@@ -199,22 +199,18 @@ class GameHud extends PositionComponent with HasGameReference<MyGame> {
     if (isLoaded && game.size.x > 0 && game.size.y > 0) {
       final margin = 30.0; // Ajusta este valor según necesites
       final joystickSize = 100.0; // Tamaño del joystick (radio + margen)
-      // Posiciona el joystick de movimiento (abajo-izquierda)
       movementJoystick.position = Vector2(
         margin + joystickSize / 2,
         game.size.y - margin - joystickSize / 2,
       );
-      // Posiciona el joystick de mira (abajo-derecha)
       lookJoystick.position = Vector2(
         game.size.x - margin - joystickSize / 2,
         game.size.y - margin - joystickSize / 2,
       );
-      // Posiciona el botón de disparo (arriba-derecha)
       shootButton.position = Vector2(game.size.x - 160, 20);
-      //fastButton.position = Vector2(margin, margin);
       menu.position = Vector2(game.size.x / 2 - 15, game.size.y - 60);
       healthBar.position = Vector2((game.size.x - healthBar.width) / 2, 20);
-      shipsDestroyedText.position = Vector2(margin + 150, margin);
+      shipsDestroyedText.position = Vector2(margin + 50, margin);
 
       debugMenuButton.position = Vector2(20, 20);
     }

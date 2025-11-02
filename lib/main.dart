@@ -34,7 +34,7 @@ void main() {
             initialActiveOverlays: const [
               'HudDecoration',
               'MainMenu',
-              'ScoreBoard',
+              //'ScoreBoard',
             ],
           ),
         );

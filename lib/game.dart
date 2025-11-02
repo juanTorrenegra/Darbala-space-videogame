@@ -36,7 +36,6 @@ class MyGame extends FlameGame
   double timeScale = 1.0;
 
   int shipsDestroyed = 0;
-  //ScoreBoard? scoreBoard;
   final ValueNotifier<int> scoreNotifier = ValueNotifier<int>(0);
 
   void incrementShipsDestroyed() {
@@ -154,12 +153,12 @@ class MyGame extends FlameGame
     universo.add(enemigo5);
 
     hud = GameHud()..priority = 100;
+    scoreNotifier.value = shipsDestroyed;
     camara?.viewport.add(hud);
 
     currentPlayerPos = player.position.clone();
 
     camara?.follow(player);
-    scoreNotifier.value = shipsDestroyed;
   }
 
   @override
@@ -183,9 +182,9 @@ class MyGame extends FlameGame
 
     debugPrint("🔄 onGameResize - Tamaño: $size ");
   }
-}
 
-void startBgmMusic() {
-  FlameAudio.bgm.initialize();
-  FlameAudio.bgm.play('bg_music.ogg');
+  void startBgmMusic() {
+    FlameAudio.bgm.initialize();
+    FlameAudio.bgm.play('bg_music.ogg');
+  }
 }

@@ -60,6 +60,7 @@ class VisorOverlay extends StatelessWidget {
                   onPressed: () {
                     game.overlays.remove('MainMenu');
                     game.overlays.add("HudDecoration");
+                    game.overlays.add("ScoreBoard");
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue.withValues(alpha: .2),
