@@ -105,8 +105,8 @@ class _ScoreBoardState extends State<ScoreBoard>
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      top: 20,
-      right: 20,
+      top: 40,
+      right: 40,
       child: AnimatedBuilder(
         animation: _animationController,
         builder: (context, child) {

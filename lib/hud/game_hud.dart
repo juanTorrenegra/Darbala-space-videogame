@@ -74,8 +74,6 @@ class GameHud extends PositionComponent with HasGameReference<MyGame> {
   late final HudButtonComponent fastButton;
   late final HudButtonComponent menu;
   late final HealthBar healthBar;
-  late final TextComponent shipsDestroyedText;
-
   late final HudButtonComponent debugMenuButton;
 
   @override
@@ -145,43 +143,24 @@ class GameHud extends PositionComponent with HasGameReference<MyGame> {
       height: 20,
     );
 
-    shipsDestroyedText = TextComponent(
-      text: '0',
-      textRenderer: TextPaint(
-        style: TextStyle(
-          color: Colors.cyanAccent,
-          fontSize: 44,
-          fontFamily: "Megatrans",
-        ),
-      ),
-    );
-
     debugMenuButton = HudButtonComponent(
-      button: RectangleComponent(
-        size: Vector2(40, 40),
-        paint: Paint()
-          ..color = Colors.blue.withAlpha(100)
-          ..style = PaintingStyle.fill,
+      button: WidgetComponent(
+        widget: Icon(Icons.bug_report, color: Colors.cyan, size: 18),
+        size: Vector2(24, 24),
       ),
       onPressed: () {
-        // Abrir el overlay del debug menu
         game.overlays.add('DebugMenu');
       },
     );
-    // Añadir componentes al HUD
+
     add(menu);
     add(movementJoystick);
     add(lookJoystick);
     add(shootButton);
     add(healthBar);
-    add(shipsDestroyedText);
     add(debugMenuButton);
 
     _positionComponents();
-  }
-
-  void updateShipsDestroyed(int count) {
-    shipsDestroyedText.text = '$count';
   }
 
   void updateHealthBar(int currentHealth, int maxHealth) {
@@ -210,9 +189,7 @@ class GameHud extends PositionComponent with HasGameReference<MyGame> {
       shootButton.position = Vector2(game.size.x - 160, 20);
       menu.position = Vector2(game.size.x / 2 - 15, game.size.y - 60);
       healthBar.position = Vector2((game.size.x - healthBar.width) / 2, 20);
-      shipsDestroyedText.position = Vector2(margin + 50, margin);
-
-      debugMenuButton.position = Vector2(20, 20);
+      debugMenuButton.position = Vector2(20, 30);
     }
   }
 }

@@ -40,8 +40,8 @@ class _DebugMenuState extends State<DebugMenu> {
         });
       },
       child: Container(
-        width: 50,
-        height: 50,
+        width: 30,
+        height: 30,
         margin: const EdgeInsets.all(8),
         decoration: BoxDecoration(color: Colors.black.withAlpha(50)),
         child: const Icon(Icons.bug_report, color: Colors.cyan, size: 18),
