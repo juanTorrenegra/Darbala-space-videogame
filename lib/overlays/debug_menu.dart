@@ -115,37 +115,81 @@ class _DebugMenuState extends State<DebugMenu> {
   Widget _buildFastModeToggle() {
     return Container(
       decoration: BoxDecoration(),
-      child: ListTile(
-        title: Text(
-          "velocidad",
-          style: TextStyle(color: Colors.cyan, fontSize: 10),
-        ),
-        //subtitle: Text("velocidad", style: TextStyle(fontSize: 10)),
-        //leading: Icon(
-        //  Icons.rocket_launch,
-        //  color: widget.game.player.isFastMode
-        //      ? const Color.fromARGB(72, 76, 175, 79)
-        //      : const Color.fromARGB(49, 244, 67, 54),
-        //),
-        trailing: Switch(
-          value: widget.game.player.isFastMode,
-          activeThumbColor: const Color.fromARGB(72, 76, 175, 79),
-          inactiveThumbColor: const Color.fromARGB(49, 244, 67, 54),
-          onChanged: (value) {
-            setState(() {
-              widget.game.player.isFastMode = value;
-              widget.game.player.currentSpeed = value ? 250 : 80;
-            });
-          },
-        ),
-        onTap: () {
-          setState(() {
-            widget.game.player.isFastMode = !widget.game.player.isFastMode;
-            widget.game.player.currentSpeed = widget.game.player.isFastMode
-                ? 250
-                : 80;
-          });
-        },
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+
+            child: Text(
+              "velocidad:",
+              style: TextStyle(color: Colors.cyan, fontSize: 12),
+            ),
+          ),
+          const SizedBox(width: 50),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildSpeedOption(80, "Normal"),
+              const SizedBox(width: 30),
+              _buildSpeedOption(250, "Rápido"),
+            ],
+          ),
+
+          const SizedBox(height: 8),
+
+          // Velocidad actual
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSpeedOption(int speed, String label) {
+    bool isSelected = widget.game.player.currentSpeed == speed;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          widget.game.player.isFastMode = (speed == 250);
+          widget.game.player.currentSpeed = speed.toDouble();
+        });
+      },
+      child: Column(
+        children: [
+          // Número de velocidad
+          Container(
+            width: 30,
+            height: 20,
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? Colors.cyan.withOpacity(0.3)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isSelected ? Colors.cyan : Colors.grey,
+                width: isSelected ? 1 : 0.5,
+              ),
+            ),
+            child: Center(
+              child: Text(
+                '$speed',
+                style: TextStyle(
+                  color: isSelected ? Colors.cyan : Colors.grey,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          // Etiqueta
+          Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.cyan : Colors.grey,
+              fontSize: 9,
+            ),
+          ),
+        ],
       ),
     );
   }
