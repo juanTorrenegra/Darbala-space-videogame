@@ -144,11 +144,14 @@ class GameHud extends PositionComponent with HasGameReference<MyGame> {
     );
 
     debugMenuButton = HudButtonComponent(
-      button: WidgetComponent(
-        widget: Icon(Icons.bug_report, color: Colors.cyan, size: 18),
-        size: Vector2(24, 24),
+      button: RectangleComponent(
+        size: Vector2(40, 40),
+        paint: Paint()
+          ..color = Colors.red.withAlpha(100)
+          ..style = PaintingStyle.fill,
       ),
       onPressed: () {
+        // Abrir el overlay del debug menu
         game.overlays.add('DebugMenu');
       },
     );

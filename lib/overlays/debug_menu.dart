@@ -12,14 +12,14 @@ class DebugMenu extends StatefulWidget {
 }
 
 class _DebugMenuState extends State<DebugMenu> {
-  bool _isDrawerOpen = true;
+  bool _isDrawerOpen = false;
   double _currentZoom = 1.0;
 
   @override
   Widget build(BuildContext context) {
     return Positioned(
       left: 0,
-      top: 70,
+      top: 30,
       child: Row(
         children: [
           // Icono del menú (siempre visible)
@@ -42,7 +42,7 @@ class _DebugMenuState extends State<DebugMenu> {
       child: Container(
         width: 30,
         height: 30,
-        margin: const EdgeInsets.all(8),
+        margin: const EdgeInsets.all(10),
         decoration: BoxDecoration(color: Colors.black.withAlpha(50)),
         child: const Icon(Icons.bug_report, color: Colors.cyan, size: 18),
       ),
@@ -51,7 +51,7 @@ class _DebugMenuState extends State<DebugMenu> {
 
   Widget _buildDebugDrawer() {
     return Container(
-      width: MediaQuery.of(context).size.width * 0.23, // 1/4 de la pantalla
+      width: MediaQuery.of(context).size.width * 0.29, // 1/4 de la pantalla
       height: MediaQuery.of(context).size.height * 0.6,
       decoration: BoxDecoration(
         color: Colors.cyan.withAlpha(20),
@@ -96,16 +96,16 @@ class _DebugMenuState extends State<DebugMenu> {
   Widget _buildHeader() {
     return const Row(
       children: [
-        Icon(Icons.bug_report, color: Colors.cyan, size: 12),
+        Icon(Icons.bug_report, color: Colors.cyan, size: 15),
         SizedBox(width: 4),
         Text(
-          'DEBUG MENU',
+          '           DEBUG MENU',
           style: TextStyle(
             color: Colors.cyan,
-            fontSize: 12,
+            fontSize: 7,
             fontWeight: FontWeight.bold,
             fontFamily: 'Megatrans',
-            letterSpacing: 3.5,
+            letterSpacing: 4.5,
           ),
         ),
       ],
@@ -116,12 +116,17 @@ class _DebugMenuState extends State<DebugMenu> {
     return Container(
       decoration: BoxDecoration(),
       child: ListTile(
-        leading: Icon(
-          Icons.rocket_launch,
-          color: widget.game.player.isFastMode
-              ? const Color.fromARGB(72, 76, 175, 79)
-              : const Color.fromARGB(49, 244, 67, 54),
+        title: Text(
+          "velocidad",
+          style: TextStyle(color: Colors.cyan, fontSize: 10),
         ),
+        //subtitle: Text("velocidad", style: TextStyle(fontSize: 10)),
+        //leading: Icon(
+        //  Icons.rocket_launch,
+        //  color: widget.game.player.isFastMode
+        //      ? const Color.fromARGB(72, 76, 175, 79)
+        //      : const Color.fromARGB(49, 244, 67, 54),
+        //),
         trailing: Switch(
           value: widget.game.player.isFastMode,
           activeThumbColor: const Color.fromARGB(72, 76, 175, 79),
@@ -129,7 +134,7 @@ class _DebugMenuState extends State<DebugMenu> {
           onChanged: (value) {
             setState(() {
               widget.game.player.isFastMode = value;
-              widget.game.player.currentSpeed = value ? 250 : 50;
+              widget.game.player.currentSpeed = value ? 250 : 80;
             });
           },
         ),
@@ -138,7 +143,7 @@ class _DebugMenuState extends State<DebugMenu> {
             widget.game.player.isFastMode = !widget.game.player.isFastMode;
             widget.game.player.currentSpeed = widget.game.player.isFastMode
                 ? 250
-                : 50;
+                : 80;
           });
         },
       ),

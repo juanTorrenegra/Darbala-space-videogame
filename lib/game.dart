@@ -52,7 +52,7 @@ class MyGame extends FlameGame
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    debugMode = true;
+    //debugMode = true;
     pool = await FlameAudio.createPool(
       'fire_2.mp3',
       minPlayers: 1,

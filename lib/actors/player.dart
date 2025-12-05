@@ -19,7 +19,7 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
       );
 
   //double _baseSpeed = 80;
-  double currentSpeed = 50;
+  double currentSpeed = 80;
   bool isFastMode = false;
   double _angle = 0;
 
