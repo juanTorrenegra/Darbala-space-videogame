@@ -54,8 +54,8 @@ class _DebugMenuState extends State<DebugMenu> {
       width: MediaQuery.of(context).size.width * 0.29, // 1/4 de la pantalla
       height: MediaQuery.of(context).size.height * 0.6,
       decoration: BoxDecoration(
-        color: Colors.cyan.withAlpha(20),
-        border: Border.all(color: Colors.cyan.withAlpha(50), width: 1),
+        color: Colors.cyanAccent.withAlpha(22),
+        //border: Border.all(color: Colors.cyan.withAlpha(50), width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(50),
@@ -113,34 +113,29 @@ class _DebugMenuState extends State<DebugMenu> {
   }
 
   Widget _buildFastModeToggle() {
-    return Container(
-      decoration: BoxDecoration(),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
 
-            child: Text(
-              "velocidad:",
-              style: TextStyle(color: Colors.cyan, fontSize: 12),
-            ),
+          child: Text(
+            "velocidad:",
+            style: TextStyle(color: Colors.cyan, fontSize: 12),
           ),
-          const SizedBox(width: 50),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildSpeedOption(80, "Normal"),
-              const SizedBox(width: 30),
-              _buildSpeedOption(250, "Rápido"),
-            ],
-          ),
+        ),
+        const SizedBox(width: 50),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildSpeedOption(80, "Normal"),
+            const SizedBox(width: 30),
+            _buildSpeedOption(250, "Rápido"),
+          ],
+        ),
 
-          const SizedBox(height: 8),
-
-          // Velocidad actual
-        ],
-      ),
+        const SizedBox(height: 8),
+      ],
     );
   }
 
@@ -167,7 +162,7 @@ class _DebugMenuState extends State<DebugMenu> {
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
                 color: isSelected ? Colors.cyan : Colors.grey,
-                width: isSelected ? 1 : 0.5,
+                width: isSelected ? 1.5 : 0.5,
               ),
             ),
             child: Center(
