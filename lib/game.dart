@@ -20,6 +20,8 @@ class MyGame extends FlameGame
     with HasGameReference<MyGame>, HasCollisionDetection {
   MyGame();
 
+  final ValueNotifier<int> scoreNotifier = ValueNotifier<int>(0);
+  int shipsDestroyed = 0;
   late final Player player;
   late final RangedEnemy mineroTorretas;
   late final RangedEnemy enemigo1;
@@ -33,10 +35,16 @@ class MyGame extends FlameGame
   CameraComponent? camara;
   Vector2 currentPlayerPos = Vector2.zero();
   late AudioPool pool;
-  double timeScale = 1.0;
+  double timeScale = 1.0; //game speed!
+  double cameraZoom = 0.5;
 
-  int shipsDestroyed = 0;
-  final ValueNotifier<int> scoreNotifier = ValueNotifier<int>(0);
+  void setCameraZoom(double zoom) {
+    cameraZoom = zoom.clamp(0.5, 3.0); // Limit zoom range
+    if (camara != null) {
+      camara!.viewfinder.zoom = cameraZoom;
+      print('Zoom set to: ${cameraZoom}x');
+    }
+  }
 
   void incrementShipsDestroyed() {
     shipsDestroyed++;
@@ -65,9 +73,10 @@ class MyGame extends FlameGame
 
     camara = CameraComponent(
       world: universo,
-      viewfinder: Viewfinder()..anchor = Anchor.center,
+      viewfinder: Viewfinder()
+        ..anchor = Anchor.center
+        ..zoom = cameraZoom,
     );
-    //camara?.viewfinder.anchor = Anchor.center;
     add(camara!);
 
     final background = SpriteComponent(

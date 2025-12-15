@@ -13,7 +13,7 @@ class DebugMenu extends StatefulWidget {
 
 class _DebugMenuState extends State<DebugMenu> {
   bool _isDrawerOpen = false;
-  double _currentZoom = 1.0;
+  double _currentZoom = 0.5;
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +71,7 @@ class _DebugMenuState extends State<DebugMenu> {
           children: [
             // Header
             _buildHeader(),
-            const SizedBox(height: 7),
+            const SizedBox(height: 12),
 
             // Fast Mode Toggle
             _buildFastModeToggle(),
@@ -95,14 +95,15 @@ class _DebugMenuState extends State<DebugMenu> {
 
   Widget _buildHeader() {
     return const Row(
+      //mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        Icon(Icons.bug_report, color: Colors.cyan, size: 15),
-        SizedBox(width: 4),
+        //Icon(Icons.bug_report, color: Colors.cyan, size: 15),
+        //SizedBox(width: 4),
         Text(
-          '           DEBUG MENU',
+          'DEBUG MENU',
           style: TextStyle(
             color: Colors.cyan,
-            fontSize: 7,
+            fontSize: 8,
             fontWeight: FontWeight.bold,
             fontFamily: 'Megatrans',
             letterSpacing: 4.5,
@@ -114,17 +115,22 @@ class _DebugMenuState extends State<DebugMenu> {
 
   Widget _buildFastModeToggle() {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
 
           child: Text(
-            "velocidad:",
-            style: TextStyle(color: Colors.cyan, fontSize: 12),
+            "Velocidad",
+            style: TextStyle(
+              color: Colors.cyan,
+              fontSize: 12,
+              fontFamily: 'Megatrans',
+              letterSpacing: 2,
+            ),
           ),
         ),
-        const SizedBox(width: 50),
+        const Spacer(),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -192,78 +198,110 @@ class _DebugMenuState extends State<DebugMenu> {
   Widget _buildZoomControls() {
     return Container(
       decoration: BoxDecoration(
-        color: const Color.fromARGB(39, 33, 33, 33),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.blue, width: 0.5),
+        //borderRadius: BorderRadius.circular(8),
+        //border: Border.all(color: Colors.blue, width: 0.5),
       ),
-      padding: const EdgeInsets.all(5),
+      //padding: const EdgeInsets.all(3),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Título del zoom
           Row(
             children: [
-              const Icon(Icons.zoom_in, color: Colors.blue, size: 10),
               const SizedBox(width: 8),
               const Text(
                 'ZOOM LEVEL',
                 style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+                  color: Colors.cyan,
+                  //fontWeight: FontWeight.bold,
                   fontSize: 10,
                   fontFamily: 'Megatrans',
+                  letterSpacing: 2,
                 ),
               ),
               const Spacer(),
               Text(
-                '${_currentZoom.toStringAsFixed(1)}x',
+                '${_currentZoom.toStringAsFixed(2)}x',
                 style: const TextStyle(
                   color: Colors.cyan,
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 14,
+                  fontFamily: 'Megatrans',
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-
+          const SizedBox(height: 5),
           // Controles de zoom
           Row(
             children: [
-              // Botón -
               Expanded(
                 child: ElevatedButton.icon(
-                  //icon: const Icon(Icons.remove, size: 10),
-                  label: const Text('-', style: TextStyle(fontSize: 15)),
+                  label: const Text('-1', style: TextStyle(fontSize: 15)),
                   onPressed: () {
                     setState(() {
-                      _currentZoom = (_currentZoom - 0.1).clamp(0.5, 3.0);
+                      _currentZoom = (_currentZoom - 0.01).clamp(0.5, 3.5);
                       _applyZoom();
                     });
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red.withAlpha(50),
-                    foregroundColor: Colors.white,
+                    foregroundColor: Colors.cyan,
                     padding: const EdgeInsets.symmetric(vertical: 4),
                   ),
                 ),
               ),
+
               const SizedBox(width: 8),
 
-              // Botón +
               Expanded(
                 child: ElevatedButton.icon(
                   //icon: const Icon(Icons.add, size: 10),
-                  label: const Text('+', style: TextStyle(fontSize: 15)),
+                  label: const Text('+1', style: TextStyle(fontSize: 15)),
                   onPressed: () {
                     setState(() {
-                      _currentZoom = (_currentZoom + 0.1).clamp(0.5, 3.0);
+                      _currentZoom = (_currentZoom + 0.01).clamp(0.5, 3.5);
                       _applyZoom();
                     });
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green.withAlpha(50),
-                    foregroundColor: Colors.white,
+                    foregroundColor: Colors.cyan,
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: ElevatedButton.icon(
+                  label: const Text('-5', style: TextStyle(fontSize: 15)),
+                  onPressed: () {
+                    setState(() {
+                      _currentZoom = (_currentZoom - 0.05).clamp(0.5, 3.5);
+                      _applyZoom();
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red.withAlpha(50),
+                    foregroundColor: Colors.cyan,
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 8),
+
+              Expanded(
+                child: ElevatedButton.icon(
+                  //icon: const Icon(Icons.add, size: 10),
+                  label: const Text('+5', style: TextStyle(fontSize: 15)),
+                  onPressed: () {
+                    setState(() {
+                      _currentZoom = (_currentZoom + 0.05).clamp(0.5, 3.5);
+                      _applyZoom();
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green.withAlpha(50),
+                    foregroundColor: Colors.cyan,
                     padding: const EdgeInsets.symmetric(vertical: 4),
                   ),
                 ),
@@ -300,9 +338,10 @@ class _DebugMenuState extends State<DebugMenu> {
   }
 
   void _applyZoom() {
-    // Aquí implementarás la lógica del zoom en tu cámara
-    // Por ejemplo:
-    // widget.game.camera.zoom = _currentZoom;
+    widget.game.setCameraZoom(_currentZoom);
     print('Zoom cambiado a: ${_currentZoom}x');
   }
 }
+// Aquí implementarás la lógica del zoom en tu cámara
+    // Por ejemplo:
+    // widget.game.camera.zoom = _currentZoom;
