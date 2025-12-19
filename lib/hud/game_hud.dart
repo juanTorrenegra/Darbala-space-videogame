@@ -71,7 +71,6 @@ class GameHud extends PositionComponent with HasGameReference<MyGame> {
   late final JoystickComponent movementJoystick;
   late final JoystickComponent lookJoystick;
   late final HudButtonComponent shootButton;
-  late final HudButtonComponent fastButton;
   late final HudButtonComponent menu;
   late final HealthBar healthBar;
   late final HudButtonComponent debugMenuButton;

@@ -38,6 +38,12 @@ class MyGame extends FlameGame
   double timeScale = 1.0; //game speed!
   double cameraZoom = 0.5;
 
+  // Método para cambiar la escala de tiempo
+  void setTimeScale(double scale) {
+    timeScale = scale.clamp(0.1, 5.0); // Limitar entre 0.1x y 5.0x
+    print('Time scale set to: ${timeScale}x');
+  }
+
   void setCameraZoom(double zoom) {
     cameraZoom = zoom.clamp(0.5, 3.0); // Limit zoom range
     if (camara != null) {
@@ -178,7 +184,6 @@ class MyGame extends FlameGame
 
   @override
   void update(double dt) {
-    super.update(dt);
     super.update(dt * timeScale);
     // Actualizar posición de depuración
     currentPlayerPos.setFrom(player.position);
