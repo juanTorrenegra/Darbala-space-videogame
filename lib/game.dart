@@ -11,6 +11,11 @@ import 'package:juanshooter/actors/player.dart';
 import 'package:juanshooter/actors/ranged_enemy.dart';
 import 'package:juanshooter/hud/game_hud.dart';
 import 'package:flame_audio/flame_audio.dart';
+import 'package:juanshooter/overlays/game_over.dart';
+import 'package:juanshooter/overlays/game_over.dart';
+import 'package:juanshooter/weapons/bullet.dart';
+import 'package:juanshooter/weapons/enemy_bullet.dart';
+import 'package:juanshooter/effects/explosion_particles.dart';
 //tamaño de pantalla = [796.363,392.727]
 // juego: nave que elimina asteroides para encontrar armas para derrotar monstruos del espacio, escenario: dentro de un imperio y uno es un minero: mision: minar y mejorar la nave para poder acceder a MediumWorld y HardWorld, competir contra otros mineros compitiendo y compartiendo loot.
 
@@ -115,7 +120,7 @@ class MyGame extends FlameGame
     universo.add(mineroTorretas);
 
     enemigo1 = RangedEnemy(
-      sprite: await Sprite.load('bite30x24.png'), //IZQUIERDA
+      sprite: await Sprite.load('bite30x24.png'),
       position: Vector2(850, 400),
       size: Vector2(30, 24),
       maxHitPoints: 10,
@@ -127,8 +132,8 @@ class MyGame extends FlameGame
     universo.add(enemigo1);
 
     enemigo2 = RangedEnemy(
-      sprite: await Sprite.load('bite30x24.png'), //morado
-      position: Vector2(850, 300),
+      sprite: await Sprite.load('bite30x24.png'),
+      position: Vector2(440, 380),
       size: Vector2(30, 24),
       maxHitPoints: 10,
       rotationSpeed: 3.0,
@@ -200,5 +205,126 @@ class MyGame extends FlameGame
   void startBgmMusic() {
     FlameAudio.bgm.initialize();
     FlameAudio.bgm.play('bg_music.ogg');
+  }
+
+  // Método para pausar/reanudar
+  void togglePause() {
+    if (paused) {
+      resumeEngine();
+    } else {
+      pauseEngine();
+    }
+  }
+
+  // Método para verificar si hay GameOverComponent
+  void removeGameOverComponent() {
+    print('🧹 Buscando GameOverComponent...');
+
+    if (camara?.viewport != null) {
+      final gameOverComponents = camara!.viewport.children
+          .whereType<GameOverComponent>()
+          .toList();
+
+      print('📊 Encontrados ${gameOverComponents.length} GameOverComponent(s)');
+
+      for (final component in gameOverComponents) {
+        component.removeFromParent();
+        print('✅ GameOverComponent removido');
+      }
+    }
+
+    // También buscar en los overlays
+    if (overlays.isActive('GameOver')) {
+      overlays.remove('GameOver');
+      print('✅ Overlay GameOver removido');
+    }
+  }
+
+  // Método para limpiar entidades
+  void clearAllGameEntities() {
+    print('🧹 Limpiando entidades del juego...');
+
+    int bulletsRemoved = 0;
+    int explosionsRemoved = 0;
+
+    // Limpiar balas y explosiones del universo
+    if (universo.isMounted) {
+      for (final component in universo.children.toList()) {
+        // Aquí necesitarías importar las clases
+        if (component is Bullet || component is EnemyBullet) {
+          component.removeFromParent();
+          bulletsRemoved++;
+        } else if (component is ExplosionEffect) {
+          component.removeFromParent();
+          explosionsRemoved++;
+        }
+      }
+    }
+
+    print(
+      '✅ Limpieza completada: $bulletsRemoved balas, $explosionsRemoved explosiones',
+    );
+  }
+
+  // Método para resetear estadísticas del jugador
+  void resetPlayerState() {
+    print('👤 Reseteando estado del jugador...');
+
+    player.currentHitPoints = player.maxHitPoints;
+    player.position = Vector2(380, 380);
+    player.isInvulnerable = false;
+    player.isVisible = true;
+    player.isFastMode = false;
+    player.currentSpeed = 80;
+
+    // Actualizar HUD
+    if (hud != null) {
+      hud.updateHealthBar(player.currentHitPoints, player.maxHitPoints);
+    }
+
+    print('✅ Jugador reseteado');
+  }
+
+  // Método para resetear estadísticas del juego
+  void resetGameStats() {
+    print('📊 Reseteando estadísticas del juego...');
+
+    shipsDestroyed = 0;
+    scoreNotifier.value = 0;
+    timeScale = 1.0;
+
+    print('✅ Estadísticas reseteadas: score=0, timeScale=1.0');
+  }
+
+  // Método para resetear cámara
+  void resetCamera() {
+    print('🎥 Reseteando cámara...');
+
+    if (camara != null) {
+      cameraZoom = 0.5;
+      camara!.viewfinder.zoom = cameraZoom;
+      camara!.follow(player);
+      //camara!.snapTo(player.position);
+
+      print('✅ Cámara reseteada: zoom=0.5x, siguiendo jugador');
+    }
+  }
+
+  // Método para resetear HUD
+  void resetHUD() {
+    print('🖥️ Reseteando HUD...');
+
+    if (hud != null) {
+      // Resetear joysticks
+      hud.movementJoystick.knob?.position =
+          hud.movementJoystick.background?.position ?? Vector2.zero();
+      hud.lookJoystick.knob?.position =
+          hud.lookJoystick.background?.position ?? Vector2.zero();
+
+      // Actualizar barra de vida
+      hud.updateHealthBar(player.currentHitPoints, player.maxHitPoints);
+
+      print('✅ HUD reseteado');
+    }
   }
 }

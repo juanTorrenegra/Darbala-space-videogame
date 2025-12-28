@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:juanshooter/game.dart';
+import 'package:juanshooter/overlays/game_over.dart';
 
 class DebugMenu extends StatefulWidget {
   final MyGame game;
@@ -82,7 +83,10 @@ class _DebugMenuState extends State<DebugMenu> {
             const SizedBox(height: 10),
             _buildTimeControls(),
             const SizedBox(height: 10),
-
+            _buildResetControls(),
+            const SizedBox(height: 10),
+            _buildGameInfo(),
+            const SizedBox(height: 10),
             // Espacio para futuros botones
             _buildPlaceholderButton('God Mode'),
             const SizedBox(height: 10),
@@ -554,6 +558,205 @@ class _DebugMenuState extends State<DebugMenu> {
     );
   }
 
+  Widget _buildResetControls() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Título
+        Padding(
+          padding: const EdgeInsets.only(left: 8, bottom: 8),
+          child: Row(
+            children: [
+              const Icon(Icons.restart_alt, size: 14, color: Colors.orange),
+              const SizedBox(width: 6),
+              const Text(
+                'CONTROLES DE RESET',
+                style: TextStyle(
+                  color: Colors.orange,
+                  fontSize: 10,
+                  fontFamily: 'Megatrans',
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Botones individuales
+        Wrap(
+          spacing: 6,
+          runSpacing: 4,
+          children: [
+            _buildResetButton('⏸️ Pausa', () {
+              widget.game.togglePause();
+              setState(() {});
+            }, Colors.blue),
+
+            _buildResetButton('🎮 Toggle GameOver', () {
+              _toggleGameOverComponent();
+            }, Colors.deepOrange),
+
+            _buildResetButton('💥 Limpiar', () {
+              widget.game.clearAllGameEntities();
+            }, Colors.purple),
+
+            _buildResetButton('👤 Reset Jugador', () {
+              widget.game.resetPlayerState();
+            }, Colors.green),
+
+            _buildResetButton('📊 Reset Stats', () {
+              widget.game.resetGameStats();
+              setState(() {});
+            }, Colors.cyan),
+
+            _buildResetButton('🎥 Reset Cámara', () {
+              widget.game.resetCamera();
+              setState(() {
+                _currentZoom = 0.5;
+              });
+            }, Colors.amber),
+            _buildResetButton('💀 Matar Jugador', () {
+              _killPlayerForTesting();
+            }, Colors.red),
+
+            _buildResetButton('🖥️ Reset HUD', () {
+              widget.game.resetHUD();
+            }, Colors.teal),
+          ],
+        ),
+
+        // Botón de RESET COMPLETO (rojo)
+        const SizedBox(height: 12),
+        ElevatedButton(
+          onPressed: () {
+            _executeFullReset();
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red.withAlpha(80),
+            foregroundColor: Colors.white,
+            minimumSize: const Size(double.infinity, 36),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.warning, size: 16),
+              SizedBox(width: 8),
+              Text(
+                'RESET COMPLETO',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildResetButton(String text, VoidCallback onPressed, Color color) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color.withAlpha(30),
+        foregroundColor: color,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        minimumSize: const Size(0, 32),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(6),
+          side: BorderSide(color: color.withAlpha(100), width: 1),
+        ),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  void _executeFullReset() {
+    // Ejecutar todos los métodos en secuencia
+    print('🔄 INICIANDO RESET COMPLETO...');
+
+    widget.game.removeGameOverComponent();
+    widget.game.clearAllGameEntities();
+    widget.game.resetPlayerState();
+    widget.game.resetGameStats();
+    widget.game.resetCamera();
+    widget.game.resetHUD();
+
+    // Si estaba pausado, reanudar
+    if (widget.game.paused) {
+      widget.game.resumeEngine();
+    }
+
+    print('✅ RESET COMPLETO FINALIZADO');
+
+    // Cerrar el debug menu
+    setState(() {
+      _isDrawerOpen = false;
+    });
+  }
+
+  Widget _buildGameInfo() {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.black.withAlpha(30),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'INFORMACIÓN DEL JUEGO',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 4),
+          _buildInfoRow(
+            'Vida Jugador',
+            '${widget.game.player.currentHitPoints}/${widget.game.player.maxHitPoints}',
+          ),
+          _buildInfoRow(
+            'Posición',
+            '${widget.game.player.position.x.toStringAsFixed(1)}, ${widget.game.player.position.y.toStringAsFixed(1)}',
+          ),
+          _buildInfoRow('Naves Destruidas', '${widget.game.shipsDestroyed}'),
+          _buildInfoRow(
+            'Time Scale',
+            '${widget.game.timeScale.toStringAsFixed(2)}x',
+          ),
+          _buildInfoRow('Estado', widget.game.paused ? 'PAUSADO' : 'ACTIVO'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(color: Colors.grey, fontSize: 9)),
+          Text(
+            value,
+            style: TextStyle(
+              color: Colors.cyan,
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPlaceholderButton(String text) {
     return ElevatedButton(
       onPressed: () {
@@ -579,5 +782,51 @@ class _DebugMenuState extends State<DebugMenu> {
   void _applyZoom() {
     widget.game.setCameraZoom(_currentZoom);
     print('Zoom cambiado a: ${_currentZoom}x');
+  }
+
+  void _toggleGameOverComponent() {
+    if (widget.game.camara?.viewport != null) {
+      // Buscar si ya existe un GameOverComponent
+      final existingComponents = widget.game.camara!.viewport.children
+          .whereType<GameOverComponent>()
+          .toList();
+
+      if (existingComponents.isEmpty) {
+        // No existe, crear uno nuevo CON referencia al juego
+        final gameOver = GameOverComponent(game: widget.game);
+        widget.game.camara!.viewport.add(gameOver);
+        print('✅ GameOverComponent AÑADIDO manualmente');
+
+        // Verificar después de un breve momento
+        Future.delayed(Duration(milliseconds: 100), () {
+          print('🔄 Verificando si se montó correctamente...');
+          print(
+            '📍 Componentes en viewport: ${widget.game.camara!.viewport.children.length}',
+          );
+          final gameOverCheck = widget.game.camara!.viewport.children
+              .whereType<GameOverComponent>()
+              .toList();
+          print('🎮 GameOverComponents encontrados: ${gameOverCheck.length}');
+          if (gameOverCheck.isNotEmpty) {
+            print(
+              '✅ GameOverComponent montado: ${gameOverCheck.first.isMounted}',
+            );
+            print('✅ Tamaño: ${gameOverCheck.first.size}');
+          }
+        });
+      } else {
+        // Ya existe, removerlo
+        for (final component in existingComponents) {
+          component.removeFromParent();
+          print('✅ GameOverComponent REMOVIDO manualmente');
+        }
+      }
+    } else {
+      print('❌ No se puede añadir GameOverComponent: cámara no disponible');
+    }
+  }
+
+  void _killPlayerForTesting() {
+    widget.game.player.die();
   }
 }

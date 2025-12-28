@@ -133,6 +133,8 @@ class GameHud extends PositionComponent with HasGameReference<MyGame> {
       ),
       onPressed: () {
         game.overlays.add("MainMenu");
+        //game.setTimeScale(0.0);
+        game.pauseEngine();
       },
     );
     healthBar = HealthBar(

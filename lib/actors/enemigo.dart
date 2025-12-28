@@ -53,6 +53,10 @@ abstract class Enemigo extends SpriteComponent
     onActivate();
   }
 
+  void deactivate() {
+    _isActivated = false;
+  } // creada por mi para intentar desactivar, borrar?
+
   // Método opcional para comportamiento al activarse
   void onActivate() {} //dame un ejemplo de como usar y por que este metodo
 

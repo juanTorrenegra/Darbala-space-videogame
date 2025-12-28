@@ -5,6 +5,7 @@ import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import 'package:juanshooter/effects/explosion_particles.dart';
 import 'package:juanshooter/game.dart';
+import 'package:juanshooter/overlays/game_over.dart';
 import 'package:juanshooter/weapons/bullet.dart';
 import 'package:juanshooter/utils/game_utils.dart';
 
@@ -36,7 +37,7 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
   // ✅ Variables para la secuencia de muerte
   bool _isDying = false;
   double _deathTimer = 0;
-  double _deathDuration = 3.0;
+  double _deathDuration = 2.0;
   double _originalTimeScale = 1.0;
 
   void toggleFastMode(bool activate) {
@@ -88,6 +89,64 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
 
     // ✅ Crear efecto de explosión
     _createExplosion();
+
+    print('🎮 Programando GameOverComponent en 1.5 segundos...');
+
+    Future.delayed(Duration(milliseconds: 1500), () {
+      print('🎮 Intentando añadir GameOverComponent...');
+      print('🎮 isDying: $_isDying');
+      print('🎮 isMounted: $isMounted');
+      print('🎮 game.camara: ${game.camara}');
+      print('🎮 game.camara?.viewport: ${game.camara?.viewport}');
+
+      if (_isDying && isMounted) {
+        if (game.camara != null && game.camara!.viewport.isMounted) {
+          print('🎮 Creando GameOverComponent...');
+          final gameOver = GameOverComponent();
+
+          // Añadir logs del constructor
+          print('🎮 GameOverComponent creado');
+          print('🎮 Prioridad: ${gameOver.priority}');
+
+          // Añadir listener para cuando se cargue
+          gameOver
+              .onLoad()
+              .then((_) {
+                print('🎮 GameOverComponent cargado exitosamente');
+                print('🎮 Tamaño asignado: ${gameOver.size}');
+              })
+              .catchError((error) {
+                print('❌ Error cargando GameOverComponent: $error');
+              });
+
+          game.camara!.viewport.add(gameOver);
+          print('✅ GameOverComponent añadido al viewport');
+
+          // Verificar que se añadió
+          Future.delayed(Duration(milliseconds: 100), () {
+            print(
+              '🎮 Componentes en viewport después de añadir: ${game.camara!.viewport.children.length}',
+            );
+            final gameOverComponents = game.camara!.viewport.children
+                .whereType<GameOverComponent>()
+                .toList();
+            print(
+              '🎮 GameOverComponents encontrados: ${gameOverComponents.length}',
+            );
+          });
+        } else {
+          print(
+            '❌ No se puede añadir GameOverComponent: cámara o viewport no disponibles',
+          );
+          print('❌ game.camara: ${game.camara}');
+          print('❌ viewport.isMounted: ${game.camara?.viewport?.isMounted}');
+        }
+      } else {
+        print('❌ Condiciones no cumplidas para añadir GameOverComponent');
+        print('❌ _isDying: $_isDying');
+        print('❌ isMounted: $isMounted');
+      }
+    });
   }
 
   void _createExplosion() {
@@ -104,9 +163,33 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
   void _completeDeathSequence() {
     // ✅ Restaurar escala de tiempo normal
     game.timeScale = _originalTimeScale;
-    game.overlays.add('MainMenu');
-    // ✅ Opcional: resetear el juego o preparar para reinicio
+    //game.overlays.add('MainMenu');
+
     print("Death sequence completed");
+  }
+
+  void resetPlayer() {
+    // Cancelar cualquier secuencia de muerte
+    _isDying = false;
+    _deathTimer = 0;
+
+    // Restaurar hitpoints
+    currentHitPoints = maxHitPoints;
+
+    // Restaurar estado
+    isInvulnerable = false;
+    isVisible = true;
+
+    // Restaurar velocidad
+    isFastMode = false;
+    currentSpeed = 80;
+
+    // Restaurar posición y rotación
+    position = Vector2(380, 380);
+    angle = 0;
+    _angle = 0;
+
+    print('🔄 Jugador reseteado completamente');
   }
 
   @override
