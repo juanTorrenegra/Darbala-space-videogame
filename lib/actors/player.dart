@@ -20,7 +20,7 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
       );
 
   //double _baseSpeed = 80;
-  double currentSpeed = 80;
+  double currentSpeed = 200;
   bool isFastMode = false;
   double _angle = 0;
 
@@ -42,7 +42,6 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
 
   void toggleFastMode(bool activate) {
     isFastMode = !isFastMode; // Invierte el estado actual
-    currentSpeed = isFastMode ? 300 : 80;
   }
 
   // Método para recibir daño

@@ -86,6 +86,14 @@ class InformacionJuego extends PositionComponent with HasGameReference<MyGame> {
       ),
     );
 
+    _infoLines.add(
+      _createInfoLine(
+        index: 5,
+        label: 'Velocidad',
+        value: game.player.currentSpeed.toStringAsFixed(0),
+      ),
+    );
+
     // Calcular tamaño del componente
     _calculateSize();
 

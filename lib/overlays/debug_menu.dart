@@ -146,9 +146,9 @@ class _DebugMenuState extends State<DebugMenu> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildSpeedOption(80, "Normal"),
+            _buildSpeedOption(100, "Normal"),
             const SizedBox(width: 30),
-            _buildSpeedOption(250, "Rápido"),
+            _buildSpeedOption(900, "Rápido"),
           ],
         ),
 
