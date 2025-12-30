@@ -63,8 +63,6 @@ class GameOverComponent extends PositionComponent
   }
 
   void _animateAppearance() {
-    print('🎮 Iniciando animación de aparición...');
-
     // Buscar el panel en _contentContainer en lugar de en children
     final panels = _contentContainer.children
         .where((c) => c is RectangleComponent && c.size == Vector2(350, 250))
@@ -74,11 +72,11 @@ class GameOverComponent extends PositionComponent
       final panel = panels.first as PositionComponent;
       print('🎮 Panel encontrado para animación');
 
-      panel.scale = Vector2.all(0.8);
+      panel.scale = Vector2.all(1.2);
       panel.add(
         ScaleEffect.to(
           Vector2.all(1.0),
-          EffectController(duration: 0.4, curve: Curves.elasticOut),
+          EffectController(duration: 3.0, curve: Curves.elasticOut),
         ),
       );
       print('🎮 Animación aplicada al panel');
@@ -133,7 +131,7 @@ class GameOverComponent extends PositionComponent
 
     // Título
     _title = TextComponent(
-      text: 'GAME OVER',
+      text: 'NAVE DESTRUIDA',
       position: Vector2(size.x / 2, size.y / 2 - 80),
       anchor: Anchor.center,
       textRenderer: TextPaint(
@@ -172,24 +170,6 @@ class GameOverComponent extends PositionComponent
   void _restartGame() {
     print('🎮 Botón NUEVO JUEGO presionado');
 
-    // Primero, animar la salida
-    _contentContainer.add(
-      OpacityEffect.to(
-        0,
-        EffectController(duration: 0.3),
-        onComplete: () {
-          // 1. Remover este componente
-          removeFromParent();
-          print('✅ GameOverComponent removido');
-
-          // 2. Llamar a resetGame (necesitarás implementarlo)
-          if (game != null) {
-            // Primero, verifica si game tiene método resetGame
-            // Si no, llama a los métodos individuales
-            //game!.resetGame();
-          }
-        },
-      ),
-    );
+    removeFromParent();
   }
 }

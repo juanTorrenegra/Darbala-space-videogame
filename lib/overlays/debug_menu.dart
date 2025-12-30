@@ -603,6 +603,9 @@ class _DebugMenuState extends State<DebugMenu> {
             _buildResetButton('👤 Reset Jugador', () {
               widget.game.resetPlayerState();
             }, Colors.green),
+            _buildResetButton('🔄 Recrear Player', () async {
+              await widget.game.recreatePlayer();
+            }, Colors.blue),
 
             _buildResetButton('📊 Reset Stats', () {
               widget.game.resetGameStats();

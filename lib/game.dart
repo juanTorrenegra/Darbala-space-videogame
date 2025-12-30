@@ -28,13 +28,13 @@ class MyGame extends FlameGame
 
   final ValueNotifier<int> scoreNotifier = ValueNotifier<int>(0);
   int shipsDestroyed = 0;
-  late final Player player;
-  late final RangedEnemy mineroTorretas;
-  late final RangedEnemy enemigo1;
-  late final Enemigo enemigo2;
-  late final Enemigo enemigo3;
-  late final Enemigo enemigo4;
-  late final Enemigo enemigo5;
+  late Player player;
+  late RangedEnemy mineroTorretas;
+  late RangedEnemy enemigo1;
+  late Enemigo enemigo2;
+  late Enemigo enemigo3;
+  late Enemigo enemigo4;
+  late Enemigo enemigo5;
 
   late final GameHud hud;
   late final World universo;
@@ -344,5 +344,39 @@ class MyGame extends FlameGame
 
       print('✅ HUD reseteado');
     }
+  }
+
+  Future<void> recreatePlayer() async {
+    print('👤 Recreando jugador...');
+
+    if (player.isMounted) {
+      player.removeFromParent();
+    }
+
+    // 2. Crear nuevo jugador
+    player = Player(
+      sprite: await Sprite.load('ship.png'),
+      position: Vector2(380, 380),
+    );
+
+    // 3. Configurar propiedades
+    player.maxHitPoints = 10;
+    player.currentHitPoints = 10;
+    player.isFastMode = false;
+    player.currentSpeed = 200;
+
+    // 4. Añadir al universo
+    universo.add(player);
+
+     5. Actualizar referencias
+    if (camara != null) {
+      camara!.follow(player);
+    }
+
+    if (hud != null) {
+      hud.updateHealthBar(player.currentHitPoints, player.maxHitPoints);
+    }
+
+    print('✅ Jugador recreado exitosamente');
   }
 }
