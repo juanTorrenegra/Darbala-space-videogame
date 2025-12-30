@@ -167,9 +167,19 @@ class GameOverComponent extends PositionComponent
     _contentContainer.add(_menuButton);
   }
 
-  void _restartGame() {
-    print('🎮 Botón NUEVO JUEGO presionado');
+  void _restartGame() async {
+    print('🎮 Iniciando nuevo juego...');
 
     removeFromParent();
+
+    // 2. Recrear jugador
+    await game.recreatePlayer();
+
+    // 3. Asegurar que la cámara siga al nuevo jugador
+    if (game.camara != null) {
+      game.camara!.follow(game.player);
+    }
+    game.shipsDestroyed = 0;
+    game.scoreNotifier.value = 0;
   }
 }

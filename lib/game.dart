@@ -368,7 +368,7 @@ class MyGame extends FlameGame
     // 4. Añadir al universo
     universo.add(player);
 
-     5. Actualizar referencias
+    // 5. Actualizar referencias
     if (camara != null) {
       camara!.follow(player);
     }
