@@ -13,7 +13,7 @@ class DebugMenu extends StatefulWidget {
 }
 
 class _DebugMenuState extends State<DebugMenu> {
-  bool _isDrawerOpen = false;
+  bool _isDrawerOpen = true;
   double _currentZoom = 0.5;
 
   @override
@@ -22,6 +22,8 @@ class _DebugMenuState extends State<DebugMenu> {
       left: 0,
       top: 30,
       child: Row(
+        //mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Icono del menú (siempre visible)
           _buildMenuIcon(),
@@ -680,8 +682,6 @@ class _DebugMenuState extends State<DebugMenu> {
 
   void _executeFullReset() {
     // Ejecutar todos los métodos en secuencia
-    print('🔄 INICIANDO RESET COMPLETO...');
-
     widget.game.removeGameOverComponent();
     widget.game.clearAllGameEntities();
     widget.game.resetPlayerState();

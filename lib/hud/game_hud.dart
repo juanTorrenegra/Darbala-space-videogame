@@ -146,13 +146,12 @@ class GameHud extends PositionComponent with HasGameReference<MyGame> {
 
     debugMenuButton = HudButtonComponent(
       button: RectangleComponent(
-        size: Vector2(40, 40),
+        size: Vector2(30, 30),
         paint: Paint()
-          ..color = Colors.red.withAlpha(100)
+          ..color = Colors.green.withAlpha(20)
           ..style = PaintingStyle.fill,
       ),
       onPressed: () {
-        // Abrir el overlay del debug menu
         game.overlays.add('DebugMenu');
       },
     );
@@ -193,7 +192,7 @@ class GameHud extends PositionComponent with HasGameReference<MyGame> {
       shootButton.position = Vector2(game.size.x - 160, 20);
       menu.position = Vector2(game.size.x / 2 - 15, game.size.y - 60);
       healthBar.position = Vector2((game.size.x - healthBar.width) / 2, 20);
-      debugMenuButton.position = Vector2(20, 30);
+      debugMenuButton.position = Vector2(10, 40);
     }
   }
 }

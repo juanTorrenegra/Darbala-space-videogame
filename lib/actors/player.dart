@@ -24,7 +24,6 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
   bool isFastMode = false;
   double _angle = 0;
 
-  // Sistema de hitpoints
   int maxHitPoints = 10;
   int currentHitPoints = 10;
   bool isInvulnerable = false;

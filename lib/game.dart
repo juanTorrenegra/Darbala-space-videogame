@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:math';
-import 'dart:ui';
 
 import 'package:flame/camera.dart';
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
+import 'package:flame/parallax.dart';
 import 'package:flutter/material.dart';
 import 'package:juanshooter/actors/enemigo.dart';
 import 'package:juanshooter/actors/player.dart';
@@ -45,6 +45,8 @@ class MyGame extends FlameGame
   double cameraZoom = 0.5;
   late InformacionJuego informacionJuego;
 
+  late ParallaxComponent spaceParallax;
+
   // Método para cambiar la escala de tiempo
   void setTimeScale(double scale) {
     timeScale = scale.clamp(0.1, 5.0); // Limitar entre 0.1x y 5.0x
@@ -82,22 +84,41 @@ class MyGame extends FlameGame
 
     universo = World();
     add(universo);
+    final layerFar = await ParallaxLayer.load(
+      ParallaxImageData('stars3000x1500.png'),
+      repeat: ImageRepeat.repeat,
+      velocityMultiplier: Vector2(0.2, 0.2),
+    );
+
+    final layerNear = await ParallaxLayer.load(
+      ParallaxImageData('estrellas1000x500dot.png'),
+      repeat: ImageRepeat.repeat,
+      velocityMultiplier: Vector2(0.8, 0.8),
+    );
+
+    final parallax = Parallax([
+      layerFar,
+      layerNear,
+    ], baseVelocity: Vector2.zero());
+
+    spaceParallax = ParallaxComponent(parallax: parallax);
 
     camara = CameraComponent(
       world: universo,
+      backdrop: spaceParallax,
       viewfinder: Viewfinder()
         ..anchor = Anchor.center
         ..zoom = cameraZoom,
     );
     add(camara!);
 
-    final background = SpriteComponent(
-      sprite: await Sprite.load('b.png'), //Nebula3.png b.png
-      size: Vector2(6000, 3000),
-      anchor: Anchor.topLeft,
-      position: Vector2(0, 0),
-    )..priority = -100;
-    universo.add(background);
+    //final background = SpriteComponent(
+    //  sprite: await Sprite.load('b.png'), //Nebula3.png b.png
+    //  size: Vector2(6000, 3000),
+    //  anchor: Anchor.topLeft,
+    //  position: Vector2(0, 0),
+    //)..priority = -100;
+    //universo.add(background);
 
     player = Player(
       sprite: await Sprite.load('ship.png'), // SIMULAR RELOAD LASERS
@@ -208,8 +229,25 @@ class MyGame extends FlameGame
   @override
   void update(double dt) {
     super.update(dt * timeScale);
-    // Actualizar posición de depuración
+
     currentPlayerPos.setFrom(player.position);
+
+    final joystick = hud.movementJoystick;
+
+    if (joystick.direction == JoystickDirection.idle) {
+      // Si no hay input, desaceleramos suavemente
+      spaceParallax.parallax!.baseVelocity.scale(0.9);
+      return;
+    }
+
+    // Dirección normalizada del joystick
+    final input = joystick.relativeDelta;
+
+    // Movimiento opuesto al jugador
+    final parallaxDirection = -input;
+
+    // Velocidad del fondo (ajusta el 20–40 según sensación)
+    spaceParallax.parallax!.baseVelocity = parallaxDirection * 25;
   }
 
   @override
@@ -260,8 +298,6 @@ class MyGame extends FlameGame
 
   // Método para limpiar entidades
   void clearAllGameEntities() {
-    print('🧹 Limpiando entidades del juego...');
-
     int bulletsRemoved = 0;
     int explosionsRemoved = 0;
 
@@ -278,7 +314,6 @@ class MyGame extends FlameGame
         }
       }
     }
-
     print(
       '✅ Limpieza completada: $bulletsRemoved balas, $explosionsRemoved explosiones',
     );
@@ -286,14 +321,12 @@ class MyGame extends FlameGame
 
   // Método para resetear estadísticas del jugador
   void resetPlayerState() {
-    print('👤 Reseteando estado del jugador...');
-
     player.currentHitPoints = player.maxHitPoints;
     player.position = Vector2(380, 380);
     player.isInvulnerable = false;
     player.isVisible = true;
     player.isFastMode = false;
-    player.currentSpeed = 80;
+    player.currentSpeed = 200;
 
     // Actualizar HUD
     if (hud != null) {
