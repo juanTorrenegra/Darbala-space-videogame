@@ -106,7 +106,7 @@ abstract class Enemigo extends SpriteComponent
   void _takeDamage(int damage) {
     final remainingShield = shield - damage;
     if (remainingShield >= 0) {
-      // TODO: Efecto visual de escudo
+      // TODO: Efecto visual de escudo hacer
       return;
     }
 
