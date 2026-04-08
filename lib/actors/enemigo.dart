@@ -14,6 +14,8 @@ abstract class Enemigo extends SpriteComponent
   final double rotationSpeed;
   bool _isActivated = false;
 
+  bool get isActivated => _isActivated;
+
   Enemigo({
     required Sprite sprite,
     required Vector2 position,
@@ -55,10 +57,12 @@ abstract class Enemigo extends SpriteComponent
 
   void deactivate() {
     _isActivated = false;
-  } // creada por mi para intentar desactivar, borrar?
+    onDeactivate();
+  }
 
   // Método opcional para comportamiento al activarse
   void onActivate() {} //dame un ejemplo de como usar y por que este metodo
+  void onDeactivate() {}
 
   //  Método para rotar suavemente hacia un ángulo objetivo
   double rotateTowards(double targetAngle, double dt) {

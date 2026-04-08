@@ -32,7 +32,7 @@ void main() {
               //'GameOver': (_, game) => GameOver(game: game),
             },
             initialActiveOverlays: const [
-              'HudDecoration',
+              //'HudDecoration',
               'MainMenu',
               //'ScoreBoard',
             ],

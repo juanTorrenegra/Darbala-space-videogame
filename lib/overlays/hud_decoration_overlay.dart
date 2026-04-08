@@ -62,9 +62,6 @@ class _HudDecorationPainter extends CustomPainter {
     path.lineTo(size.width - 20, size.height - 60);
 
     canvas.drawPath(path, paint);
-
-    // Puedes agregar más elementos decorativos aquí...
-    // Ejemplo: Barra de estado, radar, indicadores, etc.
   }
 
   @override

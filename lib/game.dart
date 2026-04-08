@@ -67,8 +67,7 @@ class MyGame extends FlameGame
   }
 
   void fast() {
-    // Llama al método del player
-    player.toggleFastMode(!player.isFastMode); // Alternar estado
+    player.toggleFastMode(!player.isFastMode); // Alternar velocidad
   }
 
   @override
@@ -121,7 +120,7 @@ class MyGame extends FlameGame
     //universo.add(background);
 
     player = Player(
-      sprite: await Sprite.load('ship.png'), // SIMULAR RELOAD LASERS
+      sprite: await Sprite.load('ship.png'),
       position: Vector2(380, 380),
     );
     player.maxHitPoints = 10;
@@ -203,7 +202,7 @@ class MyGame extends FlameGame
     if (camara?.viewport != null) {
       camara!.viewport.add(informacionJuego);
       informacionJuego.position = Vector2(530, 10);
-    } //sin este if: el se renderiza atras de los demas componentes
+    } //sin este if: la tabla se renderiza atras de los demas componentes
 
     currentPlayerPos = player.position.clone();
 
@@ -296,6 +295,36 @@ class MyGame extends FlameGame
     }
   }
 
+  void deactivateAllEnemies() {
+    int enemiesDeactivated = 0;
+    if (universo.isMounted) {
+      for (final enemy in universo.children.whereType<Enemigo>()) {
+        if (enemy.isActivated) {
+          enemy.deactivate();
+          enemiesDeactivated++;
+        } else {
+          enemy.deactivate();
+        }
+      }
+    }
+    print('🛑 Enemigos desactivados: $enemiesDeactivated');
+  }
+
+  void clearEnemyBullets() {
+    int removed = 0;
+    if (universo.isMounted) {
+      for (final component in universo.children.toList()) {
+        if (component is EnemyBullet) {
+          component.removeFromParent();
+          removed++;
+        }
+      }
+    }
+    if (removed > 0) {
+      print('🧹 EnemyBullet removidas: $removed');
+    }
+  }
+
   // Método para limpiar entidades
   void clearAllGameEntities() {
     int bulletsRemoved = 0;
@@ -381,6 +410,10 @@ class MyGame extends FlameGame
 
   Future<void> recreatePlayer() async {
     print('👤 Recreando jugador...');
+
+    // Detener cualquier enemigo que estuviera disparando al jugador anterior
+    deactivateAllEnemies();
+    clearEnemyBullets();
 
     if (player.isMounted) {
       player.removeFromParent();

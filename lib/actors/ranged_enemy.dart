@@ -67,6 +67,13 @@ class RangedEnemy extends Enemigo {
     _startAiming();
   }
 
+  @override
+  void onDeactivate() {
+    _isAiming = false;
+    _isInShootingPosition = false;
+    _shootCooldown = 0;
+  }
+
   void _startAiming() {
     _isAiming = true;
 

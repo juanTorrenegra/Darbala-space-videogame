@@ -76,6 +76,10 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
     _isDying = true;
     print("Player died! Starting death sequence...");
 
+    // ✅ Detener enemigos activos y limpiar balas enemigas para el reset
+    game.deactivateAllEnemies();
+    game.clearEnemyBullets();
+
     // ✅ Guardar la escala de tiempo original
     _originalTimeScale = game.timeScale;
 
