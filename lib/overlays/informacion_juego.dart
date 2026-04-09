@@ -1,6 +1,5 @@
 import 'package:flame/components.dart';
 import 'package:flame/text.dart';
-import 'package:flame/camera.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:juanshooter/actors/player.dart';
@@ -94,6 +93,14 @@ class InformacionJuego extends PositionComponent with HasGameReference<MyGame> {
       ),
     );
 
+    _infoLines.add(
+      _createInfoLine(
+        index: 6,
+        label: 'Zoom',
+        value: '${game.cameraZoom.toStringAsFixed(2)}x',
+      ),
+    );
+
     // Calcular tamaño del componente
     _calculateSize();
 
@@ -129,7 +136,7 @@ class InformacionJuego extends PositionComponent with HasGameReference<MyGame> {
 
   void _calculateSize() {
     double maxWidth = 130;
-    double totalHeight = 70;
+    double totalHeight = 80;
 
     size = Vector2(maxWidth, totalHeight);
   }
@@ -191,6 +198,16 @@ class InformacionJuego extends PositionComponent with HasGameReference<MyGame> {
     // Estado del juego
     if (_infoLines.length > 4) {
       _infoLines[4].text = game.paused ? 'PAUSADO' : 'ACTIVO';
+    }
+
+    // Velocidad
+    if (_infoLines.length > 5) {
+      _infoLines[5].text = game.player.currentSpeed.toStringAsFixed(0);
+    }
+
+    // Zoom (mismo valor que `MyGame.cameraZoom` / viewfinder)
+    if (_infoLines.length > 6) {
+      _infoLines[6].text = '${game.cameraZoom.toStringAsFixed(2)}x';
     }
   }
 
