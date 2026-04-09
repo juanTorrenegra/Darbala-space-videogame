@@ -4,6 +4,7 @@ import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import 'package:juanshooter/game.dart';
 import 'package:juanshooter/weapons/bullet.dart';
+import 'package:juanshooter/utils/game_utils.dart';
 
 abstract class Enemigo extends SpriteComponent
     with HasGameReference<MyGame>, CollisionCallbacks {
