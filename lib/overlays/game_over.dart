@@ -162,6 +162,7 @@ class GameOverComponent extends PositionComponent
       onPressed: () {
         removeFromParent();
         game.overlays.add('MainMenu');
+        _restartGame();
       },
     );
     _contentContainer.add(_menuButton);
