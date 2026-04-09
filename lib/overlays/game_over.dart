@@ -171,6 +171,9 @@ class GameOverComponent extends PositionComponent
     print('🎮 Iniciando nuevo juego...');
 
     removeFromParent();
+    game.clearAllGameEntities();
+    game.deactivateAllEnemies();
+    game.clearEnemyBullets();
 
     // 2. Recrear jugador
     await game.recreatePlayer();
