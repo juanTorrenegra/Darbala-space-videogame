@@ -182,7 +182,7 @@ class InformacionJuego extends PositionComponent with HasGameReference<MyGame> {
     // Posición
     if (_infoLines.length > 1) {
       _infoLines[1].text =
-          '${game.player.position.x.toStringAsFixed(1)}, ${game.player.position.y.toStringAsFixed(1)}';
+          '${game.player.position.x.toStringAsFixed(0)}, ${game.player.position.y.toStringAsFixed(0)}';
     }
 
     // Naves destruidas

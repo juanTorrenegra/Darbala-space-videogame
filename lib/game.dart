@@ -42,7 +42,7 @@ class MyGame extends FlameGame
   Vector2 currentPlayerPos = Vector2.zero();
   late AudioPool pool;
   double timeScale = 1.0; //game speed!
-  double cameraZoom = 0.5;
+  double cameraZoom = 0.7;
   late InformacionJuego informacionJuego;
 
   late ParallaxComponent spaceParallax;
@@ -92,7 +92,7 @@ class MyGame extends FlameGame
     final layerNear = await ParallaxLayer.load(
       ParallaxImageData('estrellas1000x500dot.png'),
       repeat: ImageRepeat.repeat,
-      velocityMultiplier: Vector2(0.8, 0.8),
+      velocityMultiplier: Vector2(1.5, 1.5),
     );
 
     final parallax = Parallax([
@@ -110,14 +110,6 @@ class MyGame extends FlameGame
         ..zoom = cameraZoom,
     );
     add(camara!);
-
-    //final background = SpriteComponent(
-    //  sprite: await Sprite.load('b.png'), //Nebula3.png b.png
-    //  size: Vector2(6000, 3000),
-    //  anchor: Anchor.topLeft,
-    //  position: Vector2(0, 0),
-    //)..priority = -100;
-    //universo.add(background);
 
     player = Player(
       sprite: await Sprite.load('ship.png'),
@@ -242,11 +234,9 @@ class MyGame extends FlameGame
     // Dirección normalizada del joystick
     final input = joystick.relativeDelta;
 
-    // Movimiento opuesto al jugador
-    final parallaxDirection = -input;
-
-    // Velocidad del fondo (ajusta el 20–40 según sensación)
-    spaceParallax.parallax!.baseVelocity = parallaxDirection * 25;
+    // Capas en sentido contrario al movimiento del jugador (scroll del cielo).
+    // Antes: `-input * 25` se veía como si las estrellas siguieran a la nave; usar `input * 25` invierte el scroll.
+    spaceParallax.parallax!.baseVelocity = input * 25;
   }
 
   @override
