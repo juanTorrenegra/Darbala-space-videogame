@@ -84,15 +84,15 @@ class MyGame extends FlameGame
     universo = World();
     add(universo);
     final layerFar = await ParallaxLayer.load(
-      ParallaxImageData('stars3000x1500.png'),
+      ParallaxImageData('stars3000x1500.png'), //estrellas1000x500dot.png
       repeat: ImageRepeat.repeat,
       velocityMultiplier: Vector2(0.2, 0.2),
     );
 
     final layerNear = await ParallaxLayer.load(
-      ParallaxImageData('estrellas1000x500dot.png'),
+      ParallaxImageData('estrellas950x450.png'),
       repeat: ImageRepeat.repeat,
-      velocityMultiplier: Vector2(1.5, 1.5),
+      velocityMultiplier: Vector2(2.2, 2.2),
     );
 
     final parallax = Parallax([
@@ -112,7 +112,7 @@ class MyGame extends FlameGame
     add(camara!);
 
     player = Player(
-      sprite: await Sprite.load('ship.png'),
+      sprite: await Sprite.load('ship300x240.png'),
       position: Vector2(380, 380),
     );
     player.maxHitPoints = 10;
