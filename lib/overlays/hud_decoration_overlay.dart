@@ -38,13 +38,26 @@ class _HudDecorationPainter extends CustomPainter {
     final path = Path();
 
     // Esquina superior izquierda
-    path.moveTo(40, 10);
-    path.lineTo(100, 10);
-    path.lineTo(110, 30);
-    path.lineTo(size.width / 5, 30);
-    path.lineTo(size.width / 5, 60);
+    path.moveTo(0, size.height / 15);
+    path.lineTo(size.width / 10, size.height / 15);
+    path.lineTo(size.width / 8.5, size.height / 8);
+    path.lineTo(size.width / 6, size.height / 8);
+    path.lineTo(size.width / 5.5, size.height / 6);
+    path.lineTo(size.width / 5.5, size.height / 4.5);
+    path.lineTo(size.width / 8, size.height / 3.2);
+    path.lineTo(0, size.height / 3.2);
 
-    //path.moveTo(0, 10);
+    //path.moveTo(40, 10);
+    //path.lineTo(100, 10);
+    //path.lineTo(110, 30);
+    //path.lineTo(size.width / 5, 30);
+    //path.lineTo(size.width / 5, 60);
+    //
+    //path.moveTo(size.width / 5 + 10, 30);
+    //path.lineTo(size.width / 5 + 10, 60);
+    //
+    //path.moveTo(size.width / 5 + 20, 30);
+    //path.lineTo(size.width / 5 + 20, size.height / 8);
     //path.lineTo(100, 10);
 
     // Esquina superior derecha

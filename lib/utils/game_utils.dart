@@ -77,6 +77,7 @@ class FontLoaderUtil {
       'Megatrans': 'assets/fonts/megatrans.otf',
       'Ortogonal': 'assets/fonts/ortogonal.otf',
       'Tintanium': 'assets/fonts/tintanium.ttf',
+      'steel700': 'assets/fonts/steel700.ttf',
     };
 
     // Cargar cada fuente
