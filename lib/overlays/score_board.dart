@@ -19,7 +19,6 @@ class _ScoreBoardState extends State<ScoreBoard>
   late Animation<double> _glowAnimation;
 
   int _currentScore = 0;
-  int _previousScore = 0;
   bool _showMedalAnimation = false;
 
   @override
@@ -36,7 +35,6 @@ class _ScoreBoardState extends State<ScoreBoard>
     final newScore = widget.game.scoreNotifier.value;
 
     setState(() {
-      _previousScore = _currentScore;
       _currentScore = newScore;
     });
 
@@ -80,7 +78,6 @@ class _ScoreBoardState extends State<ScoreBoard>
 
   void onScoreUpdated(int newScore) {
     setState(() {
-      _previousScore = _currentScore;
       _currentScore = newScore;
     });
 
@@ -106,7 +103,7 @@ class _ScoreBoardState extends State<ScoreBoard>
   Widget build(BuildContext context) {
     return Positioned(
       top: 40,
-      right: 40,
+      left: 40,
       child: AnimatedBuilder(
         animation: _animationController,
         builder: (context, child) {
@@ -145,17 +142,17 @@ class _ScoreBoardState extends State<ScoreBoard>
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Icono de nave destruida
-                Icon(
-                  Icons.rocket_launch,
-                  color: _colorAnimation.value,
-                  size: 24,
-                ),
-                const SizedBox(width: 8),
+                //Icon(
+                //  Icons.rocket_launch,
+                //  color: _colorAnimation.value,
+                //  size: 24,
+                //),
+                //const SizedBox(width: 8),
                 Text(
                   '$_currentScore',
                   style: TextStyle(
                     fontSize: 36,
-                    fontFamily: 'Megatrans',
+                    fontFamily: 'steel700.ttf',
                     color: _colorAnimation.value,
                     fontWeight: FontWeight.bold,
                     shadows: [

@@ -86,7 +86,7 @@ class MyGame extends FlameGame
     final layerFar = await ParallaxLayer.load(
       ParallaxImageData('stars3000x1500.png'), //estrellas1000x500dot.png
       repeat: ImageRepeat.repeat,
-      velocityMultiplier: Vector2(0.2, 0.2),
+      velocityMultiplier: Vector2(0.5, 0.5),
     );
 
     final layerNear = await ParallaxLayer.load(
@@ -121,7 +121,7 @@ class MyGame extends FlameGame
 
     mineroTorretas = RangedEnemy(
       sprite: await Sprite.load('5.png'), //MINERO
-      position: Vector2(100, 100),
+      position: Vector2(1300, 400),
       size: Vector2(530, 300),
       maxHitPoints: 20,
       rotationSpeed: 0.4,

@@ -32,16 +32,20 @@ class _HudDecorationPainter extends CustomPainter {
     final paint = Paint()
       ..color = Colors.cyan
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.0);
+      ..strokeWidth = 1.0
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.0);
 
     final path = Path();
 
     // Esquina superior izquierda
-    path.moveTo(20, 20);
-    path.lineTo(60, 20);
-    path.moveTo(20, 20);
-    path.lineTo(20, 60);
+    path.moveTo(40, 10);
+    path.lineTo(100, 10);
+    path.lineTo(110, 30);
+    path.lineTo(size.width / 5, 30);
+    path.lineTo(size.width / 5, 60);
+
+    //path.moveTo(0, 10);
+    //path.lineTo(100, 10);
 
     // Esquina superior derecha
     path.moveTo(size.width - 20, 20);
@@ -56,7 +60,7 @@ class _HudDecorationPainter extends CustomPainter {
     path.lineTo(20, size.height - 60);
 
     // Esquina inferior derecha
-    path.moveTo(size.width - 20, size.height - 20);
+    path.moveTo(size.width - 5, size.height - 20);
     path.lineTo(size.width - 60, size.height - 20);
     path.moveTo(size.width - 20, size.height - 20);
     path.lineTo(size.width - 20, size.height - 60);

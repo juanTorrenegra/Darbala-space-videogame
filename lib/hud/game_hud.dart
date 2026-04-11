@@ -81,14 +81,14 @@ class GameHud extends PositionComponent with HasGameReference<MyGame> {
       knob: CircleComponent(
         radius: 30,
         paint: Paint()
-          ..color = Colors.red.withAlpha(150)
+          ..color = Colors.cyan.withAlpha(150)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 0.3,
       ),
       background: CircleComponent(
         radius: 50,
         paint: Paint()
-          ..color = Colors.red.withAlpha(150)
+          ..color = Colors.cyan.withAlpha(150)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 0.3,
       ),
@@ -97,14 +97,14 @@ class GameHud extends PositionComponent with HasGameReference<MyGame> {
       knob: CircleComponent(
         radius: 30,
         paint: Paint()
-          ..color = Colors.red.withAlpha(150)
+          ..color = Colors.cyan.withAlpha(150)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 0.3,
       ),
       background: CircleComponent(
         radius: 50,
         paint: Paint()
-          ..color = Colors.red.withAlpha(150)
+          ..color = Colors.cyan.withAlpha(150)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 0.3,
       ),
@@ -113,8 +113,8 @@ class GameHud extends PositionComponent with HasGameReference<MyGame> {
       button: CircleComponent(
         radius: 40,
         paint: Paint()
-          ..color = Colors.red.withAlpha(150)
-          ..style = PaintingStyle.stroke
+          ..color = Colors.cyan.withAlpha(50)
+          ..style = PaintingStyle.fill
           ..strokeWidth = 0.3,
       ),
       onPressed: () => game.player.shoot(),
@@ -179,8 +179,8 @@ class GameHud extends PositionComponent with HasGameReference<MyGame> {
   void _positionComponents() {
     // Solo posiciona si los componentes están cargados y el tamaño es válido
     if (isLoaded && game.size.x > 0 && game.size.y > 0) {
-      final margin = 30.0; // Ajusta este valor según necesites
-      final joystickSize = 100.0; // Tamaño del joystick (radio + margen)
+      final margin = 40.0; // Ajusta este valor según necesites
+      final joystickSize = 150.0; // Tamaño del joystick (radio + margen)
       movementJoystick.position = Vector2(
         margin + joystickSize / 2,
         game.size.y - margin - joystickSize / 2,
