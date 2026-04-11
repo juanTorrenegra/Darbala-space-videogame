@@ -18,7 +18,6 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
         sprite: sprite,
         priority: 8,
       );
-
   //double _baseSpeed = 80;;
   double currentSpeed = 200;
   bool isFastMode = false;
@@ -81,10 +80,10 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
     game.clearEnemyBullets();
 
     // ✅ Guardar la escala de tiempo original
-    _originalTimeScale = game.timeScale;
+    //_originalTimeScale = game.timeScale;
 
     // ✅ Activar cámara lenta (0.3x velocidad)
-    game.timeScale = 0.3;
+    //game.timeScale = 0.3;
 
     // ✅ Ocultar el sprite del jugador inmediatamente
     isVisible = false;
@@ -154,8 +153,8 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
   void _createExplosion() {
     final explosion = ExplosionEffect(
       center: position.clone(),
-      particleCount: 50, // ✅ Muchas partículas
-      explosionRadius: 200, // ✅ Área grande de explosión
+      particleCount: 30, // ✅ Muchas partículas
+      explosionRadius: 20, // ✅ Área grande de explosión
       duration: _deathDuration,
     );
 
