@@ -30,7 +30,8 @@ class _HudDecorationPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.cyan
+      ..color =
+          const Color.fromARGB(255, 247, 165, 17) //Color.cyan
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.0);
