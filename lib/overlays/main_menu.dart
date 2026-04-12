@@ -150,6 +150,10 @@ class VisorOverlay extends StatelessWidget {
 // LA CLASE QUE DIBUJA EL VISOR
 // --------------------------------------------------------
 class MenuPainter extends CustomPainter {
+  //colors
+  //Color.fromARGB(255, 255, 164, 164) inner red
+  //Color.fromARGB(250, 231, 42, 20) glow red
+
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
@@ -176,8 +180,9 @@ class MenuPainter extends CustomPainter {
 
     // -- 3. Cruz de mira en el centro (simulando un telescopio) --
     final crosshairPaint = Paint()
-      ..color = Colors.cyan
+      ..color = Colors.cyan.withValues(alpha: 0.6)
       ..strokeWidth = 1.0
+      ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
     final crosshairPaintAlpha = Paint()
       ..color = Colors.cyan.withValues(alpha: 0.4)

@@ -30,11 +30,18 @@ class _HudDecorationPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color =
-          const Color.fromARGB(255, 247, 165, 17) //Color.cyan.
+      ..color = Color.fromARGB(255, 255, 164, 164)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.0);
+
+    final glowPaint =
+        Paint() // GLOW (la sombra borrosa cyan)
+          ..color = Color.fromARGB(250, 231, 42, 20)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 4.0
+          ..strokeCap = StrokeCap.round
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5.0);
 
     final path = Path();
 
@@ -80,6 +87,7 @@ class _HudDecorationPainter extends CustomPainter {
     path.lineTo(size.width - 20, size.height - 60);
 
     canvas.drawPath(path, paint);
+    canvas.drawPath(path, glowPaint);
   }
 
   @override
