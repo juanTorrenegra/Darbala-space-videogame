@@ -240,7 +240,7 @@ class MyGame extends FlameGame
     informacionJuego.priority = 1000;
     if (camara?.viewport != null) {
       camara!.viewport.add(informacionJuego);
-      informacionJuego.position = Vector2(530, 10);
+      informacionJuego.position = Vector2(10, size.y / 3);
     } //sin este if: la tabla se renderiza atras de los demas componentes
 
     currentPlayerPos = player.position.clone();

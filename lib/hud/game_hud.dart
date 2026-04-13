@@ -28,7 +28,7 @@ class HealthBar extends PositionComponent with HasGameReference<MyGame> {
   double _labelReservedWidth = 0;
 
   static const double _maxHpPulseDuration = 0.5;
-  static const double _maxHpPulseAmplitude = 0.22;
+  static const double _maxHpPulseAmplitude = 2.0;
   double _maxHpPulseElapsed = 0;
   bool _maxHpPulseActive = false;
 

@@ -91,6 +91,8 @@ class _DebugMenuState extends State<DebugMenu> {
             const SizedBox(height: 10),
             _buildHpResetRow(),
             const SizedBox(height: 10),
+            _buildAddShipDestroyedButton(),
+            const SizedBox(height: 10),
             // Espacio para futuros botones
             _buildPlaceholderButton('God Mode'),
             const SizedBox(height: 10),
@@ -800,6 +802,27 @@ class _DebugMenuState extends State<DebugMenu> {
     );
   }
 
+  Widget _buildAddShipDestroyedButton() {
+    return ElevatedButton(
+      onPressed: _addOneShipDestroyed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color.fromARGB(38, 24, 255, 255),
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        minimumSize: const Size(0, 30),
+      ),
+      child: const Text(
+        '+1 ship destroyed',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          fontFamily: 'Megatrans',
+        ),
+      ),
+    );
+  }
+
   void _extendMaxHp() {
     widget.game.extendPlayerMaxHitPoints(20, healCurrentByAmount: false);
     setState(() {});
@@ -817,6 +840,11 @@ class _DebugMenuState extends State<DebugMenu> {
 
   void _refillHpKeepPowerUps() {
     widget.game.refillPlayerCurrentHealthToMax();
+    setState(() {});
+  }
+
+  void _addOneShipDestroyed() {
+    widget.game.incrementShipsDestroyed();
     setState(() {});
   }
 

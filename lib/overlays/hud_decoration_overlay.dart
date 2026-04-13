@@ -51,45 +51,20 @@ class _HudDecorationPainter extends CustomPainter {
     path.lineTo(35, 15);
     path.lineTo(size.width / 3, 15);
 
-    //intento de tab Forma L nariz  7.2
-    //path.moveTo(0, size.height / 15);
-    //path.lineTo(size.width / 10, size.height / 15);
-    //path.lineTo(size.width / 8.5, size.height / 8);
-    //path.lineTo(size.width / 6, size.height / 8);
-    //path.lineTo(size.width / 5.5, size.height / 6);
-    //path.lineTo(size.width / 5.5, size.height / 4.5);
-    //path.lineTo(size.width / 8, size.height / 3.2);
-    //path.lineTo(0, size.height / 3.2);
-
-    //path.moveTo(40, 10);
-    //path.lineTo(100, 10);
-    //path.lineTo(110, 30);
-    //path.lineTo(size.width / 5, 30);
-    //path.lineTo(size.width / 5, 60);
-    //
-    //path.moveTo(size.width / 5 + 10, 30);
-    //path.lineTo(size.width / 5 + 10, 60);
-    //
-    //path.moveTo(size.width / 5 + 20, 30);
-    //path.lineTo(size.width / 5 + 20, size.height / 8);
-    //path.lineTo(100, 10);
-
     // Esquina superior derecha
     path.moveTo(size.width - 25, 25);
     path.lineTo(size.width - 35, 15);
     path.lineTo(size.width - size.width / 3, 15);
 
     // Esquina inferior izquierda
-    path.moveTo(20, size.height - 20);
-    path.lineTo(60, size.height - 20);
-    path.moveTo(20, size.height - 20);
-    path.lineTo(20, size.height - 60);
+    path.moveTo(25, size.height - 25);
+    path.lineTo(35, size.height - 15);
+    path.lineTo(size.width / 3, size.height - 15);
 
     // Esquina inferior derecha
-    path.moveTo(size.width - 5, size.height - 20);
-    path.lineTo(size.width - 60, size.height - 20);
-    path.moveTo(size.width - 20, size.height - 20);
-    path.lineTo(size.width - 20, size.height - 60);
+    path.moveTo(size.width - 25, size.height - 25);
+    path.lineTo(size.width - 35, size.height - 15);
+    path.lineTo(size.width - size.width / 3, size.height - 15);
 
     canvas.drawPath(path, paint);
     canvas.drawPath(path, glowPaint);
@@ -98,3 +73,13 @@ class _HudDecorationPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
+
+ //intento de tab Forma L nariz  7.2
+    //path.moveTo(0, size.height / 15);
+    //path.lineTo(size.width / 10, size.height / 15);
+    //path.lineTo(size.width / 8.5, size.height / 8);
+    //path.lineTo(size.width / 6, size.height / 8);
+    //path.lineTo(size.width / 5.5, size.height / 6);
+    //path.lineTo(size.width / 5.5, size.height / 4.5);
+    //path.lineTo(size.width / 8, size.height / 3.2);
+    //path.lineTo(0, size.height / 3.2);
