@@ -7,7 +7,7 @@ import 'package:flutter/material.dart' hide Matrix4;
 import 'package:juanshooter/game.dart';
 import 'package:vector_math/vector_math_64.dart' as vm;
 
-class HealthBar extends PositionComponent {
+class HealthBar extends PositionComponent with HasGameReference<MyGame> {
   int maxHealth;
   int currentHealth;
   double width;
@@ -26,6 +26,11 @@ class HealthBar extends PositionComponent {
 
   /// Ancho reservado a la izquierda para el número (estable según `maxHealth`).
   double _labelReservedWidth = 0;
+
+  static const double _maxHpPulseDuration = 0.5;
+  static const double _maxHpPulseAmplitude = 0.22;
+  double _maxHpPulseElapsed = 0;
+  bool _maxHpPulseActive = false;
 
   HealthBar({
     required this.maxHealth,
@@ -53,6 +58,31 @@ class HealthBar extends PositionComponent {
     size = Vector2(layoutWidth, height);
   }
 
+  double _labelPulseScale() {
+    if (!_maxHpPulseActive) return 1.0;
+    final t = (_maxHpPulseElapsed / _maxHpPulseDuration).clamp(0.0, 1.0);
+    return 1.0 + _maxHpPulseAmplitude * math.sin(math.pi * t);
+  }
+
+  void _startMaxHpPulse() {
+    _maxHpPulseElapsed = 0;
+    _maxHpPulseActive = true;
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    if (_maxHpPulseActive) {
+      // `dt` sigue al timeScale del juego; normalizamos para ~0.5s reales.
+      final realDt = dt / game.timeScale.clamp(0.001, 100.0);
+      _maxHpPulseElapsed += realDt;
+      if (_maxHpPulseElapsed >= _maxHpPulseDuration) {
+        _maxHpPulseActive = false;
+        _maxHpPulseElapsed = 0;
+      }
+    }
+  }
+
   @override
   void render(Canvas canvas) {
     super.render(canvas);
@@ -62,11 +92,18 @@ class HealthBar extends PositionComponent {
       textDirection: TextDirection.ltr,
     )..layout(maxWidth: _labelReservedWidth);
 
+    final labelX = _labelReservedWidth - labelPainter.width;
     final labelY = (height - labelPainter.height) / 2;
-    labelPainter.paint(
-      canvas,
-      Offset(_labelReservedWidth - labelPainter.width, labelY),
-    );
+    final cx = labelX + labelPainter.width / 2;
+    final cy = labelY + labelPainter.height / 2;
+    final scale = _labelPulseScale();
+
+    canvas.save();
+    canvas.translate(cx, cy);
+    canvas.scale(scale);
+    canvas.translate(-cx, -cy);
+    labelPainter.paint(canvas, Offset(labelX, labelY));
+    canvas.restore();
 
     final borderRadius = height / 2;
     final backgroundRect = RRect.fromRectAndRadius(
@@ -105,9 +142,14 @@ class HealthBar extends PositionComponent {
   }
 
   void updateHealth(int current, int max) {
+    final prevMax = maxHealth;
+    final maxIncreased = max > prevMax;
     final maxChanged = max != maxHealth;
     currentHealth = current;
     maxHealth = max;
+    if (maxIncreased) {
+      _startMaxHpPulse();
+    }
     if (maxChanged) {
       _refreshLabelReserve();
     } else {
