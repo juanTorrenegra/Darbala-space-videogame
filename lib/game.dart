@@ -299,6 +299,14 @@ class MyGame extends FlameGame
     FlameAudio.bgm.play('bg_music.ogg');
   }
 
+  void pauseBgmMusic() {
+    FlameAudio.bgm.pause();
+  }
+
+  void resumeBgmMusic() {
+    FlameAudio.bgm.resume();
+  }
+
   // Método para pausar/reanudar
   void togglePause() {
     if (paused) {

@@ -5,12 +5,24 @@ import 'package:flame/flame.dart';
 import 'package:flutter/material.dart';
 import 'package:juanshooter/game.dart';
 
-import 'package:flutter/material.dart';
-
-class VisorOverlay extends StatelessWidget {
+class VisorOverlay extends StatefulWidget {
   const VisorOverlay({required this.game, super.key});
 
   final MyGame game;
+
+  @override
+  State<VisorOverlay> createState() => _VisorOverlayState();
+}
+
+class _VisorOverlayState extends State<VisorOverlay> {
+  MyGame get game => widget.game;
+
+  @override
+  void dispose() {
+    // Si el menú se cierra/remueve, reanudar música de fondo.
+    game.resumeBgmMusic();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,6 +75,7 @@ class VisorOverlay extends StatelessWidget {
                     game.overlays.add("ScoreBoard");
                     //game.setTimeScale(1.0);
                     game.resumeEngine();
+                    game.resumeBgmMusic();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue.withValues(alpha: .2),
