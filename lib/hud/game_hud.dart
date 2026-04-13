@@ -13,7 +13,7 @@ class HealthBar extends PositionComponent {
     required this.maxHealth,
     required this.currentHealth,
     this.width = 200,
-    this.height = 20,
+    this.height = 10,
   });
   @override
   void render(Canvas canvas) {
