@@ -683,7 +683,7 @@ class _DebugMenuState extends State<DebugMenu> {
   }
 
   void _executeFullReset() {
-    // Ejecutar todos los métodos en secuencia
+    // Ejecutar todos los métodos en secuencia.
     widget.game.removeGameOverComponent();
     widget.game.clearAllGameEntities();
     widget.game.resetPlayerState();
