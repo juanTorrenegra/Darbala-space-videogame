@@ -44,7 +44,7 @@ class RangedEnemy extends Enemigo {
     double bulletSpeed = 250,
     double shootingThreshold = 10.0, //Grados de margen (10 por defecto)
     double shootingOffset = 15.0, // offset por defecto de 15.0
-    int damage = 1,
+    int damage = 10,
   }) : _shootInterval = shootInterval,
        _bulletSpeed = bulletSpeed,
        _shootingThreshold =

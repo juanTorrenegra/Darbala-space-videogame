@@ -26,6 +26,12 @@ class MyGame extends FlameGame
     with HasGameReference<MyGame>, HasCollisionDetection {
   MyGame();
 
+  /// Tope de vida al empezar una run nueva (menú / partida desde cero).
+  static const int basePlayerMaxHitPoints = 100;
+
+  /// Máximo de vida de la run: persiste al morir y al `recreatePlayer`; los power-ups lo aumentan.
+  int playerMaxHitPoints = basePlayerMaxHitPoints;
+
   final ValueNotifier<int> scoreNotifier = ValueNotifier<int>(0);
   int shipsDestroyed = 0;
   late Player player;
@@ -64,6 +70,39 @@ class MyGame extends FlameGame
   void incrementShipsDestroyed() {
     shipsDestroyed++;
     scoreNotifier.value = shipsDestroyed;
+  }
+
+  /// Power-ups: sube el máximo de vida de la run y actualiza al jugador.
+  /// Si [healCurrentByAmount] es true, suma [amount] a la vida actual (sin pasar del nuevo máximo).
+  void extendPlayerMaxHitPoints(int amount, {bool healCurrentByAmount = true}) {
+    if (amount <= 0) return;
+    playerMaxHitPoints += amount;
+    player.maxHitPoints = playerMaxHitPoints;
+    if (healCurrentByAmount) {
+      player.currentHitPoints = min(
+        player.currentHitPoints + amount,
+        playerMaxHitPoints,
+      );
+    } else {
+      player.currentHitPoints = min(
+        player.currentHitPoints,
+        playerMaxHitPoints,
+      );
+    }
+    hud.updateHealthBar(player.currentHitPoints, player.maxHitPoints);
+  }
+
+  /// Nueva partida desde cero: vuelve el máximo al valor base (llamar desde menú / reset global si aplica).
+  void resetPlayerMaxHitPointsToBase() {
+    playerMaxHitPoints = basePlayerMaxHitPoints;
+    if (player.isMounted) {
+      player.maxHitPoints = playerMaxHitPoints;
+      player.currentHitPoints = min(
+        player.currentHitPoints,
+        playerMaxHitPoints,
+      );
+      hud.updateHealthBar(player.currentHitPoints, player.maxHitPoints);
+    }
   }
 
   void fast() {
@@ -115,8 +154,9 @@ class MyGame extends FlameGame
       sprite: await Sprite.load('ship300x240.png'),
       position: Vector2(380, 380),
     );
-    player.maxHitPoints = 10;
-    player.currentHitPoints = 10;
+    playerMaxHitPoints = basePlayerMaxHitPoints;
+    player.maxHitPoints = playerMaxHitPoints;
+    player.currentHitPoints = playerMaxHitPoints;
     universo.add(player);
 
     mineroTorretas = RangedEnemy(
@@ -127,7 +167,7 @@ class MyGame extends FlameGame
       rotationSpeed: 0.4,
       bulletSpeed: 100,
       shootingThreshold: 30,
-      damage: 5,
+      damage: 40,
     );
 
     universo.add(mineroTorretas);
@@ -140,7 +180,7 @@ class MyGame extends FlameGame
       rotationSpeed: 3.0,
       bulletSpeed: 100,
       shootingThreshold: 30,
-      damage: 2,
+      damage: 10,
     );
     universo.add(enemigo1);
 
@@ -152,7 +192,7 @@ class MyGame extends FlameGame
       rotationSpeed: 3.0,
       bulletSpeed: 50,
       shootingThreshold: 30,
-      damage: 1,
+      damage: 10,
     );
     universo.add(enemigo2);
 
@@ -164,7 +204,7 @@ class MyGame extends FlameGame
       maxHitPoints: 10,
       bulletSpeed: 100,
       shootingThreshold: 30,
-      damage: 1,
+      damage: 10,
     );
     universo.add(enemigo3);
 
@@ -174,7 +214,7 @@ class MyGame extends FlameGame
       maxHitPoints: 10,
       bulletSpeed: 100,
       shootingThreshold: 30,
-      damage: 1,
+      damage: 10,
     );
     universo.add(enemigo4);
 
@@ -340,7 +380,8 @@ class MyGame extends FlameGame
 
   // Método para resetear estadísticas del jugador
   void resetPlayerState() {
-    player.currentHitPoints = player.maxHitPoints;
+    player.maxHitPoints = playerMaxHitPoints;
+    player.currentHitPoints = playerMaxHitPoints;
     player.position = Vector2(380, 380);
     player.isInvulnerable = false;
     player.isVisible = true;
@@ -415,9 +456,9 @@ class MyGame extends FlameGame
       position: Vector2(380, 380),
     );
 
-    // 3. Configurar propiedades
-    player.maxHitPoints = 10;
-    player.currentHitPoints = 10;
+    // 3. Misma run: conservar el máximo mejorado (power-ups), no el default del [Player].
+    player.maxHitPoints = playerMaxHitPoints;
+    player.currentHitPoints = playerMaxHitPoints;
     player.isFastMode = false;
     player.currentSpeed = 200;
 

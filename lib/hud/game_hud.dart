@@ -1,58 +1,101 @@
+import 'dart:math' as math;
+
 import 'package:flame/components.dart';
 
 import 'package:flame/input.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Matrix4;
 import 'package:juanshooter/game.dart';
+import 'package:vector_math/vector_math_64.dart' as vm;
 
 class HealthBar extends PositionComponent {
   int maxHealth;
   int currentHealth;
   double width;
   double height;
+
+  static const double _labelGap = 10;
+  static const double _skewX = -0.14;
+  static const double _labelPad = 4;
+
+  final TextStyle _labelStyle = const TextStyle(
+    color: Colors.white,
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+    fontFamily: "steel700",
+  );
+
+  /// Ancho reservado a la izquierda para el número (estable según `maxHealth`).
+  double _labelReservedWidth = 0;
+
   HealthBar({
     required this.maxHealth,
     required this.currentHealth,
     this.width = 200,
     this.height = 10,
-  });
+  }) {
+    _refreshLabelReserve();
+    size = Vector2(layoutWidth, height);
+  }
+
+  /// Ancho total: número + separación + barra (para centrar el HUD).
+  double get layoutWidth => _labelReservedWidth + _labelGap + width;
+
+  void _refreshLabelReserve() {
+    final tpMax = TextPainter(
+      text: TextSpan(text: '$maxHealth', style: _labelStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    final tpCur = TextPainter(
+      text: TextSpan(text: '$currentHealth', style: _labelStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    _labelReservedWidth = math.max(tpMax.width, tpCur.width) + _labelPad * 2;
+    size = Vector2(layoutWidth, height);
+  }
+
   @override
   void render(Canvas canvas) {
     super.render(canvas);
 
-    final borderRadius = height / 2;
+    final labelPainter = TextPainter(
+      text: TextSpan(text: '$currentHealth', style: _labelStyle),
+      textDirection: TextDirection.ltr,
+    )..layout(maxWidth: _labelReservedWidth);
 
-    // Fondo de la barra con bordes redondos
+    final labelY = (height - labelPainter.height) / 2;
+    labelPainter.paint(
+      canvas,
+      Offset(_labelReservedWidth - labelPainter.width, labelY),
+    );
+
+    final borderRadius = height / 2;
     final backgroundRect = RRect.fromRectAndRadius(
       Rect.fromLTWH(0, 0, width, height),
       Radius.circular(borderRadius),
     );
     final backgroundPaint = Paint()..color = Colors.red.withAlpha(150);
-    canvas.drawRRect(backgroundRect, backgroundPaint);
 
-    // Barra de vida actual con bordes redondos
-    final healthPercentage = currentHealth / maxHealth;
+    final healthPercentage = maxHealth > 0
+        ? (currentHealth / maxHealth).clamp(0.0, 1.0)
+        : 0.0;
     final healthWidth = width * healthPercentage;
 
+    final healthPaint = Paint()
+      ..color = _getHealthColor(healthPercentage)
+      ..style = PaintingStyle.fill;
+
+    canvas.save();
+    canvas.translate(_labelReservedWidth + _labelGap, 0);
+    canvas.transform(vm.Matrix4.skewX(_skewX).storage);
+    canvas.drawRRect(backgroundRect, backgroundPaint);
     if (healthWidth > 0) {
-      final healthRect = RRect.fromRectAndRadius(
+      final fillRect = RRect.fromRectAndRadius(
         Rect.fromLTWH(0, 0, healthWidth, height),
         Radius.circular(borderRadius),
       );
-
-      final healthPaint = Paint()
-        ..color = _getHealthColor(healthPercentage)
-        ..style = PaintingStyle.fill;
-
-      canvas.drawRRect(healthRect, healthPaint);
-
-      // Borde de la barra
-      final borderPaint = Paint()
-        ..color = Colors.white
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2;
-
-      canvas.drawRRect(backgroundRect, borderPaint);
+      canvas.drawRRect(fillRect, healthPaint);
     }
+    canvas.restore();
   }
 
   Color _getHealthColor(double percentage) {
@@ -62,8 +105,14 @@ class HealthBar extends PositionComponent {
   }
 
   void updateHealth(int current, int max) {
+    final maxChanged = max != maxHealth;
     currentHealth = current;
     maxHealth = max;
+    if (maxChanged) {
+      _refreshLabelReserve();
+    } else {
+      size = Vector2(layoutWidth, height);
+    }
   }
 }
 
@@ -141,7 +190,7 @@ class GameHud extends PositionComponent with HasGameReference<MyGame> {
       maxHealth: game.player.maxHitPoints,
       currentHealth: game.player.currentHitPoints,
       width: 200,
-      height: 20,
+      height: 10,
     );
 
     debugMenuButton = HudButtonComponent(
@@ -191,7 +240,10 @@ class GameHud extends PositionComponent with HasGameReference<MyGame> {
       );
       shootButton.position = Vector2(game.size.x - 160, 20);
       menu.position = Vector2(game.size.x / 2 - 15, game.size.y - 60);
-      healthBar.position = Vector2((game.size.x - healthBar.width) / 2, 20);
+      healthBar.position = Vector2(
+        (game.size.x - healthBar.layoutWidth) / 2,
+        20,
+      );
       debugMenuButton.position = Vector2(10, 40);
     }
   }

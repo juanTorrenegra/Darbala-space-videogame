@@ -23,8 +23,9 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
   bool isFastMode = false;
   double _angle = 0;
 
-  int maxHitPoints = 10;
-  int currentHitPoints = 10;
+  /// Valores por defecto; [MyGame] asigna `playerMaxHitPoints` al cargar / recrear.
+  int maxHitPoints = 100;
+  int currentHitPoints = 100;
   bool isInvulnerable = false;
   double invulnerabilityTime = 2.0; // ✅ 2 segundos de invulnerabilidad
   double invulnerabilityTimer = 0;
