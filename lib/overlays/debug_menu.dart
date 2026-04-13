@@ -87,7 +87,9 @@ class _DebugMenuState extends State<DebugMenu> {
             const SizedBox(height: 10),
             _buildResetControls(),
             const SizedBox(height: 10),
-            _buildGameInfo(),
+            _buildHpExtendRow(),
+            const SizedBox(height: 10),
+            _buildHpResetRow(),
             const SizedBox(height: 10),
             // Espacio para futuros botones
             _buildPlaceholderButton('God Mode'),
@@ -702,62 +704,120 @@ class _DebugMenuState extends State<DebugMenu> {
     });
   }
 
-  Widget _buildGameInfo() {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.black.withAlpha(30),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'INFORMACIÓN DEL JUEGO',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 9,
-              fontWeight: FontWeight.bold,
+  Widget _buildHpExtendRow() {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton(
+            onPressed: _extendMaxHp,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color.fromARGB(38, 24, 255, 255),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              minimumSize: const Size(0, 28),
+            ),
+            child: const Text(
+              '+20 max',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Megatrans',
+              ),
             ),
           ),
-          const SizedBox(height: 4),
-          _buildInfoRow(
-            'Vida Jugador',
-            '${widget.game.player.currentHitPoints}/${widget.game.player.maxHitPoints}',
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: _extendMaxHpAndCurrentHp,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color.fromARGB(60, 0, 200, 180),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              minimumSize: const Size(0, 28),
+            ),
+            child: const Text(
+              '+20 max\n+20 HP',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 8,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Megatrans',
+              ),
+            ),
           ),
-          _buildInfoRow(
-            'Posición',
-            '${widget.game.player.position.x.toStringAsFixed(1)}, ${widget.game.player.position.y.toStringAsFixed(1)}',
-          ),
-          _buildInfoRow('Naves Destruidas', '${widget.game.shipsDestroyed}'),
-          _buildInfoRow(
-            'Time Scale',
-            '${widget.game.timeScale.toStringAsFixed(2)}x',
-          ),
-          _buildInfoRow('Estado', widget.game.paused ? 'PAUSADO' : 'ACTIVO'),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: TextStyle(color: Colors.grey, fontSize: 9)),
-          Text(
-            value,
-            style: TextStyle(
-              color: Colors.cyan,
-              fontSize: 9,
-              fontWeight: FontWeight.bold,
+  Widget _buildHpResetRow() {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton(
+            onPressed: _resetMaxHpToBaseRun,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.deepOrange.withAlpha(60),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              minimumSize: const Size(0, 32),
+            ),
+            child: const Text(
+              'Max HP → base\n(quita power-ups)',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 7,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Megatrans',
+              ),
             ),
           ),
-        ],
-      ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: _refillHpKeepPowerUps,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color.fromARGB(38, 24, 255, 255),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              minimumSize: const Size(0, 32),
+            ),
+            child: const Text(
+              'HP lleno\n(mantiene max)',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 7,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Megatrans',
+              ),
+            ),
+          ),
+        ),
+      ],
     );
+  }
+
+  void _extendMaxHp() {
+    widget.game.extendPlayerMaxHitPoints(20, healCurrentByAmount: false);
+    setState(() {});
+  }
+
+  void _extendMaxHpAndCurrentHp() {
+    widget.game.extendPlayerMaxHitPoints(20, healCurrentByAmount: true);
+    setState(() {});
+  }
+
+  void _resetMaxHpToBaseRun() {
+    widget.game.resetPlayerMaxHitPointsToBase();
+    setState(() {});
+  }
+
+  void _refillHpKeepPowerUps() {
+    widget.game.refillPlayerCurrentHealthToMax();
+    setState(() {});
   }
 
   Widget _buildPlaceholderButton(String text) {

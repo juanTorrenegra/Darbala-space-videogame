@@ -92,6 +92,13 @@ class MyGame extends FlameGame
     hud.updateHealthBar(player.currentHitPoints, player.maxHitPoints);
   }
 
+  /// Rellena la vida actual al máximo conservando [playerMaxHitPoints] (power-ups).
+  void refillPlayerCurrentHealthToMax() {
+    player.maxHitPoints = playerMaxHitPoints;
+    player.currentHitPoints = playerMaxHitPoints;
+    hud.updateHealthBar(player.currentHitPoints, player.maxHitPoints);
+  }
+
   /// Nueva partida desde cero: vuelve el máximo al valor base (llamar desde menú / reset global si aplica).
   void resetPlayerMaxHitPointsToBase() {
     playerMaxHitPoints = basePlayerMaxHitPoints;
