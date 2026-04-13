@@ -80,16 +80,6 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
     game.deactivateAllEnemies();
     game.clearEnemyBullets();
 
-    // ✅ Guardar la escala de tiempo original
-    //_originalTimeScale = game.timeScale;
-
-    // ✅ Activar cámara lenta (0.3x velocidad)
-    //game.timeScale = 0.3;
-
-    // ✅ Ocultar el sprite del jugador inmediatamente
-    isVisible = false;
-
-    // ✅ Crear efecto de explosión
     _createExplosion();
 
     print('🎮 Programando GameOverComponent en 1.5 segundos...');
