@@ -55,7 +55,7 @@ class GameOverComponent extends PositionComponent
     _title.add(
       ScaleEffect.to(
         Vector2.all(1.3),
-        EffectController(duration: 1.55, curve: Curves.fastLinearToSlowEaseIn),
+        EffectController(duration: 4.00, curve: Curves.fastLinearToSlowEaseIn),
       ),
     );
   }

@@ -62,7 +62,7 @@ class _VisorOverlayState extends State<VisorOverlay> {
                   'DARBALA',
                   style: TextStyle(
                     color: Colors.white54,
-                    fontFamily: "ava",
+                    fontFamily: "futuristic1",
                     fontWeight: FontWeight.w400,
                     fontSize: 90,
                     letterSpacing: 60,
@@ -311,24 +311,24 @@ class MenuPainter extends CustomPainter {
     canvas.drawPath(earlineLeft, helmetPaint);
 
     Path lowerearLeft = Path();
-    lowerearLeft.moveTo(30, 210);
-    lowerearLeft.lineTo(30, 260);
-    lowerearLeft.lineTo(10, 285);
-    lowerearLeft.lineTo(10, 340);
-    lowerearLeft.lineTo(45, 380);
-    lowerearLeft.lineTo(180, 380);
-    lowerearLeft.lineTo(280, 300);
+    lowerearLeft.moveTo(30, size.height - 190);
+    lowerearLeft.lineTo(30, size.height - 150);
+    lowerearLeft.lineTo(10, size.height - 125);
+    lowerearLeft.lineTo(10, size.height - 65);
+    lowerearLeft.lineTo(45, size.height - 15);
+    lowerearLeft.lineTo(180, size.height - 15);
+    lowerearLeft.lineTo(280, size.height - 110);
     //canvas.drawPath(lowerearLeft, helmetGlowPaint);
     canvas.drawPath(lowerearLeft, helmetPaint);
 
     Path lowerearRight = Path();
-    lowerearRight.moveTo(size.width - 30, 210);
-    lowerearRight.lineTo(size.width - 30, 260);
-    lowerearRight.lineTo(size.width - 10, 285);
-    lowerearRight.lineTo(size.width - 10, 340);
-    lowerearRight.lineTo(size.width - 45, 380);
-    lowerearRight.lineTo(size.width - 180, 380);
-    lowerearRight.lineTo(size.width - 280, 300);
+    lowerearRight.moveTo(size.width - 30, size.height - 190);
+    lowerearRight.lineTo(size.width - 30, size.height - 150);
+    lowerearRight.lineTo(size.width - 10, size.height - 125);
+    lowerearRight.lineTo(size.width - 10, size.height - 65);
+    lowerearRight.lineTo(size.width - 45, size.height - 15);
+    lowerearRight.lineTo(size.width - 180, size.height - 15);
+    lowerearRight.lineTo(size.width - 280, size.height - 110);
     //canvas.drawPath(lowerearRight, helmetGlowPaint);
     canvas.drawPath(lowerearRight, helmetPaint);
   }
