@@ -12,7 +12,6 @@ import 'package:juanshooter/actors/ranged_enemy.dart';
 import 'package:juanshooter/hud/game_hud.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:juanshooter/overlays/game_over.dart';
-import 'package:juanshooter/overlays/game_over.dart';
 import 'package:juanshooter/overlays/informacion_juego.dart';
 import 'package:juanshooter/weapons/bullet.dart';
 import 'package:juanshooter/weapons/enemy_bullet.dart';
@@ -270,16 +269,13 @@ class MyGame extends FlameGame
 
     currentPlayerPos.setFrom(player.position);
 
-    final joystick = hud.movementJoystick;
+    final input = hud.effectiveMovementDelta;
 
-    if (joystick.direction == JoystickDirection.idle) {
-      // Si no hay input, desaceleramos suavemente
+    if (input.length2 < 1e-10) {
+      // Si no hay input (joystick / WASD en web), desaceleramos suavemente
       spaceParallax.parallax!.baseVelocity.scale(0.9);
       return;
     }
-
-    // Dirección normalizada del joystick
-    final input = joystick.relativeDelta;
 
     // Capas en sentido contrario al movimiento del jugador (scroll del cielo).
     // Antes: `-input * 25` se veía como si las estrellas siguieran a la nave; usar `input * 25` invierte el scroll.

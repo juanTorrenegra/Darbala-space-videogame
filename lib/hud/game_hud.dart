@@ -3,7 +3,9 @@ import 'dart:math' as math;
 import 'package:flame/components.dart';
 
 import 'package:flame/input.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Matrix4;
+import 'package:flutter/services.dart';
 import 'package:juanshooter/game.dart';
 import 'package:vector_math/vector_math_64.dart' as vm;
 
@@ -165,6 +167,49 @@ class GameHud extends PositionComponent with HasGameReference<MyGame> {
   late final HudButtonComponent menu;
   late final HealthBar healthBar;
   late final HudButtonComponent debugMenuButton;
+
+  /// Web (WASD): dirección normalizada; en otras plataformas permanece en cero.
+  final Vector2 _keyboardMovement = Vector2.zero();
+
+  bool _spaceWasDown = false;
+
+  /// Movimiento efectivo: en web, WASD tiene prioridad sobre el joystick; si no hay teclas, se usa el joystick.
+  Vector2 get effectiveMovementDelta {
+    if (kIsWeb && _keyboardMovement.length2 > 0.0001) {
+      return _keyboardMovement;
+    }
+    if (movementJoystick.direction != JoystickDirection.idle) {
+      return movementJoystick.relativeDelta;
+    }
+    return Vector2.zero();
+  }
+
+  void _syncWebKeyboardInput() {
+    if (!kIsWeb) return;
+    final kb = HardwareKeyboard.instance;
+    double x = 0;
+    double y = 0;
+    if (kb.isLogicalKeyPressed(LogicalKeyboardKey.keyW)) y -= 1;
+    if (kb.isLogicalKeyPressed(LogicalKeyboardKey.keyS)) y += 1;
+    if (kb.isLogicalKeyPressed(LogicalKeyboardKey.keyA)) x -= 1;
+    if (kb.isLogicalKeyPressed(LogicalKeyboardKey.keyD)) x += 1;
+    _keyboardMovement.setValues(x, y);
+    if (_keyboardMovement.length2 > 0) {
+      _keyboardMovement.normalize();
+    }
+
+    final spaceDown = kb.isLogicalKeyPressed(LogicalKeyboardKey.space);
+    if (spaceDown && !_spaceWasDown && !game.paused) {
+      game.player.shoot();
+    }
+    _spaceWasDown = spaceDown;
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    _syncWebKeyboardInput();
+  }
 
   @override
   Future<void> onLoad() async {

@@ -222,11 +222,10 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
         }
       }
 
-      // Movement: accede al joystick a través de game.hud
-      if (game.hud.movementJoystick.direction != JoystickDirection.idle) {
-        position.add(
-          game.hud.movementJoystick.relativeDelta * currentSpeed * dt,
-        );
+      // Movement: joystick; en web también WASD (ver [GameHud.effectiveMovementDelta]).
+      final move = game.hud.effectiveMovementDelta;
+      if (move.length2 > 0) {
+        position.add(move * currentSpeed * dt);
       }
 
       // Rotación (corrige el ángulo)
