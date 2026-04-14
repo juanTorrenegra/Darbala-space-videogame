@@ -3,8 +3,10 @@ import 'dart:math';
 
 import 'package:flame/camera.dart';
 import 'package:flame/components.dart';
+import 'package:flame/events.dart' as flame_events;
 import 'package:flame/game.dart';
 import 'package:flame/parallax.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:juanshooter/actors/enemigo.dart';
 import 'package:juanshooter/actors/player.dart';
@@ -22,7 +24,11 @@ import 'package:juanshooter/effects/explosion_particles.dart';
 //prototipo
 
 class MyGame extends FlameGame
-    with HasGameReference<MyGame>, HasCollisionDetection {
+    with
+        HasGameReference<MyGame>,
+        HasCollisionDetection,
+        flame_events.MouseMovementDetector,
+        flame_events.PanDetector {
   MyGame();
 
   /// Tope de vida al empezar una run nueva (menú / partida desde cero).
@@ -280,6 +286,21 @@ class MyGame extends FlameGame
     // Capas en sentido contrario al movimiento del jugador (scroll del cielo).
     // Antes: `-input * 25` se veía como si las estrellas siguieran a la nave; usar `input * 25` invierte el scroll.
     spaceParallax.parallax!.baseVelocity = input * 25;
+  }
+
+  @override
+  void onMouseMove(flame_events.PointerHoverInfo info) {
+    super.onMouseMove(info);
+    if (!kIsWeb || camara == null || !hud.isLoaded) return;
+    final worldTarget = camara!.globalToLocal(info.eventPosition.widget);
+    hud.setWebMouseWorldTarget(worldTarget);
+  }
+
+  @override
+  void onPanDown(flame_events.DragDownInfo info) {
+    super.onPanDown(info);
+    if (!kIsWeb || paused || !player.isMounted) return;
+    player.shoot();
   }
 
   @override

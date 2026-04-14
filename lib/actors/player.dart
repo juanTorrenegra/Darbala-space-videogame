@@ -228,12 +228,10 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
         position.add(move * currentSpeed * dt);
       }
 
-      // Rotación (corrige el ángulo)
-      if (game.hud.lookJoystick.direction != JoystickDirection.idle) {
-        // Obtén el ángulo del joystick (en radianes)
-        _angle = game.hud.lookJoystick.relativeDelta.screenAngle();
-
-        // Ajusta el ángulo para que coincida con la orientación del sprite
+      // Rotación: look joystick; en web también sigue al mouse.
+      final look = game.hud.effectiveLookDelta;
+      if (look.length2 > 0) {
+        _angle = look.screenAngle();
         const double offset = -pi / 2; // Ajusta este valor según tu sprite
         angle = _angle + offset;
       }

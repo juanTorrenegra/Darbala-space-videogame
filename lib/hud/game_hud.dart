@@ -170,6 +170,8 @@ class GameHud extends PositionComponent with HasGameReference<MyGame> {
 
   /// Web (WASD): dirección normalizada; en otras plataformas permanece en cero.
   final Vector2 _keyboardMovement = Vector2.zero();
+  final Vector2 _webMouseLookDelta = Vector2.zero();
+  bool _hasWebMouseLookDelta = false;
 
   bool _spaceWasDown = false;
 
@@ -182,6 +184,24 @@ class GameHud extends PositionComponent with HasGameReference<MyGame> {
       return movementJoystick.relativeDelta;
     }
     return Vector2.zero();
+  }
+
+  /// Rotación efectiva: en web usa mouse; fuera de web usa look joystick.
+  Vector2 get effectiveLookDelta {
+    if (kIsWeb && _hasWebMouseLookDelta && _webMouseLookDelta.length2 > 0.0001) {
+      return _webMouseLookDelta;
+    }
+    if (lookJoystick.direction != JoystickDirection.idle) {
+      return lookJoystick.relativeDelta;
+    }
+    return Vector2.zero();
+  }
+
+  /// Actualiza el vector de apuntado desde una posición objetivo en mundo.
+  void setWebMouseWorldTarget(Vector2 worldTarget) {
+    if (!kIsWeb || !game.player.isMounted) return;
+    _webMouseLookDelta.setFrom(worldTarget - game.player.position);
+    _hasWebMouseLookDelta = _webMouseLookDelta.length2 > 0.0001;
   }
 
   void _syncWebKeyboardInput() {
