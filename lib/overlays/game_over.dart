@@ -1,16 +1,11 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
 import 'package:flutter/material.dart';
-import 'package:juanshooter/actors/enemigo.dart';
-import 'package:juanshooter/actors/player.dart';
-import 'package:juanshooter/actors/ranged_enemy.dart';
+import 'package:flutter/services.dart';
 import 'package:juanshooter/game.dart';
-import 'package:juanshooter/hud/game_hud.dart';
-import 'package:flame_audio/flame_audio.dart';
 import 'package:juanshooter/utils/game_button.dart';
 
 class GameOverComponent extends PositionComponent
@@ -20,6 +15,9 @@ class GameOverComponent extends PositionComponent
   late final TextComponent _title;
   late final GameButton _restartButton;
   late final GameButton _menuButton;
+  late final GameButton _exitButton;
+
+  static const double _letterSpacing = 20;
 
   GameOverComponent({MyGame? game}) : super(priority: 9999) {
     if (game != null) {
@@ -30,7 +28,6 @@ class GameOverComponent extends PositionComponent
   @override
   Future<void> onLoad() async {
     print('🎮 GameOverComponent.onLoad() iniciando...');
-    // ✅ Asegúrate de que el tamaño sea el correcto
     if (game.camara != null) {
       size = game.camara!.viewport.size;
     } else {
@@ -42,122 +39,72 @@ class GameOverComponent extends PositionComponent
     }
     position = Vector2.zero();
 
-    // Contenedor para todo el contenido
     _contentContainer = PositionComponent();
     add(_contentContainer);
 
-    // Fondo oscuro semi-transparente
+    // Pantalla completa: cyan muy transparente
     _background = RectangleComponent(
       size: size,
-      paint: Paint()..color = Color(0x80000000),
+      paint: Paint()..color = const Color.fromARGB(48, 0, 220, 255),
     );
     _contentContainer.add(_background);
 
-    // Crear UI del game over
     await _createUI();
-
-    // Opcional: efecto de aparición sin usar opacity
     _animateAppearance();
     print('🎮 GameOverComponent cargado y visible');
   }
 
   void _animateAppearance() {
-    // Buscar el panel en _contentContainer en lugar de en children
-    final panels = _contentContainer.children
-        .where((c) => c is RectangleComponent && c.size == Vector2(350, 250))
-        .toList();
-
-    if (panels.isNotEmpty) {
-      final panel = panels.first as PositionComponent;
-      print('🎮 Panel encontrado para animación');
-
-      panel.scale = Vector2.all(1.2);
-      panel.add(
-        ScaleEffect.to(
-          Vector2.all(1.0),
-          EffectController(duration: 3.0, curve: Curves.elasticOut),
-        ),
-      );
-      print('🎮 Animación aplicada al panel');
-    } else {
-      print('⚠️ No se encontró panel para animar');
-      // Buscar también entre los nietos (por si el panel tiene hijos)
-      for (final child in _contentContainer.children) {
-        if (child is PositionComponent) {
-          final grandChildren = child.children
-              .where(
-                (c) => c is RectangleComponent && c.size == Vector2(350, 250),
-              )
-              .toList();
-          if (grandChildren.isNotEmpty) {
-            print('🎮 Panel encontrado en nivel secundario');
-            final panel = grandChildren.first as PositionComponent;
-            panel.scale = Vector2.all(0.8);
-            panel.add(
-              ScaleEffect.to(
-                Vector2.all(1.0),
-                EffectController(duration: 0.4, curve: Curves.elasticOut),
-              ),
-            );
-            break;
-          }
-        }
-      }
-    }
+    _title.scale = Vector2.all(1.12);
+    _title.add(
+      ScaleEffect.to(
+        Vector2.all(1.0),
+        EffectController(duration: 0.55, curve: Curves.elasticOut),
+      ),
+    );
   }
 
   Future<void> _createUI() async {
-    // Panel central
-    final panel = RectangleComponent(
-      size: Vector2(350, 250),
-      position: size / 2,
-      anchor: Anchor.center,
-      paint: Paint()
-        ..color = Color(0xFF2D3047)
-        ..style = PaintingStyle.fill,
-    );
+    const titleGlow = [
+      Shadow(color: Color.fromARGB(220, 0, 255, 255), blurRadius: 18),
+      Shadow(color: Color.fromARGB(140, 0, 200, 255), blurRadius: 28),
+    ];
 
-    final innerPanel = RectangleComponent(
-      size: Vector2(346, 246),
-      position: Vector2(2, 2),
-      paint: Paint()
-        ..color = Color(0xFF1A1C2B)
-        ..style = PaintingStyle.fill,
-    );
-
-    panel.add(innerPanel);
-    _contentContainer.add(panel);
-
-    // Título
     _title = TextComponent(
       text: 'NAVE DESTRUIDA',
-      position: Vector2(size.x / 2, size.y / 2 - 80),
+      position: Vector2(size.x / 2, size.y / 2 - 100),
       anchor: Anchor.center,
       textRenderer: TextPaint(
-        style: TextStyle(
-          fontSize: 32,
-          color: Colors.red,
+        style: const TextStyle(
+          fontSize: 28,
+          color: Colors.white,
           fontWeight: FontWeight.bold,
           fontFamily: 'Megatrans',
+          letterSpacing: _letterSpacing,
+          shadows: titleGlow,
         ),
       ),
     );
     _contentContainer.add(_title);
 
-    // Botón de reinicio
     _restartButton = GameButton(
-      position: Vector2(size.x / 2, size.y / 2),
-      size: Vector2(200, 50),
+      position: Vector2(size.x / 2, size.y / 2 - 10),
+      size: Vector2(420, 48),
       text: 'NUEVO JUEGO',
+      textOnly: true,
+      letterSpacing: _letterSpacing,
+      fontSize: 18,
       onPressed: _restartGame,
     );
     _contentContainer.add(_restartButton);
 
-    // Botón de menú
     _menuButton = GameButton(
-      position: Vector2(size.x / 2, size.y / 2 + 70),
-      size: Vector2(200, 50),
+      position: Vector2(size.x / 2, size.y / 2 + 50),
+      size: Vector2(420, 48),
       text: 'MENÚ PRINCIPAL',
+      textOnly: true,
+      letterSpacing: _letterSpacing,
+      fontSize: 18,
       onPressed: () {
         removeFromParent();
         game.overlays.add('MainMenu');
@@ -165,6 +112,19 @@ class GameOverComponent extends PositionComponent
       },
     );
     _contentContainer.add(_menuButton);
+
+    _exitButton = GameButton(
+      position: Vector2(size.x / 2, size.y / 2 + 110),
+      size: Vector2(420, 48),
+      text: 'SALIR',
+      textOnly: true,
+      letterSpacing: _letterSpacing,
+      fontSize: 18,
+      onPressed: () {
+        SystemNavigator.pop();
+      },
+    );
+    _contentContainer.add(_exitButton);
   }
 
   void _restartGame() async {
@@ -175,10 +135,8 @@ class GameOverComponent extends PositionComponent
     game.deactivateAllEnemies();
     game.clearEnemyBullets();
 
-    // 2. Recrear jugador
     await game.recreatePlayer();
 
-    // 3. Asegurar que la cámara siga al nuevo jugador
     if (game.camara != null) {
       game.camara!.follow(game.player);
     }
