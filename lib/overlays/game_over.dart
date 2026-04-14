@@ -1,15 +1,12 @@
-import 'dart:async';
-
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
-import 'package:flame/events.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:juanshooter/game.dart';
 import 'package:juanshooter/utils/game_button.dart';
 
 class GameOverComponent extends PositionComponent
-    with TapCallbacks, HasGameReference<MyGame> {
+    with HasGameReference<MyGame> {
   late final PositionComponent _contentContainer;
   late final RectangleComponent _background;
   late final TextComponent _title;
@@ -27,14 +24,14 @@ class GameOverComponent extends PositionComponent
 
   @override
   Future<void> onLoad() async {
-    print('🎮 GameOverComponent.onLoad() iniciando...');
+    print('GameOverComponent.onLoad() iniciando...');
     if (game.camara != null) {
       size = game.camara!.viewport.size;
     } else {
       size = game.size;
     }
     if (size.x <= 0 || size.y <= 0) {
-      print('⚠️ Advertencia: tamaño inválido $size, usando tamaño por defecto');
+      print('Advertencia: tamaño inválido $size, usando tamaño por defecto');
       size = Vector2(800, 600);
     }
     position = Vector2.zero();
@@ -42,7 +39,6 @@ class GameOverComponent extends PositionComponent
     _contentContainer = PositionComponent();
     add(_contentContainer);
 
-    // Pantalla completa: cyan muy transparente
     _background = RectangleComponent(
       size: size,
       paint: Paint()..color = const Color.fromARGB(48, 0, 220, 255),
@@ -51,15 +47,15 @@ class GameOverComponent extends PositionComponent
 
     await _createUI();
     _animateAppearance();
-    print('🎮 GameOverComponent cargado y visible');
+    print('GameOverComponent cargado y visible');
   }
 
   void _animateAppearance() {
     _title.scale = Vector2.all(1.12);
     _title.add(
       ScaleEffect.to(
-        Vector2.all(1.0),
-        EffectController(duration: 0.55, curve: Curves.elasticOut),
+        Vector2.all(1.3),
+        EffectController(duration: 1.55, curve: Curves.fastLinearToSlowEaseIn),
       ),
     );
   }
@@ -120,15 +116,13 @@ class GameOverComponent extends PositionComponent
       textOnly: true,
       letterSpacing: _letterSpacing,
       fontSize: 18,
-      onPressed: () {
-        SystemNavigator.pop();
-      },
+      onPressed: () => SystemNavigator.pop(),
     );
     _contentContainer.add(_exitButton);
   }
 
-  void _restartGame() async {
-    print('🎮 Iniciando nuevo juego...');
+  Future<void> _restartGame() async {
+    print('Iniciando nuevo juego...');
 
     removeFromParent();
     game.clearAllGameEntities();
