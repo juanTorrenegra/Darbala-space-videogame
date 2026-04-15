@@ -19,8 +19,7 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
         priority: 8,
       );
   //double _baseSpeed = 80;;
-  double currentSpeed = 200;
-  bool isFastMode = false;
+  double currentSpeed = 100;
   double _angle = 0;
 
   /// Valores por defecto; [MyGame] asigna `playerMaxHitPoints` al cargar / recrear.
@@ -38,10 +37,6 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
   double _deathTimer = 0;
   double _deathDuration = 2.0;
   double _originalTimeScale = 1.0;
-
-  void toggleFastMode(bool activate) {
-    isFastMode = !isFastMode; // Invierte el estado actual
-  }
 
   // Método para recibir daño
   void takeDamage(int damage) {
@@ -173,7 +168,6 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
     isVisible = true;
 
     // Restaurar velocidad
-    isFastMode = false;
     currentSpeed = 80;
 
     // Restaurar posición y rotación

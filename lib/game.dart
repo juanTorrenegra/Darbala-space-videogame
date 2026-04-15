@@ -120,10 +120,6 @@ class MyGame extends FlameGame
     }
   }
 
-  void fast() {
-    player.toggleFastMode(!player.isFastMode); // Alternar velocidad
-  }
-
   @override
   Future<void> onLoad() async {
     await super.onLoad();
@@ -443,7 +439,6 @@ class MyGame extends FlameGame
     player.position = Vector2(380, 380);
     player.isInvulnerable = false;
     player.isVisible = true;
-    player.isFastMode = false;
     player.currentSpeed = 200;
 
     // Actualizar HUD
@@ -517,7 +512,6 @@ class MyGame extends FlameGame
     // 3. Misma run: conservar el máximo mejorado (power-ups), no el default del [Player].
     player.maxHitPoints = playerMaxHitPoints;
     player.currentHitPoints = playerMaxHitPoints;
-    player.isFastMode = false;
     player.currentSpeed = 200;
 
     // 4. Añadir al universo

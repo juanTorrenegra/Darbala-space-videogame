@@ -15,6 +15,10 @@ class DebugMenu extends StatefulWidget {
 class _DebugMenuState extends State<DebugMenu> {
   bool _isDrawerOpen = true;
   double _currentZoom = 0.5;
+  double _currentSpeed = 100;
+
+  static const double _minPlayerSpeed = 1;
+  static const double _maxPlayerSpeed = 2000;
 
   @override
   Widget build(BuildContext context) {
@@ -76,8 +80,7 @@ class _DebugMenuState extends State<DebugMenu> {
             _buildHeader(),
             const SizedBox(height: 16),
 
-            // Fast Mode Toggle
-            _buildFastModeToggle(),
+            _buildSpeedControls(),
             const SizedBox(height: 10),
 
             // Zoom Controls
@@ -109,6 +112,7 @@ class _DebugMenuState extends State<DebugMenu> {
   void initState() {
     super.initState();
     _currentZoom = widget.game.cameraZoom;
+    _currentSpeed = widget.game.player.currentSpeed;
   }
 
   Widget _buildHeader() {
@@ -131,82 +135,162 @@ class _DebugMenuState extends State<DebugMenu> {
     );
   }
 
-  Widget _buildFastModeToggle() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+  void _applySpeed() {
+    widget.game.player.currentSpeed = _currentSpeed;
+    print('Velocidad cambiada a: $_currentSpeed');
+  }
 
-          child: Text(
-            "Velocidad",
-            style: TextStyle(
-              color: Colors.cyan,
-              fontSize: 12,
-              fontFamily: 'Megatrans',
-              letterSpacing: 2,
-            ),
+  Widget _buildSpeedControls() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 0.1,
+        children: [
+          Row(
+            children: [
+              const SizedBox(width: 8),
+              const Text(
+                'Velocidad',
+                style: TextStyle(
+                  color: Colors.cyan,
+                  fontSize: 12,
+                  fontFamily: 'Megatrans',
+                  letterSpacing: 2,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                _currentSpeed.round().toString(),
+                style: const TextStyle(
+                  color: Colors.cyan,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  fontFamily: 'Megatrans',
+                ),
+              ),
+            ],
           ),
-        ),
-        const Spacer(),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildSpeedOption(100, "Normal"),
-            const SizedBox(width: 30),
-            _buildSpeedOption(900, "Rápido"),
-          ],
-        ),
-
-        const SizedBox(height: 8),
-      ],
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _currentSpeed = (_currentSpeed - 5)
+                          .clamp(_minPlayerSpeed, _maxPlayerSpeed);
+                      _applySpeed();
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red.withAlpha(30),
+                    foregroundColor: Colors.cyan,
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    minimumSize: const Size(0, 20),
+                  ),
+                  child: const Text('-5', style: TextStyle(fontSize: 10)),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _currentSpeed = (_currentSpeed + 5)
+                          .clamp(_minPlayerSpeed, _maxPlayerSpeed);
+                      _applySpeed();
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green.withAlpha(30),
+                    foregroundColor: Colors.cyan,
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    minimumSize: const Size(0, 20),
+                  ),
+                  child: const Text('+5', style: TextStyle(fontSize: 10)),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _currentSpeed = (_currentSpeed - 20)
+                          .clamp(_minPlayerSpeed, _maxPlayerSpeed);
+                      _applySpeed();
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red.withAlpha(30),
+                    foregroundColor: Colors.cyan,
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    minimumSize: const Size(0, 20),
+                  ),
+                  child: const Text('-20', style: TextStyle(fontSize: 10)),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _currentSpeed = (_currentSpeed + 20)
+                          .clamp(_minPlayerSpeed, _maxPlayerSpeed);
+                      _applySpeed();
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green.withAlpha(30),
+                    foregroundColor: Colors.cyan,
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    minimumSize: const Size(0, 20),
+                  ),
+                  child: const Text('+20', style: TextStyle(fontSize: 10)),
+                ),
+              ),
+            ],
+          ),
+          Wrap(
+            alignment: WrapAlignment.spaceAround,
+            spacing: 4,
+            runSpacing: 4,
+            children: [
+              _buildPresetSpeedButton(50),
+              _buildPresetSpeedButton(75),
+              _buildPresetSpeedButton(100),
+              _buildPresetSpeedButton(125),
+              _buildPresetSpeedButton(200),
+              _buildPresetSpeedButton(900),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildSpeedOption(int speed, String label) {
-    bool isSelected = widget.game.player.currentSpeed == speed;
-
-    return GestureDetector(
-      onTap: () {
+  Widget _buildPresetSpeedButton(int speed) {
+    final selected = _currentSpeed.round() == speed;
+    return TextButton(
+      onPressed: () {
         setState(() {
-          widget.game.player.isFastMode = (speed == 250);
-          widget.game.player.currentSpeed = speed.toDouble();
+          _currentSpeed = speed.toDouble();
+          _applySpeed();
         });
       },
-      child: Column(
-        children: [
-          Container(
-            width: 30,
-            height: 20,
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? Colors.cyan.withOpacity(0.3)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: isSelected ? Colors.cyan : Colors.grey,
-                width: isSelected ? 1.5 : 0.5,
-              ),
-            ),
-            child: Center(
-              child: Text(
-                '$speed',
-                style: TextStyle(
-                  color: isSelected ? Colors.cyan : Colors.grey,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? Colors.cyan : Colors.grey,
-              fontSize: 9,
-            ),
-          ),
-        ],
+      style: TextButton.styleFrom(
+        minimumSize: const Size(28, 18),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        backgroundColor:
+            selected ? Colors.cyan.withAlpha(50) : Colors.transparent,
+      ),
+      child: Text(
+        '$speed',
+        style: TextStyle(
+          color: selected ? Colors.cyan : Colors.grey,
+          fontSize: 7,
+          fontFamily: 'Megatrans',
+        ),
       ),
     );
   }
