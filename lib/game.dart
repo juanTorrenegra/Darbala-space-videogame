@@ -31,7 +31,7 @@ class MyGame extends FlameGame
         flame_events.PanDetector {
   MyGame();
 
-  /// Tope de vida al empezar una run nueva (menú / partida desde cero).
+  /// Tope de vida al empezar una run nueva (menú / partida desde cero)
   static const int basePlayerMaxHitPoints = 100;
 
   /// Máximo de vida de la run: persiste al morir y al `recreatePlayer`; los power-ups lo aumentan.
