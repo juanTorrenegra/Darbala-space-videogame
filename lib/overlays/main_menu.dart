@@ -58,14 +58,21 @@ class _VisorOverlayState extends State<VisorOverlay> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  'DARBALA',
-                  style: TextStyle(
-                    color: Colors.white54,
-                    fontFamily: "futuristic1",
-                    fontWeight: FontWeight.w400,
-                    fontSize: 90,
-                    letterSpacing: 60,
+                ClipRect(
+                  child: Text(
+                    'DARBALA',
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.clip,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white54,
+                      fontFamily: 'megatrans',
+                      fontWeight: FontWeight.w400,
+                      fontSize: 90,
+                      letterSpacing: 60,
+                      height: 1.0,
+                    ),
                   ),
                 ),
                 ElevatedButton(
