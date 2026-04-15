@@ -67,9 +67,9 @@ class _VisorOverlayState extends State<VisorOverlay> {
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white54,
-                      fontFamily: 'megatrans',
+                      fontFamily: 'Megatrans',
                       fontWeight: FontWeight.w400,
-                      fontSize: 90,
+                      fontSize: 80,
                       letterSpacing: 60,
                       height: 1.0,
                     ),

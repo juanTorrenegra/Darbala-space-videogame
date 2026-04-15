@@ -46,6 +46,9 @@ class MyGame extends FlameGame
   late Enemigo enemigo3;
   late Enemigo enemigo4;
   late Enemigo enemigo5;
+  late Enemigo enemigo6;
+  late Enemigo enemigo7;
+  late Enemigo enemigo8;
 
   late final GameHud hud;
   late final World universo;
@@ -53,7 +56,7 @@ class MyGame extends FlameGame
   Vector2 currentPlayerPos = Vector2.zero();
   late AudioPool pool;
   double timeScale = 1.0; //game speed!
-  double cameraZoom = 0.7;
+  double cameraZoom = 1.3;
   late InformacionJuego informacionJuego;
 
   late ParallaxComponent spaceParallax;
@@ -197,9 +200,9 @@ class MyGame extends FlameGame
     universo.add(enemigo1);
 
     enemigo2 = RangedEnemy(
-      sprite: await Sprite.load('bite30x24.png'),
+      sprite: await Sprite.load('verdePequeno.png'),
       position: Vector2(440, 380),
-      size: Vector2(30, 24),
+      size: Vector2(16, 16),
       maxHitPoints: 10,
       rotationSpeed: 3.0,
       bulletSpeed: 50,
@@ -208,17 +211,40 @@ class MyGame extends FlameGame
     );
     universo.add(enemigo2);
 
-    enemigo3 = RangedEnemy(
-      sprite: await Sprite.load('3B.png'), //derecha
-      position: Vector2(850, 450),
-      size: Vector2(30, 24),
+    enemigo6 = RangedEnemy(
+      sprite: await Sprite.load('verdePequenoPink.png'), //
+      position: Vector2(200, 390),
+      size: Vector2(18, 16),
       rotationSpeed: 4.0,
       maxHitPoints: 10,
       bulletSpeed: 100,
       shootingThreshold: 30,
       damage: 10,
     );
-    universo.add(enemigo3);
+    universo.add(enemigo6);
+
+    enemigo7 = RangedEnemy(
+      sprite: await Sprite.load('azulCanon.png'),
+      position: Vector2(100, 440),
+      size: Vector2(18, 16),
+      rotationSpeed: 4.0,
+      maxHitPoints: 10,
+      bulletSpeed: 100,
+      shootingThreshold: 30,
+      damage: 10,
+    );
+    universo.add(enemigo7);
+
+    enemigo8 = RangedEnemy(
+      sprite: await Sprite.load('verdeMediano.png'),
+      position: Vector2(350, 270),
+      size: Vector2(30, 25),
+      maxHitPoints: 10,
+      bulletSpeed: 100,
+      shootingThreshold: 30,
+      damage: 10,
+    );
+    universo.add(enemigo8);
 
     enemigo4 = RangedEnemy(
       sprite: await Sprite.load('7B.png'),
@@ -231,7 +257,7 @@ class MyGame extends FlameGame
     universo.add(enemigo4);
 
     enemigo5 = RangedEnemy(
-      sprite: await Sprite.load('2B.png'),
+      sprite: await Sprite.load('verdeGrande.png'),
       position: Vector2(380, 450),
       //size: Vector2(134, 199),
     );
