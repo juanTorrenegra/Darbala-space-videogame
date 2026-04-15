@@ -77,15 +77,7 @@ class RangedEnemy extends Enemigo {
   void _startAiming() {
     _isAiming = true;
 
-    _isInShootingPosition = false; // ✅ Resetear estado de disparo
-    //AQUI DEBERIA ESTAR UN IF PORQUE PUEDE QUE AL PRINCIPIO YA ESTE ALINEADO
-    // No iniciar el cooldown de disparo inmediatamente
-
-    //Future.delayed(Duration(milliseconds: (_aimTime * 1000).toInt()), () {
-    //  if (isMounted) {
-    //    _shootCooldown = _shootInterval;
-    //  }
-    //});
+    _isInShootingPosition = false;
   }
 
   @override

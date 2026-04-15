@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:juanshooter/actors/enemigo.dart';
 import 'package:juanshooter/actors/player.dart';
 import 'package:juanshooter/actors/ranged_enemy.dart';
+import 'package:juanshooter/actors/spike_enemy.dart';
 import 'package:juanshooter/hud/game_hud.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:juanshooter/overlays/game_over.dart';
@@ -31,7 +32,7 @@ class MyGame extends FlameGame
         flame_events.PanDetector {
   MyGame();
 
-  /// Tope de vida al empezar una run nueva (menú / partida desde cero)
+  /// Tope de vida al empezar una run nueva (menú / partida desde cero).
   static const int basePlayerMaxHitPoints = 100;
 
   /// Máximo de vida de la run: persiste al morir y al `recreatePlayer`; los power-ups lo aumentan.
@@ -60,6 +61,12 @@ class MyGame extends FlameGame
   late InformacionJuego informacionJuego;
 
   late ParallaxComponent spaceParallax;
+  double spikeCurveStrength = 0.35;
+  double spikeChargeSpeed = 70;
+  double spikeBullRushSpeed = 230;
+  double spikeChargeDuration = 2.0;
+  double spikeRushDistanceMultiplier = 2.0;
+  double spikeMinRushDistance = 220.0;
 
   // Método para cambiar la escala de tiempo
   void setTimeScale(double scale) {
@@ -72,6 +79,49 @@ class MyGame extends FlameGame
     if (camara != null) {
       camara!.viewfinder.zoom = cameraZoom;
       print('Zoom set to: ${cameraZoom}x');
+    }
+  }
+
+  void setSpikeCurveStrength(double value) {
+    spikeCurveStrength = value.clamp(0.0, 2.0);
+    _applySpikeBehaviorToMounted();
+  }
+
+  void setSpikeChargeSpeed(double value) {
+    spikeChargeSpeed = value.clamp(1.0, 2000.0);
+    _applySpikeBehaviorToMounted();
+  }
+
+  void setSpikeBullRushSpeed(double value) {
+    spikeBullRushSpeed = value.clamp(1.0, 3000.0);
+    _applySpikeBehaviorToMounted();
+  }
+
+  void setSpikeChargeDuration(double value) {
+    spikeChargeDuration = value.clamp(0.2, 10.0);
+    _applySpikeBehaviorToMounted();
+  }
+
+  void setSpikeRushDistanceMultiplier(double value) {
+    spikeRushDistanceMultiplier = value.clamp(1.0, 8.0);
+    _applySpikeBehaviorToMounted();
+  }
+
+  void setSpikeMinRushDistance(double value) {
+    spikeMinRushDistance = value.clamp(20.0, 4000.0);
+    _applySpikeBehaviorToMounted();
+  }
+
+  void _applySpikeBehaviorToMounted() {
+    for (final spike in universo.children.whereType<SpikeEnemy>()) {
+      spike.configureBehavior(
+        curveStrength: spikeCurveStrength,
+        chargingSpeed: spikeChargeSpeed,
+        bullRushSpeed: spikeBullRushSpeed,
+        chargeDuration: spikeChargeDuration,
+        rushDistanceMultiplier: spikeRushDistanceMultiplier,
+        minRushDistance: spikeMinRushDistance,
+      );
     }
   }
 
@@ -258,6 +308,46 @@ class MyGame extends FlameGame
       //size: Vector2(134, 199),
     );
     universo.add(enemigo5);
+
+    // Grupo de SpikeEnemy para pruebas (mismo sprite, distinta curva).
+    final spikeSprite = await Sprite.load('verdePequeno.png');
+    final spikeA = SpikeEnemy(
+      sprite: spikeSprite,
+      position: Vector2(560, 420),
+      size: Vector2(18, 16),
+      movementSpeed: 70,
+      rotationSpeed: 1.4,
+      damage: 40,
+      // Low curve preset.
+      curveStrength: 0.18,
+      chargeDuration: 2.0,
+      bullRushSpeed: 230,
+    );
+    final spikeB = SpikeEnemy(
+      sprite: spikeSprite,
+      position: Vector2(595, 430),
+      size: Vector2(18, 16),
+      movementSpeed: 70,
+      rotationSpeed: 1.4,
+      damage: 40,
+      // Medium curve preset.
+      curveStrength: 0.38,
+      chargeDuration: 2.0,
+      bullRushSpeed: 230,
+    );
+    final spikeC = SpikeEnemy(
+      sprite: spikeSprite,
+      position: Vector2(630, 420),
+      size: Vector2(18, 16),
+      movementSpeed: 70,
+      rotationSpeed: 1.4,
+      damage: 40,
+      // High curve preset.
+      curveStrength: 0.62,
+      chargeDuration: 2.0,
+      bullRushSpeed: 230,
+    );
+    universo.addAll([spikeA, spikeB, spikeC]);
 
     hud = GameHud()..priority = 100;
     scoreNotifier.value = shipsDestroyed;

@@ -16,6 +16,12 @@ class _DebugMenuState extends State<DebugMenu> {
   bool _isDrawerOpen = true;
   double _currentZoom = 0.5;
   double _currentSpeed = 100;
+  double _spikeCurve = 0.35;
+  double _spikeChargeSpeed = 70;
+  double _spikeRushSpeed = 230;
+  double _spikeChargeDuration = 2.0;
+  double _spikeRushDistanceMultiplier = 2.0;
+  double _spikeMinRushDistance = 220.0;
 
   static const double _minPlayerSpeed = 1;
   static const double _maxPlayerSpeed = 2000;
@@ -82,6 +88,8 @@ class _DebugMenuState extends State<DebugMenu> {
 
             _buildSpeedControls(),
             const SizedBox(height: 10),
+            _buildSpikeControls(),
+            const SizedBox(height: 10),
 
             // Zoom Controls
             _buildZoomControls(),
@@ -113,6 +121,12 @@ class _DebugMenuState extends State<DebugMenu> {
     super.initState();
     _currentZoom = widget.game.cameraZoom;
     _currentSpeed = widget.game.player.currentSpeed;
+    _spikeCurve = widget.game.spikeCurveStrength;
+    _spikeChargeSpeed = widget.game.spikeChargeSpeed;
+    _spikeRushSpeed = widget.game.spikeBullRushSpeed;
+    _spikeChargeDuration = widget.game.spikeChargeDuration;
+    _spikeRushDistanceMultiplier = widget.game.spikeRushDistanceMultiplier;
+    _spikeMinRushDistance = widget.game.spikeMinRushDistance;
   }
 
   Widget _buildHeader() {
@@ -292,6 +306,301 @@ class _DebugMenuState extends State<DebugMenu> {
           fontFamily: 'Megatrans',
         ),
       ),
+    );
+  }
+
+  void _applySpikeValues() {
+    widget.game.setSpikeCurveStrength(_spikeCurve);
+    widget.game.setSpikeChargeSpeed(_spikeChargeSpeed);
+    widget.game.setSpikeBullRushSpeed(_spikeRushSpeed);
+    widget.game.setSpikeChargeDuration(_spikeChargeDuration);
+    widget.game.setSpikeRushDistanceMultiplier(_spikeRushDistanceMultiplier);
+    widget.game.setSpikeMinRushDistance(_spikeMinRushDistance);
+  }
+
+  void _applySpikePreset({
+    required double curve,
+    required double chargeSpeed,
+    required double rushSpeed,
+    required double chargeDuration,
+    required double rushDistanceMultiplier,
+    required double minRushDistance,
+  }) {
+    setState(() {
+      _spikeCurve = curve;
+      _spikeChargeSpeed = chargeSpeed;
+      _spikeRushSpeed = rushSpeed;
+      _spikeChargeDuration = chargeDuration;
+      _spikeRushDistanceMultiplier = rushDistanceMultiplier;
+      _spikeMinRushDistance = minRushDistance;
+      _applySpikeValues();
+    });
+  }
+
+  Widget _buildSpikeControls() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(width: 8),
+          const Text(
+            'SPIKE BULL',
+            style: TextStyle(
+              color: Colors.cyanAccent,
+              fontSize: 10,
+              fontFamily: 'Megatrans',
+              letterSpacing: 1.5,
+            ),
+          ),
+          const SizedBox(height: 4),
+          _buildSpikeAdjustRow(
+            label: 'Curve',
+            value: _spikeCurve.toStringAsFixed(2),
+            onMinus: () {
+              setState(() {
+                _spikeCurve = (_spikeCurve - 0.05).clamp(0.0, 2.0);
+                _applySpikeValues();
+              });
+            },
+            onPlus: () {
+              setState(() {
+                _spikeCurve = (_spikeCurve + 0.05).clamp(0.0, 2.0);
+                _applySpikeValues();
+              });
+            },
+          ),
+          _buildSpikeAdjustRow(
+            label: 'Charge Speed',
+            value: _spikeChargeSpeed.toStringAsFixed(0),
+            onMinus: () {
+              setState(() {
+                _spikeChargeSpeed = (_spikeChargeSpeed - 10).clamp(1.0, 2000.0);
+                _applySpikeValues();
+              });
+            },
+            onPlus: () {
+              setState(() {
+                _spikeChargeSpeed = (_spikeChargeSpeed + 10).clamp(1.0, 2000.0);
+                _applySpikeValues();
+              });
+            },
+          ),
+          _buildSpikeAdjustRow(
+            label: 'Rush Speed',
+            value: _spikeRushSpeed.toStringAsFixed(0),
+            onMinus: () {
+              setState(() {
+                _spikeRushSpeed = (_spikeRushSpeed - 20).clamp(1.0, 3000.0);
+                _applySpikeValues();
+              });
+            },
+            onPlus: () {
+              setState(() {
+                _spikeRushSpeed = (_spikeRushSpeed + 20).clamp(1.0, 3000.0);
+                _applySpikeValues();
+              });
+            },
+          ),
+          _buildSpikeAdjustRow(
+            label: 'Charge Time',
+            value: '${_spikeChargeDuration.toStringAsFixed(2)}s',
+            onMinus: () {
+              setState(() {
+                _spikeChargeDuration = (_spikeChargeDuration - 0.1).clamp(
+                  0.2,
+                  10.0,
+                );
+                _applySpikeValues();
+              });
+            },
+            onPlus: () {
+              setState(() {
+                _spikeChargeDuration = (_spikeChargeDuration + 0.1).clamp(
+                  0.2,
+                  10.0,
+                );
+                _applySpikeValues();
+              });
+            },
+          ),
+          _buildSpikeAdjustRow(
+            label: 'Rush xDist',
+            value: '${_spikeRushDistanceMultiplier.toStringAsFixed(2)}x',
+            onMinus: () {
+              setState(() {
+                _spikeRushDistanceMultiplier =
+                    (_spikeRushDistanceMultiplier - 0.1).clamp(1.0, 8.0);
+                _applySpikeValues();
+              });
+            },
+            onPlus: () {
+              setState(() {
+                _spikeRushDistanceMultiplier =
+                    (_spikeRushDistanceMultiplier + 0.1).clamp(1.0, 8.0);
+                _applySpikeValues();
+              });
+            },
+          ),
+          _buildSpikeAdjustRow(
+            label: 'Rush Min',
+            value: _spikeMinRushDistance.toStringAsFixed(0),
+            onMinus: () {
+              setState(() {
+                _spikeMinRushDistance = (_spikeMinRushDistance - 20).clamp(
+                  20.0,
+                  4000.0,
+                );
+                _applySpikeValues();
+              });
+            },
+            onPlus: () {
+              setState(() {
+                _spikeMinRushDistance = (_spikeMinRushDistance + 20).clamp(
+                  20.0,
+                  4000.0,
+                );
+                _applySpikeValues();
+              });
+            },
+          ),
+          const SizedBox(height: 4),
+          Wrap(
+            spacing: 4,
+            runSpacing: 4,
+            children: [
+              _buildSpikePresetButton(
+                label: 'Matador',
+                onPressed: () => _applySpikePreset(
+                  curve: 0.60,
+                  chargeSpeed: 60,
+                  rushSpeed: 220,
+                  chargeDuration: 2.4,
+                  rushDistanceMultiplier: 2.8,
+                  minRushDistance: 260,
+                ),
+              ),
+              _buildSpikePresetButton(
+                label: 'Aggressive',
+                onPressed: () => _applySpikePreset(
+                  curve: 0.30,
+                  chargeSpeed: 90,
+                  rushSpeed: 320,
+                  chargeDuration: 1.5,
+                  rushDistanceMultiplier: 2.1,
+                  minRushDistance: 220,
+                ),
+              ),
+              _buildSpikePresetButton(
+                label: 'Chaotic',
+                onPressed: () => _applySpikePreset(
+                  curve: 1.05,
+                  chargeSpeed: 120,
+                  rushSpeed: 360,
+                  chargeDuration: 1.1,
+                  rushDistanceMultiplier: 3.2,
+                  minRushDistance: 300,
+                ),
+              ),
+              _buildSpikePresetButton(
+                label: 'Default',
+                onPressed: () => _applySpikePreset(
+                  curve: 0.35,
+                  chargeSpeed: 70,
+                  rushSpeed: 230,
+                  chargeDuration: 2.0,
+                  rushDistanceMultiplier: 2.0,
+                  minRushDistance: 220,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSpikePresetButton({
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return TextButton(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        minimumSize: const Size(60, 20),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        backgroundColor: Colors.cyan.withAlpha(22),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.cyanAccent,
+          fontSize: 8,
+          fontFamily: 'Megatrans',
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSpikeAdjustRow({
+    required String label,
+    required String value,
+    required VoidCallback onMinus,
+    required VoidCallback onPlus,
+  }) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 84,
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: Colors.cyan,
+              fontSize: 8,
+              fontFamily: 'Megatrans',
+            ),
+          ),
+        ),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: onMinus,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red.withAlpha(30),
+              foregroundColor: Colors.cyan,
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              minimumSize: const Size(0, 20),
+            ),
+            child: const Text('-', style: TextStyle(fontSize: 10)),
+          ),
+        ),
+        const SizedBox(width: 6),
+        SizedBox(
+          width: 62,
+          child: Text(
+            value,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.cyanAccent,
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: onPlus,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green.withAlpha(30),
+              foregroundColor: Colors.cyan,
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              minimumSize: const Size(0, 20),
+            ),
+            child: const Text('+', style: TextStyle(fontSize: 10)),
+          ),
+        ),
+      ],
     );
   }
 
