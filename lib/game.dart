@@ -309,7 +309,7 @@ class MyGame extends FlameGame
     );
     universo.add(enemigo5);
 
-    // Grupo de SpikeEnemy para pruebas (mismo sprite,... distinta curva)
+    // Grupo de SpikeEnemy para pruebas (mismo sprite, distinta curva)
     final spikeSprite = await Sprite.load('verdePequeno.png');
     final spikeA = SpikeEnemy(
       sprite: spikeSprite,
