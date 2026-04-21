@@ -222,7 +222,7 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
         position.add(move * currentSpeed * dt);
       }
 
-      // Rotación: look joystick; en web también sigue al mouse.
+      // Rotación: look joystick; en web también sigue al mouse
       final look = game.hud.effectiveLookDelta;
       if (look.length2 > 0) {
         _angle = look.screenAngle();
