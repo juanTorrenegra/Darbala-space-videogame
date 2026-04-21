@@ -5,6 +5,7 @@ import 'package:juanshooter/game.dart';
 import 'package:juanshooter/weapons/enemy_bullet.dart';
 import 'package:juanshooter/utils/game_utils.dart';
 
+//.
 class Turret extends SpriteComponent with HasGameReference<MyGame> {
   final double rotationSpeed;
   final double shootInterval;
