@@ -46,7 +46,7 @@ class Turret extends SpriteComponent with HasGameReference<MyGame> {
       angle = mothershipAngle + _currentAngle;
     }
 
-    // Manejar disparo
+    // Manejar disparo.
     _handleShooting(dt);
   }
 
