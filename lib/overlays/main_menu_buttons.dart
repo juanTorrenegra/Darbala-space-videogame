@@ -174,9 +174,9 @@ class _MenuCarouselLabel extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: 'Megatrans',
-              fontSize: 42,
+              fontSize: 40,
               fontWeight: FontWeight.bold,
-              letterSpacing: 10,
+              letterSpacing: 5,
               color: selected ? Colors.cyanAccent : Colors.white54,
               shadows: selected ? _whiteGlow : null,
             ),

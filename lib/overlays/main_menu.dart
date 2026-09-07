@@ -40,8 +40,9 @@ class _VisorOverlayState extends ConsumerState<VisorOverlay> {
   Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent, // Fondo completamente transparente
-      child: Stack(
-        children: [
+      child: _MenuBootFx(
+        child: Stack(
+          children: [
           //Positioned.fill(
           //  child: Container(
           //    color: const Color(0xAA000000), //Fondo negro semi-transparente
@@ -151,6 +152,7 @@ class _VisorOverlayState extends ConsumerState<VisorOverlay> {
             ),
           ),
         ],
+        ),
       ),
     );
   }
@@ -180,6 +182,105 @@ class _VisorOverlayState extends ConsumerState<VisorOverlay> {
         ),
       ),
     );
+  }
+}
+
+/// One-second boot: 0–0.5s interference jitter, 0.5–1s veil lift.
+/// No extra blur, no screenshot copies — only a translate + a few rects.
+class _MenuBootFx extends StatefulWidget {
+  const _MenuBootFx({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_MenuBootFx> createState() => _MenuBootFxState();
+}
+
+class _MenuBootFxState extends State<_MenuBootFx>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _boot;
+
+  @override
+  void initState() {
+    super.initState();
+    _boot = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _boot.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _boot,
+      child: widget.child,
+      builder: (context, child) {
+        if (_boot.isCompleted) return child!;
+
+        final t = _boot.value;
+        final interference = t < 0.5;
+        final step = (t * 22).floor();
+        final rng = Random(step);
+
+        var jitter = Offset.zero;
+        if (interference) {
+          final amp = 11.0 * (1.0 - t / 0.5);
+          jitter = Offset(
+            (rng.nextDouble() - 0.5) * 2 * amp,
+            (rng.nextDouble() - 0.5) * amp * 0.45,
+          );
+        }
+
+        final veil = interference
+            ? (rng.nextBool() ? 0.08 : 0.28)
+            : 0.55 * (1.0 - (t - 0.5) / 0.5);
+
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final h = constraints.maxHeight;
+            final w = constraints.maxWidth;
+            return Stack(
+              children: [
+                Transform.translate(offset: jitter, child: child),
+                if (interference) ..._tearBars(rng, w, h),
+                if (veil > 0.02)
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: ColoredBox(
+                        color: Colors.black.withValues(alpha: veil),
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  List<Widget> _tearBars(Random rng, double w, double h) {
+    return [
+      for (var i = 0; i < 2; i++)
+        Positioned(
+          top: h * (0.12 + rng.nextDouble() * 0.7),
+          left: (rng.nextDouble() - 0.5) * 48,
+          width: w,
+          height: 3 + rng.nextDouble() * 16,
+          child: IgnorePointer(
+            child: ColoredBox(
+              color: (i.isEven ? Colors.cyanAccent : const Color(0xFFFF3D8A))
+                  .withValues(alpha: 0.22),
+            ),
+          ),
+        ),
+    ];
   }
 }
 
