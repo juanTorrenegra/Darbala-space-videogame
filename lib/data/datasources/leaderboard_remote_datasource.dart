@@ -81,7 +81,7 @@ class SupabaseLeaderboardRemoteDataSource
           .from('leaderboard_scores')
           .select('id, user_id, display_name, score')
           .order('score', ascending: false)
-          .limit(80);
+          .limit(1000);
       final seen = <String>{};
       final result = <SubmittedScoreDto>[];
       for (final row in rows) {

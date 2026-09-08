@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:juanshooter/core/di/providers.dart';
 import 'package:juanshooter/domain/entities/leaderboard_entry.dart';
+import 'package:juanshooter/domain/entities/pilot_identity.dart';
 import 'package:juanshooter/game.dart';
 
 class LeaderboardOverlay extends ConsumerStatefulWidget {
@@ -158,7 +159,14 @@ class _LeaderboardOverlayState extends ConsumerState<LeaderboardOverlay> {
                 ],
               ),
               const SizedBox(height: 8),
-              Expanded(child: _LeaderboardBody(state: board)),
+              Expanded(
+                child: Consumer(
+                  builder: (context, ref, _) {
+                    final pilot = ref.watch(currentPilotProvider).value;
+                    return _LeaderboardBody(state: board, pilot: pilot);
+                  },
+                ),
+              ),
             ],
           ),
         ),
@@ -167,13 +175,46 @@ class _LeaderboardOverlayState extends ConsumerState<LeaderboardOverlay> {
   }
 }
 
-class _LeaderboardBody extends StatelessWidget {
-  const _LeaderboardBody({required this.state});
+class _LeaderboardBody extends ConsumerStatefulWidget {
+  const _LeaderboardBody({required this.state, required this.pilot});
 
   final LeaderboardState state;
+  final PilotIdentity? pilot;
+
+  @override
+  ConsumerState<_LeaderboardBody> createState() => _LeaderboardBodyState();
+}
+
+class _LeaderboardBodyState extends ConsumerState<_LeaderboardBody> {
+  final ScrollController _scrollController = ScrollController();
+  bool _hasScrolled = false;
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToUser(int localIndex) {
+    if (_hasScrolled || localIndex < 0) return;
+    _hasScrolled = true;
+    Future<void>.delayed(const Duration(seconds: 1), () {
+      if (!mounted || !_scrollController.hasClients) return;
+      final position = _scrollController.position;
+      final target = localIndex * 61.0;
+      final max = position.maxScrollExtent;
+      final desired = target - position.viewportDimension * 0.4;
+      _scrollController.animateTo(
+        desired.clamp(0.0, max),
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeOutCubic,
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final state = widget.state;
     if (state.isLoading) {
       return const Center(
         child: CircularProgressIndicator(color: Colors.cyanAccent),
@@ -197,28 +238,169 @@ class _LeaderboardBody extends StatelessWidget {
       );
     }
 
-    return ListView.separated(
-      itemCount: state.entries.length,
-      separatorBuilder: (_, __) =>
-          const Divider(color: Colors.white10, height: 1),
-      itemBuilder: (context, index) {
-        return _RankRow(rank: index + 1, entry: state.entries[index]);
-      },
+    final entries = state.entries;
+    final pilotId = widget.pilot?.id;
+    final localIndex = entries.indexWhere((entry) => entry.pilotId == pilotId);
+    final local = localIndex >= 0 ? entries[localIndex] : null;
+    final localRank = localIndex >= 0 ? localIndex + 1 : null;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToUser(localIndex);
+    });
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          flex: 1,
+          child: _PilotSpotlight(
+            entry: local,
+            rank: localRank,
+            total: entries.length,
+          ),
+        ),
+        const SizedBox(width: 24),
+        Expanded(
+          flex: 2,
+          child: ListView.separated(
+            controller: _scrollController,
+            itemCount: entries.length,
+            separatorBuilder: (_, __) =>
+                const Divider(color: Colors.white10, height: 1),
+            itemBuilder: (context, index) {
+              return _RankRow(
+                rank: index + 1,
+                entry: entries[index],
+                isCurrent: entries[index].pilotId == pilotId,
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PilotSpotlight extends StatelessWidget {
+  const _PilotSpotlight({
+    required this.entry,
+    required this.rank,
+    required this.total,
+  });
+
+  final LeaderboardEntry? entry;
+  final int? rank;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    if (entry == null || rank == null) {
+      return const Center(
+        child: Text(
+          'SIN PILOTO LOCAL',
+          style: TextStyle(
+            color: Colors.white38,
+            fontFamily: 'Megatrans',
+            letterSpacing: 2,
+          ),
+        ),
+      );
+    }
+
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'TU POSICIÓN',
+            style: TextStyle(
+              color: Colors.cyanAccent,
+              fontFamily: 'Megatrans',
+              fontSize: 12,
+              letterSpacing: 4,
+            ),
+          ),
+          const SizedBox(height: 18),
+          Text(
+            '#$rank',
+            style: const TextStyle(
+              color: Color(0xFF69F0AE),
+              fontFamily: 'steel700',
+              fontSize: 56,
+              height: 1,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            entry!.callSign,
+            style: const TextStyle(
+              color: Colors.white,
+              fontFamily: 'Megatrans',
+              fontSize: 22,
+              letterSpacing: 3,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            '${entry!.score} PTS',
+            style: const TextStyle(
+              color: Colors.cyanAccent,
+              fontFamily: 'steel700',
+              fontSize: 26,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'DE $total PILOTOS',
+            style: const TextStyle(
+              color: Colors.white38,
+              fontFamily: 'Megatrans',
+              fontSize: 11,
+              letterSpacing: 2,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
 class _RankRow extends StatelessWidget {
-  const _RankRow({required this.rank, required this.entry});
+  const _RankRow({
+    required this.rank,
+    required this.entry,
+    required this.isCurrent,
+  });
 
   final int rank;
   final LeaderboardEntry entry;
+  final bool isCurrent;
+
+  static const _glow = Color(0xFF69F0AE);
 
   @override
   Widget build(BuildContext context) {
-    final accent = entry.isLocalPilot ? Colors.cyanAccent : Colors.white;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+    final accent = isCurrent ? _glow : Colors.white;
+    final indent = ((rank - 1) * 5.0).clamp(0.0, 120.0);
+
+    return Container(
+      margin: EdgeInsets.only(top: 4, bottom: 4, left: indent),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+      decoration: isCurrent
+          ? BoxDecoration(
+              color: _glow.withValues(alpha: 0.12),
+              border: Border.all(color: _glow.withValues(alpha: 0.4)),
+              borderRadius: BorderRadius.circular(6),
+              boxShadow: [
+                BoxShadow(
+                  color: _glow.withValues(alpha: 0.28),
+                  blurRadius: 12,
+                  spreadRadius: 1,
+                ),
+              ],
+            )
+          : null,
       child: Row(
         children: [
           SizedBox(

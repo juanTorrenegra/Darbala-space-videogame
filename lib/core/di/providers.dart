@@ -127,7 +127,7 @@ class LeaderboardController extends Notifier<LeaderboardState> {
   @override
   LeaderboardState build() => const LeaderboardState();
 
-  Future<void> load({int limit = 10}) async {
+  Future<void> load({int limit = 1000}) async {
     state = state.copyWith(isLoading: true, clearError: true);
     final result = await ref.read(fetchLeaderboardProvider).call(limit: limit);
     state = result.when(
