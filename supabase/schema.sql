@@ -1,8 +1,6 @@
 -- Darbala / juanhooter_camera
 -- Paste this in Supabase → SQL Editor → Run
--- After running:
---   Authentication → Providers → Email
---   turn OFF "Confirm email" so NOMBRE + CONTRASEÑA works without a mailbox.
+-- Accounts are created by the create-player Edge Function (no confirmation email).
 
 create extension if not exists pgcrypto;
 

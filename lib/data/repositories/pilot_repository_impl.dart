@@ -43,26 +43,16 @@ class PilotRepositoryImpl implements PilotRepository {
     if (parsed != null) return Failure(parsed);
 
     try {
-      final display = nombre.trim().toUpperCase();
-      final response = await _client.auth.signUp(
-        email: SupabaseConfig.emailFromNombre(nombre),
-        password: password,
-        data: {'display_name': display},
+      await _client.functions.invoke(
+        'create-player',
+        body: {
+          'nombre': nombre.trim(),
+          'password': password,
+        },
       );
-      if (response.session == null || response.user == null) {
-        return const Failure(
-          AuthFailure(
-            'Cuenta creada pero no hay sesión. En Supabase desactiva '
-            '"Confirm email" en Authentication → Providers → Email.',
-          ),
-        );
-      }
-      final identity = PilotIdentity(
-        id: response.user!.id,
-        callSign: display,
-      );
-      await _local.saveSession(identity);
-      return Success(identity);
+      return signIn(nombre: nombre, password: password);
+    } on FunctionException catch (error) {
+      return Failure(AuthFailure(_mapFunction(error), cause: error));
     } on AuthException catch (error) {
       return Failure(AuthFailure(_mapAuth(error), cause: error));
     } catch (error) {
@@ -146,7 +136,8 @@ class PilotRepositoryImpl implements PilotRepository {
     if (trimmed.length < 2 || trimmed.length > 24) {
       return const AuthFailure('El nombre debe tener entre 2 y 24 caracteres');
     }
-    if (SupabaseConfig.emailFromNombre(trimmed).startsWith('@')) {
+    final slug = trimmed.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+    if (slug.isEmpty) {
       return const AuthFailure('El nombre necesita letras o números');
     }
     if (password.length < 6) {
@@ -167,9 +158,30 @@ class PilotRepositoryImpl implements PilotRepository {
         message.contains('user already')) {
       return 'Ese nombre ya está registrado. Usa Entrar.';
     }
-    if (message.contains('invalid login') || message.contains('invalid credentials')) {
+    if (message.contains('invalid login') ||
+        message.contains('invalid credentials')) {
       return 'Nombre o contraseña incorrectos';
     }
+    if (message.contains('is invalid') || message.contains('invalid email')) {
+      return 'No se pudo crear la cuenta. Prueba otro nombre.';
+    }
+    if (message.contains('rate limit') || message.contains('email rate')) {
+      return 'Demasiados intentos. Espera un minuto y prueba de nuevo.';
+    }
     return error.message;
+  }
+
+  String _mapFunction(FunctionException error) {
+    final details = error.details;
+    if (details is Map) {
+      final message = details['error'] ?? details['message'];
+      if (message is String && message.trim().isNotEmpty) {
+        return message.trim();
+      }
+    }
+    if (details is String && details.trim().isNotEmpty) {
+      return details.trim();
+    }
+    return 'No se pudo crear la cuenta';
   }
 }

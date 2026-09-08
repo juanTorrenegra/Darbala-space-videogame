@@ -42,7 +42,10 @@ class _LeaderboardOverlayState extends ConsumerState<LeaderboardOverlay> {
     await ref.read(pilotRepositoryProvider).updateCallSign(next);
     if (!mounted) return;
     final updated = await ref.read(pilotRepositoryProvider).current();
-    _callSignController.text = updated.callSign;
+    if (!mounted) return;
+    if (updated != null) {
+      _callSignController.text = updated.callSign;
+    }
     ref.invalidate(currentPilotProvider);
   }
 
