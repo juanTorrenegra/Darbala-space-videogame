@@ -312,52 +312,67 @@ class _PilotSpotlight extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'TU POSICIÓN',
-            style: TextStyle(
-              color: Colors.cyanAccent,
-              fontFamily: 'Megatrans',
-              fontSize: 12,
-              letterSpacing: 4,
+          const Padding(
+            padding: EdgeInsets.only(left: 0),
+            child: Text(
+              'TU POSICIÓN',
+              style: TextStyle(
+                color: Colors.cyanAccent,
+                fontFamily: 'Megatrans',
+                fontSize: 12,
+                letterSpacing: 4,
+              ),
             ),
           ),
           const SizedBox(height: 18),
-          Text(
-            '#$rank',
-            style: const TextStyle(
-              color: Color(0xFF69F0AE),
-              fontFamily: 'steel700',
-              fontSize: 56,
-              height: 1,
+          Padding(
+            padding: const EdgeInsets.only(left: 16),
+            child: Text(
+              '#$rank',
+              style: const TextStyle(
+                color: Color(0xFFFFB74D),
+                fontFamily: 'steel700',
+                fontSize: 56,
+                height: 1,
+              ),
             ),
           ),
           const SizedBox(height: 14),
-          Text(
-            entry!.callSign,
-            style: const TextStyle(
-              color: Colors.white,
-              fontFamily: 'Megatrans',
-              fontSize: 22,
-              letterSpacing: 3,
+          Padding(
+            padding: const EdgeInsets.only(left: 32),
+            child: Text(
+              entry!.callSign,
+              style: const TextStyle(
+                color: Colors.white,
+                fontFamily: 'Megatrans',
+                fontSize: 22,
+                letterSpacing: 3,
+              ),
             ),
           ),
           const SizedBox(height: 10),
-          Text(
-            '${entry!.score} PTS',
-            style: const TextStyle(
-              color: Colors.cyanAccent,
-              fontFamily: 'steel700',
-              fontSize: 26,
+          Padding(
+            padding: const EdgeInsets.only(left: 48),
+            child: Text(
+              '${entry!.score} PTS',
+              style: const TextStyle(
+                color: Colors.cyanAccent,
+                fontFamily: 'steel700',
+                fontSize: 26,
+              ),
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            'DE $total PILOTOS',
-            style: const TextStyle(
-              color: Colors.white38,
-              fontFamily: 'Megatrans',
-              fontSize: 11,
-              letterSpacing: 2,
+          Padding(
+            padding: const EdgeInsets.only(left: 64),
+            child: Text(
+              'DE $total PILOTOS',
+              style: const TextStyle(
+                color: Colors.white38,
+                fontFamily: 'Megatrans',
+                fontSize: 11,
+                letterSpacing: 2,
+              ),
             ),
           ),
         ],
@@ -382,10 +397,9 @@ class _RankRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = isCurrent ? _glow : Colors.white;
-    final indent = ((rank - 1) * 5.0).clamp(0.0, 120.0);
 
     return Container(
-      margin: EdgeInsets.only(top: 4, bottom: 4, left: indent),
+      margin: const EdgeInsets.symmetric(vertical: 4),
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
       decoration: isCurrent
           ? BoxDecoration(
