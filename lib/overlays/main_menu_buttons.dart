@@ -36,22 +36,26 @@ class _MainMenuButtonsState extends ConsumerState<MainMenuButtons> {
   MyGame get game => widget.game;
 
   List<_MenuAction> get _actions => [
-    _MenuAction(label: 'Jugar', onPressed: _play),
-    _MenuAction(
-      label: 'Ranking',
-      onPressed: () => game.overlays.add('Leaderboard'),
-    ),
-    _MenuAction(
-      label: 'Configuracion',
-      onPressed: () => Flame.device.setLandscapeRightOnly(),
-    ),
-    _MenuAction(label: 'Salir', onPressed: _exitApp),
-    _MenuAction(
-      label: 'creditos',
-      onPressed: () => Flame.device.setLandscapeLeftOnly(),
-    ),
-    _MenuAction(label: 'Cerrar sesion', onPressed: _signOut),
-  ];
+        _MenuAction(label: 'Jugar', onPressed: _play),
+        _MenuAction(
+          label: 'Ranking',
+          onPressed: () => game.overlays.add('Leaderboard'),
+        ),
+        _MenuAction(
+          label: 'Crear Usuario',
+          onPressed: () => game.overlays.add('CreateAccount'),
+        ),
+        _MenuAction(
+          label: 'Configuracion',
+          onPressed: () => Flame.device.setLandscapeRightOnly(),
+        ),
+        _MenuAction(label: 'Salir', onPressed: _exitApp),
+        _MenuAction(
+          label: 'creditos',
+          onPressed: () => Flame.device.setLandscapeLeftOnly(),
+        ),
+        _MenuAction(label: 'Cerrar sesion', onPressed: _signOut),
+      ];
 
   @override
   void initState() {
@@ -67,7 +71,12 @@ class _MainMenuButtonsState extends ConsumerState<MainMenuButtons> {
     super.dispose();
   }
 
-  void _play() {
+  Future<void> _play() async {
+    final pilot = await ref.read(pilotRepositoryProvider).current();
+    if (pilot == null) {
+      game.overlays.add('CreateAccount');
+      return;
+    }
     game.overlays.remove('MainMenu');
     game.overlays.add('HudDecoration');
     game.overlays.add('ScoreBoard');
@@ -80,9 +89,7 @@ class _MainMenuButtonsState extends ConsumerState<MainMenuButtons> {
     ref.invalidate(currentPilotProvider);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Sesión cerrada. Se creará un nuevo callsign.'),
-      ),
+      const SnackBar(content: Text('Sesión cerrada')),
     );
   }
 

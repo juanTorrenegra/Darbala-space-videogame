@@ -20,13 +20,13 @@ class LeaderboardRepositoryImpl implements LeaderboardRepository {
   @override
   Future<Result<List<LeaderboardEntry>>> fetchTop({int limit = 10}) async {
     try {
-      final remotePilots = await _remote.fetchPilots();
+      final remotePilots = await _remote.fetchScores();
       final localRuns = await _local.loadCachedRuns();
       final entries = [
-        ...remotePilots.map((dto) => dto.toDomain()),
+        ...remotePilots.map((dto) => dto.toDomain(isLocalPilot: false)),
         ...localRuns.map((dto) => dto.toDomain(isLocalPilot: true)),
-      ]..sort((a, b) => b.score.compareTo(a.score));
-      return Success(entries.take(limit).toList());
+      ];
+      return Success(_bestPerPilot(entries, limit));
     } on AppFailure catch (failure) {
       return _cachedOnly(failure, limit);
     } catch (error) {
@@ -48,10 +48,23 @@ class LeaderboardRepositoryImpl implements LeaderboardRepository {
           .map((dto) => dto.toDomain(isLocalPilot: true))
           .toList()
         ..sort((a, b) => b.score.compareTo(a.score));
-      return Success(entries.take(limit).toList());
+      return Success(_bestPerPilot(entries, limit));
     } on AppFailure catch (cacheFailure) {
       return Failure(cacheFailure);
     }
+  }
+
+  List<LeaderboardEntry> _bestPerPilot(List<LeaderboardEntry> entries, int limit) {
+    final byPilot = <String, LeaderboardEntry>{};
+    for (final entry in entries) {
+      final previous = byPilot[entry.pilotId];
+      if (previous == null || entry.score > previous.score) {
+        byPilot[entry.pilotId] = entry;
+      }
+    }
+    final ranked = byPilot.values.toList()
+      ..sort((a, b) => b.score.compareTo(a.score));
+    return ranked.take(limit).toList();
   }
 
   @override

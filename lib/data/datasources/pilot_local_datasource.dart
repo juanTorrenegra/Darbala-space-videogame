@@ -1,48 +1,51 @@
 import 'package:juanshooter/domain/entities/pilot_identity.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uuid/uuid.dart';
 
 abstract class PilotLocalDataSource {
-  Future<PilotIdentity> loadOrCreate();
-  Future<PilotIdentity> saveCallSign(String callSign);
+  Future<PilotIdentity?> loadCached();
+  Future<void> saveSession(PilotIdentity identity);
+  Future<void> saveLastNombre(String nombre);
+  String? lastNombre();
   Future<void> clearSession();
 }
 
 class PilotLocalDataSourceImpl implements PilotLocalDataSource {
-  PilotLocalDataSourceImpl(this._prefs, {Uuid? uuid}) : _uuid = uuid ?? const Uuid();
+  PilotLocalDataSourceImpl(this._prefs);
 
-  static const _idKey = 'pilot.id';
-  static const _callSignKey = 'pilot.call_sign';
+  static const _idKey = 'auth.user_id';
+  static const _nameKey = 'auth.display_name';
+  static const _lastNombreKey = 'auth.last_nombre';
 
   final SharedPreferences _prefs;
-  final Uuid _uuid;
 
   @override
-  Future<PilotIdentity> loadOrCreate() async {
-    var id = _prefs.getString(_idKey);
-    if (id == null || id.isEmpty) {
-      id = _uuid.v4();
-      await _prefs.setString(_idKey, id);
+  Future<PilotIdentity?> loadCached() async {
+    final id = _prefs.getString(_idKey);
+    final name = _prefs.getString(_nameKey);
+    if (id == null || id.isEmpty || name == null || name.isEmpty) {
+      return null;
     }
-    var callSign = _prefs.getString(_callSignKey);
-    if (callSign == null || callSign.trim().isEmpty) {
-      callSign = 'MINER-${id.substring(0, 4).toUpperCase()}';
-      await _prefs.setString(_callSignKey, callSign);
-    }
-    return PilotIdentity(id: id, callSign: callSign);
+    return PilotIdentity(id: id, callSign: name);
   }
 
   @override
-  Future<PilotIdentity> saveCallSign(String callSign) async {
-    final current = await loadOrCreate();
-    final next = callSign.trim().toUpperCase();
-    await _prefs.setString(_callSignKey, next);
-    return current.copyWith(callSign: next);
+  Future<void> saveSession(PilotIdentity identity) async {
+    await _prefs.setString(_idKey, identity.id);
+    await _prefs.setString(_nameKey, identity.callSign);
+    await saveLastNombre(identity.callSign);
   }
+
+  @override
+  Future<void> saveLastNombre(String nombre) {
+    return _prefs.setString(_lastNombreKey, nombre.trim());
+  }
+
+  @override
+  String? lastNombre() => _prefs.getString(_lastNombreKey);
 
   @override
   Future<void> clearSession() async {
     await _prefs.remove(_idKey);
-    await _prefs.remove(_callSignKey);
+    await _prefs.remove(_nameKey);
   }
 }

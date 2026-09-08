@@ -14,6 +14,9 @@ import 'package:juanshooter/overlays/score_board.dart';
 import 'package:juanshooter/overlays/score_transmit_overlay.dart';
 import 'package:juanshooter/utils/game_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:juanshooter/core/network/supabase_config.dart';
+import 'package:juanshooter/overlays/create_account_overlay.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +27,10 @@ Future<void> main() async {
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ]);
+  await Supabase.initialize(
+    url: SupabaseConfig.url,
+    anonKey: SupabaseConfig.anonKey,
+  );
   final prefs = await SharedPreferences.getInstance();
   runApp(
     ProviderScope(
@@ -67,6 +74,8 @@ class JuanShooterApp extends ConsumerWidget {
                   'Leaderboard': (_, game) => LeaderboardOverlay(game: game),
                   'ScoreTransmit': (_, game) =>
                       ScoreTransmitOverlay(game: game),
+                  'CreateAccount': (_, game) =>
+                      CreateAccountOverlay(game: game),
                 },
                 initialActiveOverlays: const [
                   'MainMenu',

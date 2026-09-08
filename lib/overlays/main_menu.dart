@@ -66,6 +66,12 @@ class _VisorOverlayState extends ConsumerState<VisorOverlay> {
           // 2) -- Nuestro visor espacial dibujado encima --
           CustomPaint(painter: MenuPainter(), size: Size.infinite),
 
+          Positioned(
+            top: 22,
+            left: 28,
+            child: _PilotCornerName(),
+          ),
+
           // 3) -- Los botones y otros widgets de interfaz encima del visor --
           Center(
             child: Column(
@@ -181,6 +187,33 @@ class _VisorOverlayState extends ConsumerState<VisorOverlay> {
               : null,
         ),
       ),
+    );
+  }
+}
+
+class _PilotCornerName extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final session = ref.watch(currentPilotProvider);
+    return session.when(
+      data: (pilot) {
+        if (pilot == null) return const SizedBox.shrink();
+        return Text(
+          pilot.callSign,
+          style: const TextStyle(
+            color: Colors.cyanAccent,
+            fontFamily: 'Megatrans',
+            fontSize: 16,
+            letterSpacing: 3,
+            shadows: [
+              Shadow(color: Colors.white, blurRadius: 8),
+              Shadow(color: Colors.white54, blurRadius: 16),
+            ],
+          ),
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 }

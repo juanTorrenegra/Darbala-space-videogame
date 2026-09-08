@@ -3,7 +3,6 @@ import 'package:juanshooter/core/error/app_failure.dart';
 import 'package:juanshooter/core/error/result.dart';
 import 'package:juanshooter/data/datasources/leaderboard_local_datasource.dart';
 import 'package:juanshooter/data/datasources/leaderboard_remote_datasource.dart';
-import 'package:juanshooter/data/models/json_placeholder_user_dto.dart';
 import 'package:juanshooter/data/models/submitted_score_dto.dart';
 import 'package:juanshooter/data/repositories/leaderboard_repository_impl.dart';
 import 'package:juanshooter/domain/entities/pilot_identity.dart';
@@ -36,13 +35,15 @@ void main() {
     repository = LeaderboardRepositoryImpl(remote: remote, local: local);
   });
 
-  test('merges remote pilots with locally cached runs and sorts by score', () async {
-    when(() => remote.fetchPilots()).thenAnswer(
+  test('merges remote scores with locally cached runs and sorts by score', () async {
+    when(() => remote.fetchScores()).thenAnswer(
       (_) async => [
-        const JsonPlaceholderUserDto(
-          id: 10,
-          username: 'low',
-          companyName: 'Far outpost',
+        const SubmittedScoreDto(
+          remoteId: '10',
+          pilotId: 'jp-user-10',
+          callSign: 'LOW',
+          faction: 'Far outpost',
+          score: 1000,
         ),
       ],
     );
@@ -68,7 +69,7 @@ void main() {
   });
 
   test('falls back to cached runs when the remote outpost is down', () async {
-    when(() => remote.fetchPilots()).thenThrow(
+    when(() => remote.fetchScores()).thenThrow(
       const NetworkFailure('No link to the outpost'),
     );
     when(() => local.loadCachedRuns()).thenAnswer(

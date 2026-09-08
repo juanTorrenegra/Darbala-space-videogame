@@ -50,7 +50,7 @@ final apiClientProvider = Provider<ApiClient>((ref) {
 
 final leaderboardRemoteDataSourceProvider =
     Provider<LeaderboardRemoteDataSource>((ref) {
-  return LeaderboardRemoteDataSourceImpl(ref.watch(apiClientProvider));
+  return SupabaseLeaderboardRemoteDataSource();
 });
 
 final leaderboardLocalDataSourceProvider =
@@ -86,8 +86,8 @@ final fetchGameFlagsProvider = Provider<FetchGameFlags>((ref) {
   return FetchGameFlags(ref.watch(gameFlagsRepositoryProvider));
 });
 
-final currentPilotProvider = FutureProvider<PilotIdentity>((ref) {
-  return ref.watch(pilotRepositoryProvider).current();
+final currentPilotProvider = StreamProvider<PilotIdentity?>((ref) {
+  return ref.watch(pilotRepositoryProvider).watch();
 });
 
 final gameFlagsProvider = FutureProvider<GameFlags>((ref) async {
@@ -172,6 +172,10 @@ class ScoreSubmitController extends Notifier<ScoreSubmitState> {
   Future<void> submit(int score) async {
     state = ScoreSubmitInFlight(score);
     final pilot = await ref.read(pilotRepositoryProvider).current();
+    if (pilot == null) {
+      state = const ScoreSubmitFailure('Necesitas una cuenta para enviar el puntaje');
+      return;
+    }
     final result = await ref.read(submitRunScoreProvider).call(
           pilot: pilot,
           score: score,

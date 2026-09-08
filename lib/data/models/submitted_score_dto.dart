@@ -26,7 +26,7 @@ class SubmittedScoreDto {
       pilotId: json['pilotId'] as String? ?? '',
       callSign: json['callSign'] as String? ?? 'UNKNOWN',
       faction: json['faction'] as String? ?? 'Independent',
-      score: _asInt(json['score']),
+      score: asInt(json['score']),
     );
   }
 
@@ -48,7 +48,7 @@ class SubmittedScoreDto {
       pilotId: json['pilotId'] as String? ?? '',
       callSign: json['callSign'] as String? ?? 'UNKNOWN',
       faction: json['faction'] as String? ?? 'Independent',
-      score: _asInt(json['score']),
+      score: asInt(json['score']),
     );
   }
 
@@ -73,7 +73,7 @@ class SubmittedScoreDto {
     );
   }
 
-  static int _asInt(Object? value) {
+  static int asInt(Object? value) {
     if (value is int) return value;
     if (value is num) return value.toInt();
     if (value is String) return int.tryParse(value) ?? 0;

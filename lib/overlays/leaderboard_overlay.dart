@@ -23,7 +23,9 @@ class _LeaderboardOverlayState extends ConsumerState<LeaderboardOverlay> {
     Future<void>.microtask(() async {
       final pilot = await ref.read(pilotRepositoryProvider).current();
       if (!mounted) return;
-      _callSignController.text = pilot.callSign;
+      if (pilot != null) {
+        _callSignController.text = pilot.callSign;
+      }
       await ref.read(leaderboardControllerProvider.notifier).load();
     });
   }

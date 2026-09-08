@@ -34,3 +34,7 @@ final class CacheFailure extends AppFailure {
 final class UnauthorizedFailure extends AppFailure {
   const UnauthorizedFailure(super.message, {super.cause});
 }
+
+final class AuthFailure extends AppFailure {
+  const AuthFailure(super.message, {super.cause});
+}
