@@ -97,6 +97,13 @@ class MyGame extends FlameGame
 
   late ParallaxComponent spaceParallax;
   AppStickMode stickMode = AppStickMode.single;
+
+  /// Web-only: phone-browser touch HUD (joystick + shoot). Off by default.
+  bool cellularMode = false;
+
+  /// Native app always uses sticks; web only when [cellularMode] is on.
+  bool get useTouchControls => !kIsWeb || cellularMode;
+
   double spikeCurveStrength = 0.35;
   double spikeChargeSpeed = 70;
   double spikeBullRushSpeed = 230;
@@ -108,6 +115,16 @@ class MyGame extends FlameGame
   void setStickMode(AppStickMode mode) {
     if (kIsWeb) return;
     stickMode = mode;
+    _applyHudStickMode();
+  }
+
+  void setCellularMode(bool enabled) {
+    if (!kIsWeb) return;
+    cellularMode = enabled;
+    _applyHudStickMode();
+  }
+
+  void _applyHudStickMode() {
     final viewport = camara?.viewport;
     if (viewport == null) return;
     for (final child in viewport.children.whereType<GameHud>()) {
@@ -586,24 +603,27 @@ class MyGame extends FlameGame
   @override
   void onMouseMove(flame_events.PointerHoverInfo info) {
     super.onMouseMove(info);
-    if (!kIsWeb || camara == null || !hud.isLoaded) return;
+    if (!kIsWeb || cellularMode || camara == null || !hud.isLoaded) return;
     final worldTarget = camara!.globalToLocal(info.eventPosition.widget);
     hud.setWebMouseWorldTarget(worldTarget);
   }
 
   void _beginWebCharge() {
-    if (!kIsWeb || paused || !player.isMounted || !hud.isLoaded) return;
+    if (!kIsWeb || cellularMode || paused || !player.isMounted || !hud.isLoaded) {
+      return;
+    }
     hud.beginCharge();
   }
 
   void _endWebCharge() {
-    if (!kIsWeb || !hud.isLoaded) return;
+    if (!kIsWeb || cellularMode || !hud.isLoaded) return;
     hud.releaseCharge();
   }
 
   @override
   void onPanDown(flame_events.DragDownInfo info) {
     super.onPanDown(info);
+    if (cellularMode) return;
     _beginWebCharge();
     if (!kIsWeb || camara == null || !hud.isLoaded) return;
     hud.setWebMouseWorldTarget(
@@ -614,7 +634,7 @@ class MyGame extends FlameGame
   @override
   void onPanUpdate(flame_events.DragUpdateInfo info) {
     super.onPanUpdate(info);
-    if (!kIsWeb || camara == null || !hud.isLoaded) return;
+    if (!kIsWeb || cellularMode || camara == null || !hud.isLoaded) return;
     hud.setWebMouseWorldTarget(
       camara!.globalToLocal(info.eventPosition.widget),
     );

@@ -165,7 +165,7 @@ class HealthBar extends PositionComponent with HasGameReference<MyGame> {
 
 class GameHud extends PositionComponent
     with HasGameReference<MyGame>, TapCallbacks {
-  /// Touch controls: only created on mobile/desktop apps, never on web.
+  /// Touch controls: native app always; web only in cellular mode.
   JoystickComponent? movementJoystick;
   JoystickComponent? lookJoystick;
   HudButtonComponent? shootButton;
@@ -175,7 +175,8 @@ class GameHud extends PositionComponent
   late final InformacionJuego informacionJuego;
   late final PotencyBar potencyBar;
 
-  bool get _isSingleStick => !kIsWeb && game.stickMode == AppStickMode.single;
+  bool get _isSingleStick =>
+      game.useTouchControls && game.stickMode == AppStickMode.single;
 
   /// Web (WASD): dirección normalizada; en otras plataformas permanece en cero.
   final Vector2 _keyboardMovement = Vector2.zero();
@@ -185,39 +186,45 @@ class GameHud extends PositionComponent
   bool _spaceWasDown = false;
   bool _chargeHeld = false;
 
-  /// Movimiento: WASD en web; left stick (or the one stick) in app.
+  /// Movimiento: WASD en web; left stick (or the one stick) in app / celular.
   Vector2 get effectiveMovementDelta {
+    if (game.useTouchControls) {
+      final joystick = movementJoystick;
+      if (joystick != null &&
+          joystick.isMounted &&
+          joystick.direction != JoystickDirection.idle) {
+        return joystick.relativeDelta;
+      }
+      if (!kIsWeb) return Vector2.zero();
+    }
     if (kIsWeb) {
       if (_keyboardMovement.length2 > 0.0001) {
         return _keyboardMovement;
       }
       return Vector2.zero();
     }
-    final joystick = movementJoystick;
-    if (joystick != null &&
-        joystick.isMounted &&
-        joystick.direction != JoystickDirection.idle) {
-      return joystick.relativeDelta;
-    }
     return Vector2.zero();
   }
 
-  /// Rotación: mouse en web; look stick in 2-stick app; same stick in 1-stick.
+  /// Rotación: mouse en web; look stick in 2-stick; same stick in 1-stick / celular.
   Vector2 get effectiveLookDelta {
+    if (game.useTouchControls) {
+      if (_isSingleStick) {
+        return effectiveMovementDelta;
+      }
+      final joystick = lookJoystick;
+      if (joystick != null &&
+          joystick.isMounted &&
+          joystick.direction != JoystickDirection.idle) {
+        return joystick.relativeDelta;
+      }
+      return Vector2.zero();
+    }
     if (kIsWeb) {
       if (_hasWebMouseLookDelta && _webMouseLookDelta.length2 > 0.0001) {
         return _webMouseLookDelta;
       }
       return Vector2.zero();
-    }
-    if (_isSingleStick) {
-      return effectiveMovementDelta;
-    }
-    final joystick = lookJoystick;
-    if (joystick != null &&
-        joystick.isMounted &&
-        joystick.direction != JoystickDirection.idle) {
-      return joystick.relativeDelta;
     }
     return Vector2.zero();
   }
@@ -283,13 +290,13 @@ class GameHud extends PositionComponent
 
   @override
   void onTapDown(TapDownEvent event) {
-    if (!kIsWeb) return;
+    if (!kIsWeb || game.cellularMode) return;
     beginCharge();
   }
 
   @override
   void onTapUp(TapUpEvent event) {
-    if (!kIsWeb) return;
+    if (!kIsWeb || game.cellularMode) return;
     releaseCharge();
   }
 
@@ -301,53 +308,51 @@ class GameHud extends PositionComponent
 
   @override
   Future<void> onLoad() async {
-    if (!kIsWeb) {
-      movementJoystick = JoystickComponent(
-        knob: CircleComponent(
-          radius: 50,
-          paint: Paint()
-            ..color = Colors.cyan.withAlpha(150)
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 0.4,
-        ),
-        background: CircleComponent(
-          radius: 80,
-          paint: Paint()
-            ..color = Colors.cyan.withAlpha(50)
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 0.3,
-        ),
-      );
-      lookJoystick = JoystickComponent(
-        knob: CircleComponent(
-          radius: 50,
-          paint: Paint()
-            ..color = Colors.cyan.withAlpha(150)
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 0.3,
-        ),
-        background: CircleComponent(
-          radius: 80,
-          paint: Paint()
-            ..color = Colors.cyan.withAlpha(50)
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 0.3,
-        ),
-      );
-      shootButton = HudButtonComponent(
-        button: AimShootPad(
-          fillColor: Colors.cyan.withAlpha(25),
-          strokeColor: Colors.cyan.withAlpha(90),
-        ),
-        buttonDown: AimShootPad(
-          fillColor: Colors.cyan.withAlpha(70),
-          strokeColor: Colors.cyanAccent.withAlpha(128),
-        ),
-        onPressed: beginCharge,
-        onReleased: releaseCharge,
-        onCancelled: releaseCharge,
-      );
-    }
+    movementJoystick = JoystickComponent(
+      knob: CircleComponent(
+        radius: 50,
+        paint: Paint()
+          ..color = Colors.cyan.withAlpha(150)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 0.4,
+      ),
+      background: CircleComponent(
+        radius: 80,
+        paint: Paint()
+          ..color = Colors.cyan.withAlpha(50)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 0.3,
+      ),
+    );
+    lookJoystick = JoystickComponent(
+      knob: CircleComponent(
+        radius: 50,
+        paint: Paint()
+          ..color = Colors.cyan.withAlpha(150)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 0.3,
+      ),
+      background: CircleComponent(
+        radius: 80,
+        paint: Paint()
+          ..color = Colors.cyan.withAlpha(50)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 0.3,
+      ),
+    );
+    shootButton = HudButtonComponent(
+      button: AimShootPad(
+        fillColor: Colors.cyan.withAlpha(25),
+        strokeColor: Colors.cyan.withAlpha(90),
+      ),
+      buttonDown: AimShootPad(
+        fillColor: Colors.cyan.withAlpha(70),
+        strokeColor: Colors.cyanAccent.withAlpha(128),
+      ),
+      onPressed: beginCharge,
+      onReleased: releaseCharge,
+      onCancelled: releaseCharge,
+    );
 
     menu = HudButtonComponent(
       button: TextComponent(
@@ -395,12 +400,6 @@ class GameHud extends PositionComponent
     potencyBar = PotencyBar();
 
     add(menu);
-    final move = movementJoystick;
-    final look = lookJoystick;
-    final shoot = shootButton;
-    if (move != null) add(move);
-    if (look != null) add(look);
-    if (shoot != null) add(shoot);
     add(healthBar);
     add(debugMenuButton);
     add(informacionJuego);
@@ -411,10 +410,18 @@ class GameHud extends PositionComponent
   }
 
   void applyStickMode() {
-    if (kIsWeb) return;
     final move = movementJoystick;
     final look = lookJoystick;
-    if (move == null || look == null) return;
+    final shoot = shootButton;
+    if (move == null || look == null || shoot == null) return;
+
+    if (!game.useTouchControls) {
+      if (move.isMounted) move.removeFromParent();
+      if (look.isMounted) look.removeFromParent();
+      if (shoot.isMounted) shoot.removeFromParent();
+      _positionComponents();
+      return;
+    }
 
     if (game.stickMode == AppStickMode.single) {
       if (look.isMounted) look.removeFromParent();
@@ -423,6 +430,7 @@ class GameHud extends PositionComponent
       if (!move.isMounted) add(move);
       if (!look.isMounted) add(look);
     }
+    if (!shoot.isMounted) add(shoot);
     _positionComponents();
   }
 

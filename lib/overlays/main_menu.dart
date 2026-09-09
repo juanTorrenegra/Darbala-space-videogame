@@ -43,121 +43,118 @@ class _VisorOverlayState extends ConsumerState<VisorOverlay> {
       child: _MenuBootFx(
         child: Stack(
           children: [
-          //Positioned.fill(
-          //  child: Container(
-          //    color: const Color(0xAA000000), //Fondo negro semi-transparente
-          //  ),
-          //),
-          Positioned.fill(
-            child: ClipRect(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: 5.0,
-                  sigmaY: 5.0, // Intensidad del blur
-                ),
-                child: Container(
-                  color: Colors
-                      .transparent, // Contenedor vacío, solo importa el filtro
+            //Positioned.fill(
+            //  child: Container(
+            //    color: const Color(0xAA000000), //Fondo negro semi-transparente
+            //  ),
+            //),
+            Positioned.fill(
+              child: ClipRect(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(
+                    sigmaX: 5.0,
+                    sigmaY: 5.0, // Intensidad del blur
+                  ),
+                  child: Container(
+                    color: Colors
+                        .transparent, // Contenedor vacío, solo importa el filtro
+                  ),
                 ),
               ),
             ),
-          ),
 
-          // 2) -- Nuestro visor espacial dibujado encima --
-          CustomPaint(painter: MenuPainter(), size: Size.infinite),
+            // 2) -- Nuestro visor espacial dibujado encima --
+            CustomPaint(painter: MenuPainter(), size: Size.infinite),
 
-          Positioned(
-            top: 22,
-            left: 28,
-            child: _PilotCornerName(),
-          ),
+            Positioned(top: 505, left: 80, child: _ArtilleroNamePlate()),
 
-          // 3) -- Los botones y otros widgets de interfaz encima del visor --
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 30),
-                ClipRect(
-                  child: Text(
-                    'DARBALA',
-                    maxLines: 1,
-                    softWrap: false,
-                    overflow: TextOverflow.clip,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white54,
-                      fontFamily: 'Megatrans',
-                      fontWeight: FontWeight.w400,
-                      fontSize: 150,
-                      letterSpacing: 60,
-                      height: 1.0,
+            // 3) -- Los botones y otros widgets de interfaz encima del visor --
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 30),
+                  ClipRect(
+                    child: Text(
+                      'DARBALA',
+                      maxLines: 1,
+                      softWrap: false,
+                      overflow: TextOverflow.clip,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontFamily: 'Megatrans',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 150,
+                        letterSpacing: 60,
+                        height: 1.0,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 80),
-                  child: ref
-                      .watch(gameFlagsProvider)
-                      .when(
-                        data: (flags) => Text(
-                          flags.transmissionTitle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: flags.fromRemote
-                                ? Colors.cyanAccent.withValues(alpha: 0.75)
-                                : Colors.orangeAccent.withValues(alpha: 0.85),
-                            fontFamily: 'Megatrans',
-                            fontSize: 14,
-                            letterSpacing: 3,
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 80),
+                    child: ref
+                        .watch(gameFlagsProvider)
+                        .when(
+                          data: (flags) => Text(
+                            flags.transmissionTitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: flags.fromRemote
+                                  ? Colors.cyanAccent.withValues(alpha: 0.75)
+                                  : Colors.orangeAccent.withValues(alpha: 0.85),
+                              fontFamily: 'Megatrans',
+                              fontSize: 14,
+                              letterSpacing: 3,
+                            ),
+                          ),
+                          loading: () => const SizedBox(height: 18),
+                          error: (_, __) => const SizedBox(height: 18),
+                        ),
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                              left: stickModeOffsetX,
+                              top: stickModeOffsetY,
+                            ),
+                            child: kIsWeb
+                                ? _cellularModeOption()
+                                : Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      _stickModeOption(
+                                        '1 joystick mode',
+                                        AppStickMode.single,
+                                      ),
+                                      const SizedBox(height: 18),
+                                      _stickModeOption(
+                                        '2 joystick mode',
+                                        AppStickMode.dual,
+                                      ),
+                                    ],
+                                  ),
                           ),
                         ),
-                        loading: () => const SizedBox(height: 18),
-                        error: (_, __) => const SizedBox(height: 18),
                       ),
-                ),
-                const SizedBox(height: 18),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: kIsWeb
-                            ? const SizedBox.shrink()
-                            : Padding(
-                                padding: const EdgeInsets.only(
-                                  left: stickModeOffsetX,
-                                  top: stickModeOffsetY,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    _stickModeOption(
-                                      '1 joystick mode',
-                                      AppStickMode.single,
-                                    ),
-                                    const SizedBox(height: 18),
-                                    _stickModeOption(
-                                      '2 joystick mode',
-                                      AppStickMode.dual,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                      ),
-                    ),
-                    MainMenuButtons(game: game),
-                    const Expanded(child: SizedBox()),
-                  ],
-                ),
-              ],
+                      MainMenuButtons(game: game),
+                      const Expanded(child: SizedBox()),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
         ),
       ),
     );
@@ -170,45 +167,103 @@ class _VisorOverlayState extends ConsumerState<VisorOverlay> {
         game.setStickMode(mode);
         setState(() {});
       },
-      child: Text(
-        label,
-        style: TextStyle(
-          fontFamily: 'Megatrans',
-          fontSize: stickModeFontSize,
-          fontWeight: FontWeight.w400,
-          letterSpacing: 3,
-          color: selected ? Colors.cyan : Colors.white38,
-          shadows: selected
-              ? const [
-                  Shadow(color: Colors.white, blurRadius: 8),
-                  Shadow(color: Colors.white, blurRadius: 16),
-                  Shadow(color: Colors.white70, blurRadius: 28),
-                ]
-              : null,
-        ),
+      child: _modeLabel(label, selected),
+    );
+  }
+
+  Widget _cellularModeOption() {
+    final selected = game.cellularMode;
+    return GestureDetector(
+      onTap: () {
+        game.setCellularMode(!game.cellularMode);
+        setState(() {});
+      },
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: _modeLabel('modo celular', selected),
+      ),
+    );
+  }
+
+  Widget _modeLabel(String label, bool selected) {
+    return Text(
+      label,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        fontFamily: 'Megatrans',
+        fontSize: stickModeFontSize,
+        fontWeight: FontWeight.w400,
+        letterSpacing: 3,
+        color: selected ? Colors.cyan : Colors.white38,
+        shadows: selected
+            ? const [
+                Shadow(color: Colors.white, blurRadius: 8),
+                Shadow(color: Colors.white, blurRadius: 16),
+                Shadow(color: Colors.white70, blurRadius: 28),
+              ]
+            : null,
       ),
     );
   }
 }
 
-class _PilotCornerName extends ConsumerWidget {
+class _ArtilleroNamePlate extends ConsumerWidget {
+  static const double _skewX = 0.20;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(currentPilotProvider);
     return session.when(
       data: (pilot) {
         if (pilot == null) return const SizedBox.shrink();
-        return Text(
-          pilot.callSign,
-          style: const TextStyle(
-            color: Colors.cyanAccent,
-            fontFamily: 'Megatrans',
-            fontSize: 16,
-            letterSpacing: 3,
-            shadows: [
-              Shadow(color: Colors.white, blurRadius: 8),
-              Shadow(color: Colors.white54, blurRadius: 16),
-            ],
+        return Transform(
+          alignment: Alignment.centerLeft,
+          transform: Matrix4.skewX(_skewX),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(16, 8, 22, 10),
+            decoration: BoxDecoration(
+              color: Colors.cyan.withValues(alpha: 0.08),
+              border: Border.all(color: Colors.cyan, width: 1.5),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'ARTILLERO',
+                      style: TextStyle(
+                        color: Colors.cyan,
+                        fontFamily: 'Megatrans',
+                        fontSize: 13,
+                        letterSpacing: 4,
+                        height: 1.1,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Icon(Icons.military_tech, color: Colors.cyan, size: 16),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  pilot.callSign,
+                  style: const TextStyle(
+                    color: Colors.cyanAccent,
+                    fontFamily: 'Megatrans',
+                    fontSize: 22,
+                    letterSpacing: 3,
+                    height: 1.1,
+                    shadows: [
+                      Shadow(color: Colors.white, blurRadius: 8),
+                      Shadow(color: Colors.white54, blurRadius: 16),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
