@@ -1,24 +1,72 @@
 // hud_decoration_overlay.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:juanshooter/core/di/providers.dart';
 import 'package:juanshooter/game.dart';
 
-class HudDecorationOverlay extends StatelessWidget {
+class HudDecorationOverlay extends ConsumerWidget {
   const HudDecorationOverlay({required this.game, super.key});
   final MyGame game;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // IgnorePointer: este widget no bloquee los botones del hud.
     // SizedBox.expand so the painter uses the game frame size (1280×720),
     // not MediaQuery (browser size) — that mismatch pulled the right corners left.
     return IgnorePointer(
       child: Material(
         color: Colors.transparent,
-        child: CustomPaint(
-          painter: const _HudDecorationPainter(),
-          child: const SizedBox.expand(),
+        child: Stack(
+          children: [
+            CustomPaint(
+              painter: const _HudDecorationPainter(),
+              child: const SizedBox.expand(),
+            ),
+            const Positioned(
+              top: 10,
+              left: 36,
+              child: _InGamePilotName(),
+            ),
+          ],
         ),
       ),
+    );
+  }
+}
+
+class _InGamePilotName extends ConsumerWidget {
+  const _InGamePilotName();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final session = ref.watch(currentPilotProvider);
+    return session.when(
+      data: (pilot) {
+        if (pilot == null) return const SizedBox.shrink();
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              pilot.callSign,
+              style: const TextStyle(
+                color: Colors.cyanAccent,
+                fontFamily: 'Megatrans',
+                fontSize: 16,
+                letterSpacing: 3,
+                height: 1.1,
+                shadows: [
+                  Shadow(color: Colors.white, blurRadius: 8),
+                  Shadow(color: Colors.white54, blurRadius: 16),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(Icons.military_tech, color: Colors.cyan, size: 18),
+          ],
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 }

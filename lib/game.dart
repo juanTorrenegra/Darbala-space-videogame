@@ -792,7 +792,8 @@ class MyGame extends FlameGame
     player.position = Vector2(380, 380);
     player.isInvulnerable = false;
     player.isVisible = true;
-    player.currentSpeed = 200;
+    player.restoreChargeSpeed();
+    player.currentSpeed = 50;
 
     // Actualizar HUD
     if (hud != null) {
@@ -868,9 +869,9 @@ class MyGame extends FlameGame
     );
 
     // 3. Misma run: conservar el máximo mejorado (power-ups), no el default del [Player].
+    // La velocidad queda en la inicial del [Player] (50).
     player.maxHitPoints = playerMaxHitPoints;
     player.currentHitPoints = playerMaxHitPoints;
-    player.currentSpeed = 200;
 
     // 4. Añadir al universo
     universo.add(player);
