@@ -5,6 +5,7 @@ import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import 'package:juanshooter/effects/charge_aim_effect.dart';
 import 'package:juanshooter/effects/explosion_particles.dart';
+import 'package:juanshooter/effects/thruster_trail.dart';
 import 'package:juanshooter/game.dart';
 import 'package:juanshooter/hud/potency_bar.dart';
 import 'package:juanshooter/overlays/game_over.dart';
@@ -54,8 +55,9 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
   double _originalTimeScale = 1.0;
 
   // Método para recibir daño
-  void takeDamage(int damage) {
-    if (isInvulnerable || _isDying) return;
+  ThrusterTrail? _trail;
+
+  void takeDamage(int damage) {    if (isInvulnerable || _isDying) return;
 
     currentHitPoints -= damage;
 
@@ -192,6 +194,7 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
     restoreChargeSpeed();
     clearKnockback();
     clearVelocity();
+    _trail?.clear();
     if (game.hud.isLoaded) {
       game.hud.cancelCharge();
     }
@@ -302,6 +305,7 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
 
     clearKnockback();
     clearVelocity();
+    _trail?.clear();
 
     // Restaurar posición y rotación
     position = Vector2(380, 380);
@@ -315,6 +319,8 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
   Future<void> onLoad() async {
     add(CircleHitbox()..collisionType = CollisionType.active);
     game.universo.add(ChargeAimEffect());
+    _trail = ThrusterTrail(player: this);
+    game.universo.add(_trail!);
   }
 
   @override
