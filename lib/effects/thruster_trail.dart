@@ -16,7 +16,7 @@ class ThrusterTrail extends Component {
 
   static const int _poolSize = 18;
   static const double _emitInterval = 0.045;
-  static const double _puffLife = 0.55;
+  static const double _puffLife = 4.55;
 
   final Random _rng = Random();
   final List<_SmokePuff> _pool = [];
@@ -54,21 +54,15 @@ class ThrusterTrail extends Component {
     );
 
     // Engine sits at the back of the ship, opposite its facing direction.
-    // Facing follows `angle` with the same -pi/2 sprite offset the Player uses.
-    final facing = Vector2(
-      cos(player.angle + pi / 2),
-      sin(player.angle + pi / 2),
-    );
+    // The nose points along (cos(angle), sin(angle)) — same axis bullets use.
+    final facing = Vector2(cos(player.angle), sin(player.angle));
     final engine = player.position - facing * (player.size.x * 0.55);
 
     // Smoke drifts opposite to motion plus a small random spread.
     final drift = player.velocity.clone()
       ..scale(-0.18)
       ..add(
-        Vector2(
-          (_rng.nextDouble() - 0.5) * 8,
-          (_rng.nextDouble() - 0.5) * 8,
-        ),
+        Vector2((_rng.nextDouble() - 0.5) * 8, (_rng.nextDouble() - 0.5) * 8),
       );
 
     puff.reset(

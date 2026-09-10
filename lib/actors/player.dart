@@ -316,6 +316,13 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
   }
 
   @override
+  void onRemove() {
+    _trail?.removeFromParent();
+    _trail = null;
+    super.onRemove();
+  }
+
+  @override
   Future<void> onLoad() async {
     add(CircleHitbox()..collisionType = CollisionType.active);
     game.universo.add(ChargeAimEffect());
