@@ -4,7 +4,7 @@ import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import 'package:juanshooter/actors/player.dart';
 
-/// Cheap pooled smoke trail behind the ship's thruster.
+/// Cheap pooled smoke trail behind the ship's thruster..
 ///
 /// No per-frame allocation: a fixed pool of [_SmokePuff] circles is created
 /// once and recycled. Each puff is a single `CircleComponent` with a paint
