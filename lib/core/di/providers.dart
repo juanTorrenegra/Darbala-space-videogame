@@ -67,7 +67,7 @@ final leaderboardRepositoryProvider = Provider<LeaderboardRepository>((ref) {
 
 final gameFlagsRemoteDataSourceProvider =
     Provider<GameFlagsRemoteDataSource>((ref) {
-  return GameFlagsRemoteDataSourceImpl(ref.watch(apiClientProvider));
+  return SupabaseGameFlagsRemoteDataSource();
 });
 
 final gameFlagsRepositoryProvider = Provider<GameFlagsRepository>((ref) {
@@ -90,12 +90,16 @@ final currentPilotProvider = StreamProvider<PilotIdentity?>((ref) {
   return ref.watch(pilotRepositoryProvider).watch();
 });
 
-final gameFlagsProvider = FutureProvider<GameFlags>((ref) async {
-  final result = await ref.watch(fetchGameFlagsProvider).call();
-  return result.when(
+final gameFlagsProvider = StreamProvider<GameFlags>((ref) async* {
+  final repository = ref.watch(gameFlagsRepositoryProvider);
+  final initial = await repository.fetch();
+  yield initial.when(
     success: (flags) => flags,
     failure: (_) => GameFlags.offlineFallback(),
   );
+  await for (final flags in repository.watch()) {
+    yield flags;
+  }
 });
 
 class LeaderboardState {

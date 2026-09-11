@@ -17,6 +17,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:juanshooter/core/network/supabase_config.dart';
 import 'package:juanshooter/overlays/create_account_overlay.dart';
+import 'package:juanshooter/overlays/flag_admin_overlay.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -76,6 +77,7 @@ class JuanShooterApp extends ConsumerWidget {
                       ScoreTransmitOverlay(game: game),
                   'CreateAccount': (_, game) =>
                       CreateAccountOverlay(game: game),
+                  'FlagAdmin': (_, game) => FlagAdminOverlay(game: game),
                 },
                 initialActiveOverlays: const [
                   'MainMenu',

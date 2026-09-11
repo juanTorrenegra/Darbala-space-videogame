@@ -94,6 +94,7 @@ class Turret extends SpriteComponent with HasGameReference<MyGame> {
       position: shootPosition,
       angle: angle,
       speed: bulletSpeed,
+      damage: 3,
     );
     game.universo.add(bullet);
   }

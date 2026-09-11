@@ -5,10 +5,12 @@ class GameFlagsDto {
   const GameFlagsDto({
     required this.title,
     required this.body,
+    this.leaderboardEnabled = true,
   });
 
   final String title;
   final String body;
+  final bool leaderboardEnabled;
 
   factory GameFlagsDto.fromJson(Map<String, dynamic> json) {
     final title = json['title'];
@@ -21,7 +23,7 @@ class GameFlagsDto {
 
   GameFlags toDomain() {
     return GameFlags(
-      leaderboardEnabled: true,
+      leaderboardEnabled: leaderboardEnabled,
       transmissionTitle: title.toUpperCase(),
       transmissionBody: body,
       fromRemote: true,

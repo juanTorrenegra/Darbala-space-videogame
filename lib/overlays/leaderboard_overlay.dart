@@ -77,13 +77,17 @@ class _LeaderboardOverlayState extends ConsumerState<LeaderboardOverlay> {
                     ),
                   ),
                   const Spacer(),
-                  const Text(
-                    'RANKING',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'Megatrans',
-                      fontSize: 28,
-                      letterSpacing: 8,
+                  GestureDetector(
+                    onLongPress: () =>
+                        widget.game.overlays.add('FlagAdmin'),
+                    child: const Text(
+                      'RANKING',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontFamily: 'Megatrans',
+                        fontSize: 28,
+                        letterSpacing: 8,
+                      ),
                     ),
                   ),
                   const Spacer(),

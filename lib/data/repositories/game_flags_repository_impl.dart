@@ -20,4 +20,9 @@ class GameFlagsRepositoryImpl implements GameFlagsRepository {
       return Success(GameFlags.offlineFallback());
     }
   }
+
+  @override
+  Stream<GameFlags> watch() {
+    return _remote.watch().map((dto) => dto.toDomain()).handleError((_) {});
+  }
 }
