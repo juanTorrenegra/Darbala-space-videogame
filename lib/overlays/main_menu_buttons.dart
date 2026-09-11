@@ -18,10 +18,15 @@ class MainMenuButtons extends ConsumerStatefulWidget {
 }
 
 class _MenuAction {
-  const _MenuAction({required this.label, required this.onPressed});
+  const _MenuAction({
+    required this.label,
+    required this.onPressed,
+    this.onLongPress,
+  });
 
   final String label;
   final VoidCallback onPressed;
+  final VoidCallback? onLongPress;
 }
 
 class _MainMenuButtonsState extends ConsumerState<MainMenuButtons> {
@@ -40,6 +45,7 @@ class _MainMenuButtonsState extends ConsumerState<MainMenuButtons> {
         _MenuAction(
           label: 'Ranking',
           onPressed: () => game.overlays.add('Leaderboard'),
+          onLongPress: () => game.overlays.add('FlagAdmin'),
         ),
         _MenuAction(
           label: 'Crear Usuario',
@@ -139,6 +145,7 @@ class _MainMenuButtonsState extends ConsumerState<MainMenuButtons> {
                 return GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: action.onPressed,
+                  onLongPress: action.onLongPress,
                   child: Opacity(
                     opacity: fade,
                     child: _MenuCarouselLabel(
