@@ -210,7 +210,7 @@ class _LeaderboardBodyState extends ConsumerState<_LeaderboardBody> {
       final desired = target - position.viewportDimension * 0.4;
       _scrollController.animateTo(
         desired.clamp(0.0, max),
-        duration: const Duration(milliseconds: 600),
+        duration: const Duration(milliseconds: 3000),
         curve: Curves.easeOutCubic,
       );
     });

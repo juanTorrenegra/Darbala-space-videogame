@@ -451,6 +451,18 @@ class MyGame extends FlameGame
     );
     add(camara!);
 
+    // Gas giant planet in the middle of the game, rendered below the player.
+    final planetSprite = await Sprite.load('bgasgigant.png');
+    universo.add(
+      SpriteComponent(
+        sprite: planetSprite,
+        position: Vector2(380, 380),
+        size: planetSprite.originalSize,
+        anchor: Anchor.center,
+        priority: -1,
+      ),
+    );
+
     player = Player(
       sprite: await Sprite.load('ship300x240.png'),
       position: Vector2(380, 380),
