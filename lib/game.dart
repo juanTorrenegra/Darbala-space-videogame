@@ -62,7 +62,7 @@ class MyGame extends FlameGame
   late AudioPool pool;
   final Map<String, AudioPlayer> _sfxPlayers = {};
   double timeScale = 1.0; //game speed!
-  double cameraZoom = 2;
+  double cameraZoom = 1.4;
   static const double knockbackCameraHoldSeconds = 2.0;
 
   /// How far the viewfinder leads the ship (world units). Screen center sits
@@ -456,8 +456,8 @@ class MyGame extends FlameGame
     universo.add(
       SpriteComponent(
         sprite: planetSprite,
-        position: Vector2(380, 380),
-        size: planetSprite.originalSize,
+        position: Vector2(10, 380),
+        size: Vector2(850, 750),
         anchor: Anchor.center,
         priority: -1,
       ),
@@ -621,7 +621,11 @@ class MyGame extends FlameGame
   }
 
   void _beginWebCharge() {
-    if (!kIsWeb || cellularMode || paused || !player.isMounted || !hud.isLoaded) {
+    if (!kIsWeb ||
+        cellularMode ||
+        paused ||
+        !player.isMounted ||
+        !hud.isLoaded) {
       return;
     }
     hud.beginCharge();
