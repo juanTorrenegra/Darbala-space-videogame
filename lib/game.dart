@@ -451,13 +451,48 @@ class MyGame extends FlameGame
     );
     add(camara!);
 
+    // Background scenery, rendered below the player: nebula haze furthest
+    // back, planets in front of it.
+    final nebula1Sprite = await Sprite.load('Nebula1.png');
+    universo.add(
+      SpriteComponent(
+        sprite: nebula1Sprite,
+        position: Vector2(1000, 150),
+        size: Vector2(1500, 1128),
+        anchor: Anchor.center,
+        priority: -3,
+      ),
+    );
+
+    final nebula2Sprite = await Sprite.load('Nebula2.png');
+    universo.add(
+      SpriteComponent(
+        sprite: nebula2Sprite,
+        position: Vector2(200, 950),
+        size: Vector2(1600, 1438),
+        anchor: Anchor.center,
+        priority: -3,
+      ),
+    );
+
     // Gas giant planet in the middle of the game, rendered below the player.
     final planetSprite = await Sprite.load('bgasgigant.png');
     universo.add(
       SpriteComponent(
         sprite: planetSprite,
-        position: Vector2(10, 380),
-        size: Vector2(850, 750),
+        position: Vector2(-800, 380),
+        size: Vector2(1800, 1700),
+        anchor: Anchor.center,
+        priority: -1,
+      ),
+    );
+
+    final bplanetSprite = await Sprite.load('bplanet.png');
+    universo.add(
+      SpriteComponent(
+        sprite: bplanetSprite,
+        position: Vector2(1300, 500),
+        size: Vector2(1800, 1700),
         anchor: Anchor.center,
         priority: -1,
       ),
