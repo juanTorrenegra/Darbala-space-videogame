@@ -77,6 +77,9 @@ class MyGame extends FlameGame
   /// While true, player input (move / aim / shoot) is ignored.
   bool controlsLocked = false;
 
+  /// While false, enemies will not wake from proximity (level intro slide).
+  bool enemyAlertsEnabled = true;
+
   GameLevel? _currentLevel;
 
   /// The level currently running, if any.
@@ -205,6 +208,7 @@ class MyGame extends FlameGame
     clearWorldEntities();
     cameraLocked = false;
     controlsLocked = false;
+    enemyAlertsEnabled = true;
     if (player.isMounted) player.resetPlayer();
     if (hud.isLoaded) hud.cancelCharge();
 
@@ -222,6 +226,7 @@ class MyGame extends FlameGame
     clearWorldEntities();
     cameraLocked = false;
     controlsLocked = false;
+    enemyAlertsEnabled = true;
     if (player.isMounted) player.resetPlayer();
     setZoomDirect(defaultZoom);
     snapViewfinderToPlayer();

@@ -69,6 +69,7 @@ class SectorLevel extends GameLevel {
 
     game.cameraLocked = true;
     game.controlsLocked = true;
+    game.enemyAlertsEnabled = false;
     game.setZoomDirect(MyGame.defaultZoom);
     game.camara?.viewfinder.position = center.clone();
 
@@ -130,6 +131,7 @@ class SectorLevel extends GameLevel {
     game.overlays.remove('LevelBanner');
     game.controlsLocked = false;
     game.cameraLocked = false;
+    game.enemyAlertsEnabled = true;
     game.snapViewfinderToPlayer();
   }
 

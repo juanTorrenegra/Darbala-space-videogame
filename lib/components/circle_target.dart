@@ -25,13 +25,15 @@ class CircleTarget extends CircleComponent
          position: position,
          anchor: Anchor.center,
          priority: 2,
-         paint: Paint()..color = _baseColor,
-       );
+        paint: Paint()..color = const Color(0xFF67E8F9),
+      );
 
   /// Called once when the orb starts its destruction animation.
   final void Function() onDestroyed;
 
-  static const Color _baseColor = Color(0xFF3E6FB0);
+  static const Color _innerColor = Color(0xFFA5F3FC); // light cyan
+  static const Color _outerColor = Color(0xFF38BDF8); // light blue
+  static const Color _shadowColor = Color(0xFF9E9E9E);
   static const int maxHitPoints = 49;
   static const int regenAmount = 10;
   static const double regenInterval = 0.3;
@@ -90,9 +92,43 @@ class CircleTarget extends CircleComponent
 
   void _startDestruction() {
     _destroying = true;
-    paint.color = Colors.white;
     game.spawnEnemyExplosion(position.clone(), size.clone());
     onDestroyed();
+  }
+
+  @override
+  void render(Canvas canvas) {
+    final destroyT = _destroying
+        ? (_destroyElapsed / _destroySeconds).clamp(0.0, 1.0)
+        : 0.0;
+    final flash = _destroying
+        ? 1.0
+        : (_flashTimer / _flashSeconds).clamp(0.0, 1.0);
+    final alpha = 1 - destroyT;
+    final inner = Color.lerp(_innerColor, Colors.white, flash)!;
+    final outer = Color.lerp(_outerColor, Colors.white, flash)!;
+    final center = Offset(size.x / 2, size.y / 2);
+    final bounds = Rect.fromLTWH(0, 0, size.x, size.y);
+
+    canvas.drawCircle(
+      center.translate(2.5, 3.5),
+      radius,
+      Paint()
+        ..color = _shadowColor.withValues(alpha: 0.55 * alpha)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
+    );
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..shader = RadialGradient(
+          colors: [
+            inner.withValues(alpha: alpha),
+            outer.withValues(alpha: alpha),
+          ],
+          radius: 0.85,
+        ).createShader(bounds),
+    );
   }
 
   @override
@@ -103,7 +139,6 @@ class CircleTarget extends CircleComponent
       _destroyElapsed += dt;
       final t = (_destroyElapsed / _destroySeconds).clamp(0.0, 1.0);
       scale = Vector2.all(1 + 0.6 * t);
-      paint.color = Colors.white.withValues(alpha: 1 - t);
       if (t >= 1) {
         removeFromParent();
       }
@@ -119,8 +154,6 @@ class CircleTarget extends CircleComponent
 
     if (_flashTimer > 0) {
       _flashTimer -= dt;
-      final f = (_flashTimer / _flashSeconds).clamp(0.0, 1.0);
-      paint.color = Color.lerp(_baseColor, Colors.white, f)!;
     }
   }
 }

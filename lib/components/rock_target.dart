@@ -23,13 +23,15 @@ class RockTarget extends PolygonComponent
         size: Vector2.all(34), // about the player's size (28)
         anchor: Anchor.center,
         priority: 2,
-        paint: Paint()..color = _baseColor,
+        paint: Paint()..color = const Color(0xFF1D4ED8),
       );
 
   /// Called once when the rock starts its destruction animation.
   final void Function() onDestroyed;
 
-  static const Color _baseColor = Color(0xFF8D7B6D);
+  static const Color _innerColor = Color(0xFF22D3EE); // cyan
+  static const Color _outerColor = Color(0xFF1D4ED8); // blue
+  static const Color _shadowColor = Color(0xFF9E9E9E);
   static const int maxHitPoints = 20;
 
   /// Asymmetric boulder outline in local space (0..34 box).
@@ -100,10 +102,56 @@ class RockTarget extends PolygonComponent
 
   void _startDestruction() {
     _destroying = true;
-    paint.color = Colors.white;
-    // Explosion + sfx, but no score: rocks are not ships.
     game.spawnEnemyExplosion(position.clone(), size.clone());
     onDestroyed();
+  }
+
+  Path get _shapePath {
+    final path = Path();
+    final verts = vertices;
+    path.moveTo(verts.first.x, verts.first.y);
+    for (var i = 1; i < verts.length; i++) {
+      path.lineTo(verts[i].x, verts[i].y);
+    }
+    path.close();
+    return path;
+  }
+
+  @override
+  void render(Canvas canvas) {
+    final destroyT = _destroying
+        ? (_destroyElapsed / _destroySeconds).clamp(0.0, 1.0)
+        : 0.0;
+    final flash = _destroying
+        ? 1.0
+        : (_flashTimer / _flashSeconds).clamp(0.0, 1.0);
+    final alpha = 1 - destroyT;
+    final inner = Color.lerp(_innerColor, Colors.white, flash)!;
+    final outer = Color.lerp(_outerColor, Colors.white, flash)!;
+    final path = _shapePath;
+    final bounds = Rect.fromLTWH(0, 0, size.x, size.y);
+
+    canvas.save();
+    canvas.translate(2.5, 3.5);
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = _shadowColor.withValues(alpha: 0.55 * alpha)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
+    );
+    canvas.restore();
+
+    canvas.drawPath(
+      path,
+      Paint()
+        ..shader = RadialGradient(
+          colors: [
+            inner.withValues(alpha: alpha),
+            outer.withValues(alpha: alpha),
+          ],
+          radius: 0.9,
+        ).createShader(bounds),
+    );
   }
 
   @override
@@ -114,7 +162,6 @@ class RockTarget extends PolygonComponent
       _destroyElapsed += dt;
       final t = (_destroyElapsed / _destroySeconds).clamp(0.0, 1.0);
       scale = Vector2.all(1 + 0.6 * t);
-      paint.color = Colors.white.withValues(alpha: 1 - t);
       if (t >= 1) {
         removeFromParent();
       }
@@ -123,8 +170,6 @@ class RockTarget extends PolygonComponent
 
     if (_flashTimer > 0) {
       _flashTimer -= dt;
-      final f = (_flashTimer / _flashSeconds).clamp(0.0, 1.0);
-      paint.color = Color.lerp(_baseColor, Colors.white, f)!;
     }
 
     if (_shakeTimer > 0) {

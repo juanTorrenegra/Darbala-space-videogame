@@ -69,7 +69,7 @@ abstract class Enemigo extends SpriteComponent
   }
 
   void _updateProximityState() {
-    if (!game.player.isMounted) {
+    if (!game.player.isMounted || !game.enemyAlertsEnabled) {
       _hideWarning();
       return;
     }
@@ -103,7 +103,7 @@ abstract class Enemigo extends SpriteComponent
   void onIdleBehavior(double dt) {}
 
   void activate() {
-    if (_isActivated) return;
+    if (_isActivated || !game.enemyAlertsEnabled) return;
     _hideWarning();
     _isActivated = true;
     onActivate();

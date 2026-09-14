@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:juanshooter/components/circle_target.dart';
 import 'package:juanshooter/components/rock_target.dart';
+import 'package:juanshooter/components/scenery_sprite.dart';
 import 'package:juanshooter/game.dart';
 import 'package:juanshooter/levels/game_level.dart';
 import 'package:juanshooter/levels/sector_level.dart';
@@ -31,8 +32,8 @@ class TutorialLevel extends GameLevel {
 
   /// Camera zoom for each phase of the tutorial.
   static const double rocksZoom = 3.5;
-  static const double circleZoom = 2.2;
-  static const double circlesZoom = 1.8;
+  static const double circleZoom = 3.0;
+  static const double circlesZoom = 2.5;
 
   /// Where the static ship sits for the whole tutorial.
   static final Vector2 playerPosition = Vector2(350, 365);
@@ -64,8 +65,30 @@ class TutorialLevel extends GameLevel {
     game.cameraLocked = true;
     game.setZoomDirect(rocksZoom);
     _frameCamera();
+    await _spawnBackground();
 
     unawaited(_run());
+  }
+
+  /// Covers the widest tutorial camera (circlesZoom) so zooms 4.5→2.5 stay filled.
+  Future<void> _spawnBackground() async {
+    final sprite = await Sprite.load('tutorialBG4.png');
+    final viewW = MyGame.logicalWidth / circlesZoom;
+    final viewH = MyGame.logicalHeight / circlesZoom;
+    final src = sprite.originalSize;
+    final cover = max(viewW / src.x, viewH / src.y);
+    final viewfinder = Vector2(
+      playerPosition.x - (playerScreenFraction - 0.5) * viewW,
+      playerPosition.y,
+    );
+    game.universo.add(
+      ScenerySprite(
+        sprite: sprite,
+        position: viewfinder,
+        size: src * 0.6,
+        priority: -10,
+      ),
+    );
   }
 
   /// Viewfinder (anchor center) stays at the screen center. The ship is
