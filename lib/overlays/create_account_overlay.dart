@@ -4,6 +4,8 @@ import 'package:juanshooter/core/error/result.dart';
 import 'package:juanshooter/core/di/providers.dart';
 import 'package:juanshooter/domain/entities/pilot_identity.dart';
 import 'package:juanshooter/game.dart';
+import 'package:juanshooter/levels/sector_level.dart';
+import 'package:juanshooter/levels/tutorial_level.dart';
 
 class CreateAccountOverlay extends ConsumerStatefulWidget {
   const CreateAccountOverlay({required this.game, super.key});
@@ -38,7 +40,10 @@ class _CreateAccountOverlayState extends ConsumerState<CreateAccountOverlay> {
     super.dispose();
   }
 
-  Future<void> _run(Future<Result<PilotIdentity>> Function() action) async {
+  Future<void> _run(
+    Future<Result<PilotIdentity>> Function() action, {
+    required bool isNewAccount,
+  }) async {
     setState(() {
       _busy = true;
       _error = null;
@@ -47,7 +52,17 @@ class _CreateAccountOverlayState extends ConsumerState<CreateAccountOverlay> {
     if (!mounted) return;
     result.when(
       success: (_) {
+        // Straight into the game: new pilots get the tutorial level,
+        // returning pilots jump into the first sector.
         widget.game.overlays.remove('CreateAccount');
+        widget.game.overlays.remove('MainMenu');
+        widget.game.overlays.add('HudDecoration');
+        widget.game.overlays.add('ScoreBoard');
+        widget.game.resumeEngine();
+        widget.game.resumeBgmMusic();
+        widget.game.startLevel(
+          isNewAccount ? TutorialLevel() : SectorLevel.sector7(),
+        );
       },
       failure: (error) {
         setState(() {
@@ -148,6 +163,7 @@ class _CreateAccountOverlayState extends ConsumerState<CreateAccountOverlay> {
                               nombre: _nombre.text,
                               password: _password.text,
                             ),
+                            isNewAccount: true,
                           ),
                           child: const Text(
                             'CREAR',
@@ -164,6 +180,7 @@ class _CreateAccountOverlayState extends ConsumerState<CreateAccountOverlay> {
                               nombre: _nombre.text,
                               password: _password.text,
                             ),
+                            isNewAccount: false,
                           ),
                           child: const Text(
                             'ENTRAR',

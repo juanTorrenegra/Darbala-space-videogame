@@ -57,6 +57,16 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
   // Método para recibir daño
   ThrusterTrail? _trail;
 
+  /// Tutorial/scripted mode: the ship holds its position and the move stick
+  /// only aims. Set by levels, cleared by [resetPlayer].
+  bool staticAimOnly = false;
+
+  /// When set, the aim direction is clamped to
+  /// [aimClampCenter] ± [aimClampRange] (screenAngle convention:
+  /// up = 0, right = pi/2, down = pi, left = -pi/2).
+  double? aimClampCenter;
+  double aimClampRange = pi / 2;
+
   void takeDamage(int damage) {    if (isInvulnerable || _isDying) return;
 
     currentHitPoints -= damage;
@@ -312,6 +322,10 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
     angle = 0;
     _angle = 0;
 
+    // Salir de modos de nivel (tutorial estático / cono de apuntado)
+    staticAimOnly = false;
+    aimClampCenter = null;
+
     print('🔄 Jugador reseteado completamente');
   }
 
@@ -347,8 +361,10 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
 
     // ✅ Solo actualizar movimiento si no está muriendo
     if (!_isDying) {
-      _updateKnockback(dt);
-      _updateSpaceMovement(dt);
+      if (!game.controlsLocked && !staticAimOnly) {
+        _updateKnockback(dt);
+        _updateSpaceMovement(dt);
+      }
 
       // Manejar invulnerabilidad y parpadeo
       if (isInvulnerable) {
@@ -367,11 +383,23 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
       }
 
       // Rotación: look joystick; en web también sigue al mouse
-      final look = game.hud.effectiveLookDelta;
-      if (look.length2 > 0) {
-        _angle = look.screenAngle();
-        const double offset = -pi / 2; // Ajusta este valor según tu sprite
-        angle = _angle + offset;
+      if (!game.controlsLocked) {
+        final look = game.hud.effectiveLookDelta;
+        if (look.length2 > 0) {
+          var newAngle = look.screenAngle();
+          final center = aimClampCenter;
+          if (center != null) {
+            // Clamp al cono permitido (tutorial: no apuntar hacia atrás).
+            var d = (newAngle - center) % (2 * pi);
+            if (d > pi) d -= 2 * pi;
+            if (d < -pi) d += 2 * pi;
+            d = d.clamp(-aimClampRange, aimClampRange).toDouble();
+            newAngle = center + d;
+          }
+          _angle = newAngle;
+          const double offset = -pi / 2; // Ajusta este valor según tu sprite
+          angle = _angle + offset;
+        }
       }
     }
   }

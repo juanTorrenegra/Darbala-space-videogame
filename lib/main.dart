@@ -9,6 +9,7 @@ import 'package:juanshooter/game.dart';
 import 'package:juanshooter/overlays/debug_menu.dart';
 import 'package:juanshooter/overlays/hud_decoration_overlay.dart';
 import 'package:juanshooter/overlays/leaderboard_overlay.dart';
+import 'package:juanshooter/overlays/level_title_overlay.dart';
 import 'package:juanshooter/overlays/main_menu.dart';
 import 'package:juanshooter/overlays/score_board.dart';
 import 'package:juanshooter/overlays/score_transmit_overlay.dart';
@@ -78,6 +79,10 @@ class JuanShooterApp extends ConsumerWidget {
                   'CreateAccount': (_, game) =>
                       CreateAccountOverlay(game: game),
                   'FlagAdmin': (_, game) => FlagAdminOverlay(game: game),
+                  'LevelTitle': (_, game) => LevelTitleOverlay(
+                    controller: game.levelTitleController!,
+                  ),
+                  'LevelBanner': (_, game) => const LevelBannerOverlay(),
                 },
                 initialActiveOverlays: const [
                   'MainMenu',

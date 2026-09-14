@@ -10,13 +10,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:juanshooter/actors/enemigo.dart';
 import 'package:juanshooter/actors/player.dart';
-import 'package:juanshooter/actors/ranged_enemy.dart';
 import 'package:juanshooter/actors/spike_enemy.dart';
 import 'package:juanshooter/actors/crab_enemy.dart';
+import 'package:juanshooter/components/circle_target.dart';
+import 'package:juanshooter/components/rock_target.dart';
+import 'package:juanshooter/components/scenery_sprite.dart';
 import 'package:juanshooter/hud/game_hud.dart';
 import 'package:juanshooter/hud/offscreen_enemy_markers.dart';
 import 'package:flame_audio/flame_audio.dart';
+import 'package:juanshooter/levels/game_level.dart';
 import 'package:juanshooter/overlays/game_over.dart';
+import 'package:juanshooter/overlays/level_title_overlay.dart';
 import 'package:juanshooter/weapons/bullet.dart';
 import 'package:juanshooter/weapons/enemy_bullet.dart';
 import 'package:juanshooter/effects/explosion_particles.dart';
@@ -53,7 +57,6 @@ class MyGame extends FlameGame
   final ValueNotifier<int> scoreNotifier = ValueNotifier<int>(0);
   int shipsDestroyed = 0;
   late Player player;
-  late RangedEnemy enemigo2;
 
   late final GameHud hud;
   late final World universo;
@@ -62,7 +65,25 @@ class MyGame extends FlameGame
   late AudioPool pool;
   final Map<String, AudioPlayer> _sfxPlayers = {};
   double timeScale = 1.0; //game speed!
-  double cameraZoom = 1.4;
+
+  /// Zoom al empezar una partida (los niveles pueden animarlo).
+  static const double defaultZoom = 1.4;
+  double cameraZoom = defaultZoom;
+
+  /// While true, level scripts drive the camera: no follow, no player clamp.
+  bool cameraLocked = false;
+
+  /// While true, player input (move / aim / shoot) is ignored.
+  bool controlsLocked = false;
+
+  GameLevel? _currentLevel;
+
+  /// The level currently running, if any.
+  GameLevel? get currentLevel => _currentLevel;
+
+  /// Parameters for the active 'LevelTitle' overlay, set by
+  /// [presentLevelTitle] before adding the overlay.
+  LevelTitleController? levelTitleController;
   static const double knockbackCameraHoldSeconds = 2.0;
 
   /// How far the viewfinder leads the ship (world units). Screen center sits
@@ -143,6 +164,91 @@ class MyGame extends FlameGame
       camara!.viewfinder.zoom = cameraZoom;
       print('Zoom set to: ${cameraZoom}x');
     }
+  }
+
+  /// Level scripts: set the zoom without the debug-menu clamp (0.5–3.0).
+  void setZoomDirect(double zoom) {
+    cameraZoom = zoom;
+    camara?.viewfinder.zoom = zoom;
+  }
+
+  /// Public for level scripts (intro placement, edge math).
+  Vector2? visibleWorldHalf() => _visibleWorldHalf();
+
+  /// Removes every gameplay/scenery entity from the world, keeping the
+  /// player and its attached effects (trail, charge-aim).
+  void clearWorldEntities() {
+    if (!universo.isMounted) return;
+    for (final component in universo.children.toList()) {
+      if (component is Enemigo ||
+          component is Bullet ||
+          component is EnemyBullet ||
+          component is ExplosionEffect ||
+          component is RockTarget ||
+          component is CircleTarget ||
+          component is ScenerySprite) {
+        component.removeFromParent();
+      }
+    }
+  }
+
+  /// Switches to [level]: clears the world, resets the player and camera
+  /// locks, then starts the level script.
+  void startLevel(GameLevel level) {
+    final old = _currentLevel;
+    _currentLevel = null;
+    old?.removeFromParent(); // onRemove cancels its script
+
+    clearWorldEntities();
+    cameraLocked = false;
+    controlsLocked = false;
+    if (player.isMounted) player.resetPlayer();
+    if (hud.isLoaded) hud.cancelCharge();
+
+    _currentLevel = level;
+    add(level);
+  }
+
+  /// Used as the "load behind black" step when there is no next sector yet:
+  /// back to the main menu in the initial state.
+  void returnToMenuBehindBlack() {
+    final old = _currentLevel;
+    _currentLevel = null;
+    old?.removeFromParent();
+
+    clearWorldEntities();
+    cameraLocked = false;
+    controlsLocked = false;
+    if (player.isMounted) player.resetPlayer();
+    setZoomDirect(defaultZoom);
+    snapViewfinderToPlayer();
+
+    if (overlays.isActive('HudDecoration')) overlays.remove('HudDecoration');
+    if (overlays.isActive('ScoreBoard')) overlays.remove('ScoreBoard');
+    overlays.add('MainMenu');
+  }
+
+  /// Plays the blur + title + glitch + blackout card for [title], holds the
+  /// black screen for 3 s, runs [loadBehindBlack] (e.g. [startLevel]), then
+  /// fades the black away and removes the overlay.
+  Future<void> presentLevelTitle(
+    String title,
+    void Function() loadBehindBlack,
+  ) async {
+    final controller = LevelTitleController(title: title);
+    levelTitleController = controller;
+    overlays.add('LevelTitle');
+
+    await controller.blackout;
+    await Future<void>.delayed(const Duration(seconds: 3));
+    loadBehindBlack();
+
+    controller.requestDismiss();
+    await controller.finished;
+    if (overlays.isActive('LevelTitle')) {
+      overlays.remove('LevelTitle');
+    }
+    levelTitleController = null;
   }
 
   /// Knockback hits: freeze look-ahead so the viewfinder does not jump.
@@ -451,53 +557,6 @@ class MyGame extends FlameGame
     );
     add(camara!);
 
-    // Background scenery, rendered below the player: nebula haze furthest
-    // back, planets in front of it.
-    final nebula1Sprite = await Sprite.load('Nebula1.png');
-    universo.add(
-      SpriteComponent(
-        sprite: nebula1Sprite,
-        position: Vector2(1000, 150),
-        size: Vector2(1500, 1128),
-        anchor: Anchor.center,
-        priority: -3,
-      ),
-    );
-
-    final nebula2Sprite = await Sprite.load('Nebula2.png');
-    universo.add(
-      SpriteComponent(
-        sprite: nebula2Sprite,
-        position: Vector2(200, 950),
-        size: Vector2(1600, 1438),
-        anchor: Anchor.center,
-        priority: -3,
-      ),
-    );
-
-    // Gas giant planet in the middle of the game, rendered below the player.
-    final planetSprite = await Sprite.load('bgasgigant.png');
-    universo.add(
-      SpriteComponent(
-        sprite: planetSprite,
-        position: Vector2(-800, 380),
-        size: Vector2(1800, 1700),
-        anchor: Anchor.center,
-        priority: -1,
-      ),
-    );
-
-    final bplanetSprite = await Sprite.load('bplanet.png');
-    universo.add(
-      SpriteComponent(
-        sprite: bplanetSprite,
-        position: Vector2(1300, 500),
-        size: Vector2(1800, 1700),
-        anchor: Anchor.center,
-        priority: -1,
-      ),
-    );
-
     player = Player(
       sprite: await Sprite.load('ship300x240.png'),
       position: Vector2(380, 380),
@@ -506,57 +565,6 @@ class MyGame extends FlameGame
     player.maxHitPoints = playerMaxHitPoints;
     player.currentHitPoints = playerMaxHitPoints;
     universo.add(player);
-
-    enemigo2 = RangedEnemy(
-      sprite: await Sprite.load('verdePequeno.png'),
-      position: Vector2(660, 380),
-      size: Vector2(16, 16),
-      maxHitPoints: 200,
-      rotationSpeed: 3.0,
-      bulletSpeed: 50,
-      shootingThreshold: 30,
-      damage: 10,
-    );
-    universo.add(enemigo2);
-
-    universo.add(
-      CrabEnemy(
-        sprite: await Sprite.load('10.png'),
-        position: Vector2(620, 350),
-        size: Vector2(20, 20),
-        maxHitPoints: 50,
-        rotationSpeed: 4.0,
-        damage: 30,
-      ),
-    );
-
-    await _spawnEdgePatrolCrabs();
-
-    final rangedSprite = await Sprite.load('verdePequeno.png');
-    universo.add(
-      RangedEnemy(
-        sprite: rangedSprite,
-        position: Vector2(620, 330),
-        size: Vector2(18, 18),
-        maxHitPoints: 40,
-        rotationSpeed: 3.0,
-        bulletSpeed: 50,
-        shootingThreshold: 30,
-        damage: 10,
-      ),
-    );
-    universo.add(
-      RangedEnemy(
-        sprite: rangedSprite,
-        position: Vector2(630, 385),
-        size: Vector2(18, 18),
-        maxHitPoints: 40,
-        rotationSpeed: 3.0,
-        bulletSpeed: 50,
-        shootingThreshold: 30,
-        damage: 10,
-      ),
-    );
 
     hud = GameHud()..priority = 100;
     scoreNotifier.value = shipsDestroyed;
@@ -570,9 +578,9 @@ class MyGame extends FlameGame
   }
 
   /// Four patrol crabs just outside each viewport edge (16 total) to test markers.
-  Future<void> _spawnEdgePatrolCrabs() async {
+  Future<void> spawnEdgePatrolCrabs({Vector2? origin}) async {
     final sprite = await Sprite.load('10.png');
-    final origin = player.position;
+    final patrolOrigin = origin ?? player.position;
     final half =
         _visibleWorldHalf() ??
         Vector2(
@@ -589,19 +597,19 @@ class MyGame extends FlameGame
     }
 
     final alongY = spread(
-      origin.y - half.y * 0.7,
-      origin.y + half.y * 0.7,
+      patrolOrigin.y - half.y * 0.7,
+      patrolOrigin.y + half.y * 0.7,
       perSide,
     );
     final alongX = spread(
-      origin.x - half.x * 0.7,
-      origin.x + half.x * 0.7,
+      patrolOrigin.x - half.x * 0.7,
+      patrolOrigin.x + half.x * 0.7,
       perSide,
     );
-    final leftX = origin.x - half.x - outside;
-    final rightX = origin.x + half.x + outside;
-    final topY = origin.y - half.y - outside;
-    final bottomY = origin.y + half.y + outside;
+    final leftX = patrolOrigin.x - half.x - outside;
+    final rightX = patrolOrigin.x + half.x + outside;
+    final topY = patrolOrigin.y - half.y - outside;
+    final bottomY = patrolOrigin.y + half.y + outside;
 
     void addCrab(double x, double y) {
       universo.add(
@@ -636,8 +644,10 @@ class MyGame extends FlameGame
   @override
   void update(double dt) {
     super.update(dt * timeScale);
-    _updateSpaceCamera(dt);
-    _clampPlayerToViewport();
+    if (!cameraLocked) {
+      _updateSpaceCamera(dt);
+      _clampPlayerToViewport();
+    }
 
     currentPlayerPos.setFrom(player.position);
 

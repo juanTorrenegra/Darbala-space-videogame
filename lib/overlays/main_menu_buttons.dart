@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:juanshooter/core/di/providers.dart';
 import 'package:juanshooter/game.dart';
+import 'package:juanshooter/levels/sector_level.dart';
 
 class MainMenuButtons extends ConsumerStatefulWidget {
   const MainMenuButtons({required this.game, super.key});
@@ -88,6 +89,7 @@ class _MainMenuButtonsState extends ConsumerState<MainMenuButtons> {
     game.overlays.add('ScoreBoard');
     game.resumeEngine();
     game.resumeBgmMusic();
+    game.startLevel(SectorLevel.sector7());
   }
 
   Future<void> _signOut() async {

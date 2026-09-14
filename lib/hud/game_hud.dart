@@ -260,7 +260,12 @@ class GameHud extends PositionComponent
   }
 
   void beginCharge() {
-    if (_chargeHeld || game.paused || !game.player.isMounted) return;
+    if (_chargeHeld ||
+        game.paused ||
+        !game.player.isMounted ||
+        game.controlsLocked) {
+      return;
+    }
     _chargeHeld = true;
     potencyBar.beginCharge();
     game.player.applyChargeSlowdown();
@@ -271,7 +276,10 @@ class GameHud extends PositionComponent
     _chargeHeld = false;
     final shot = potencyBar.releaseCharge();
     game.player.restoreChargeSpeed();
-    if (shot != null && !game.paused && game.player.isMounted) {
+    if (shot != null &&
+        !game.paused &&
+        game.player.isMounted &&
+        !game.controlsLocked) {
       game.player.shoot(
         damage: shot.damage,
         sizeScale: shot.sizeScale,
