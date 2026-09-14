@@ -62,7 +62,7 @@ class RockTarget extends PolygonComponent
     await super.onLoad();
     _basePosition.setFrom(position);
     add(CircleHitbox()..collisionType = CollisionType.passive);
-    add(
+    game.universo.add(
       TargetHealthBar(
         host: this,
         currentHp: () => _hitPoints,

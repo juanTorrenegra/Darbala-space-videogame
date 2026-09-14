@@ -50,7 +50,7 @@ class CircleTarget extends CircleComponent
   Future<void> onLoad() async {
     await super.onLoad();
     add(CircleHitbox()..collisionType = CollisionType.passive);
-    add(
+    game.universo.add(
       TargetHealthBar(
         host: this,
         currentHp: () => _hitPoints,

@@ -2,6 +2,10 @@ import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
 /// Small red HP bar above a tutorial target, same look as enemy bars.
+///
+/// Lives in the world (not as a child of the target) so rotation of the
+/// host never drags the bar to a corner. It sits on the top of the host's
+/// world bounding box.
 class TargetHealthBar extends PositionComponent {
   TargetHealthBar({
     required this.host,
@@ -9,8 +13,8 @@ class TargetHealthBar extends PositionComponent {
     required this.maxHp,
     this.isVisible = _alwaysTrue,
   }) : super(
-         size: Vector2((host.size.x * 1.2).clamp(16.0, 36.0), 3),
-         anchor: Anchor.center,
+         size: Vector2((host.size.x * 0.8).clamp(16.0, 36.0), 3),
+         anchor: Anchor.bottomCenter,
          priority: 90,
        );
 
@@ -24,10 +28,13 @@ class TargetHealthBar extends PositionComponent {
   @override
   void update(double dt) {
     super.update(dt);
-    final lift = host.size.y * 0.55 - 6;
-    position.setValues(0, -lift);
-    position.rotate(-host.angle);
-    angle = -host.angle;
+    if (!host.isMounted) {
+      removeFromParent();
+      return;
+    }
+    final bounds = host.toAbsoluteRect();
+    angle = 0;
+    position.setValues(bounds.center.dx, bounds.top - 5);
   }
 
   @override

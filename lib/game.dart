@@ -15,6 +15,7 @@ import 'package:juanshooter/actors/crab_enemy.dart';
 import 'package:juanshooter/components/circle_target.dart';
 import 'package:juanshooter/components/rock_target.dart';
 import 'package:juanshooter/components/scenery_sprite.dart';
+import 'package:juanshooter/components/target_health_bar.dart';
 import 'package:juanshooter/hud/game_hud.dart';
 import 'package:juanshooter/hud/offscreen_enemy_markers.dart';
 import 'package:flame_audio/flame_audio.dart';
@@ -67,7 +68,7 @@ class MyGame extends FlameGame
   double timeScale = 1.0; //game speed!
 
   /// Zoom al empezar una partida (los niveles pueden animarlo).
-  static const double defaultZoom = 1.4;
+  static const double defaultZoom = 2.2;
   double cameraZoom = defaultZoom;
 
   /// While true, level scripts drive the camera: no follow, no player clamp.
@@ -186,7 +187,9 @@ class MyGame extends FlameGame
           component is ExplosionEffect ||
           component is RockTarget ||
           component is CircleTarget ||
-          component is ScenerySprite) {
+          component is ScenerySprite ||
+          component is EnemyHealthBar ||
+          component is TargetHealthBar) {
         component.removeFromParent();
       }
     }

@@ -49,7 +49,8 @@ abstract class Enemigo extends SpriteComponent
   @override
   Future<void> onLoad() async {
     add(CircleHitbox(collisionType: CollisionType.active));
-    add(EnemyHealthBar(host: this));
+    // World-space bar so it stays on the top of the sprite, not a rotating corner.
+    game.universo.add(EnemyHealthBar(host: this));
   }
 
   @override
@@ -208,20 +209,24 @@ class EnemyHealthBar extends PositionComponent {
   EnemyHealthBar({required this.host})
     : super(
         size: Vector2(_barWidthFor(host), 3),
-        anchor: Anchor.center,
+        anchor: Anchor.bottomCenter,
         priority: 90,
       );
 
   static double _barWidthFor(Enemigo host) =>
-      (host.size.x * 1.2).clamp(16.0, 36.0);
+      (host.size.x * 0.8).clamp(16.0, 36.0);
 
   @override
   void update(double dt) {
     super.update(dt);
-    final lift = host.size.y * 0.55 - 6;
-    position.setValues(0, -lift);
-    position.rotate(-host.angle);
-    angle = -host.angle;
+    if (!host.isMounted) {
+      removeFromParent();
+      return;
+    }
+    // World AABB top: stays above the sprite even as it turns.
+    final bounds = host.toAbsoluteRect();
+    angle = 0;
+    position.setValues(bounds.center.dx, bounds.top - 5);
   }
 
   @override
