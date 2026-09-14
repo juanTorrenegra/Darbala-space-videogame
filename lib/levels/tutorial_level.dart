@@ -10,8 +10,8 @@ import 'package:juanshooter/levels/sector_level.dart';
 
 /// Level 0 — shooting tutorial.
 ///
-/// The ship sits static on the right side of the view; the movement stick
-/// only aims, clamped to a 180° cone facing right (no aiming backwards).
+/// The ship sits static at 1/4 of the view width, vertically centered;
+/// the movement stick only aims, clamped to a 180° cone facing right.
 ///
 /// Script:
 /// 1. Zoom 3.5 — destroy 3 rocks (20 HP each).
@@ -23,16 +23,22 @@ import 'package:juanshooter/levels/sector_level.dart';
 /// 6. Wait 1 s — "SECTOR 7" title card (blur, glitches, black), then the
 ///    first real level loads behind the black screen.
 class TutorialLevel extends GameLevel {
+  TutorialLevel({this.promptAccountAfter = false});
+
+  /// When true (first-time player), the SECTOR 7 black screen stays up and
+  /// the create-account overlay is shown on top of it.
+  final bool promptAccountAfter;
+
   /// Camera zoom for each phase of the tutorial.
   static const double rocksZoom = 3.5;
   static const double circleZoom = 2.2;
   static const double circlesZoom = 1.8;
 
   /// Where the static ship sits for the whole tutorial.
-  static final Vector2 playerPosition = Vector2(380, 380);
+  static final Vector2 playerPosition = Vector2(350, 365);
 
-  /// How far across the view the ship sits (0.65 = 65% from the left).
-  static const double playerScreenFraction = 0.65;
+  /// Ship X on screen: 1/4 of the view width from the left.
+  static const double playerScreenFraction = 0.25;
 
   int _rocksDestroyed = 0;
   Completer<void>? _rocksCompleter;
@@ -62,16 +68,26 @@ class TutorialLevel extends GameLevel {
     unawaited(_run());
   }
 
-  /// Places the camera so the player appears at [playerScreenFraction] of
-  /// the view width, vertically centered.
+  /// Viewfinder (anchor center) stays at the screen center. The ship is
+  /// kept at [playerScreenFraction] of the width and halfway down the height.
   void _frameCamera() {
     final cam = game.camara;
     if (cam == null) return;
-    final viewWidth = MyGame.logicalWidth / cam.viewfinder.zoom;
+    cam.viewfinder.anchor = Anchor.center;
+    final viewSize = cam.viewport.virtualSize;
+    final zoom = cam.viewfinder.zoom.clamp(0.01, 100.0);
+    final viewWidth = viewSize.x / zoom;
     cam.viewfinder.position = Vector2(
       playerPosition.x - (playerScreenFraction - 0.5) * viewWidth,
       playerPosition.y,
     );
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    // Keep the same screen composition while zoom animates.
+    _frameCamera();
   }
 
   void _complete(Completer<void>? completer) {
@@ -167,9 +183,13 @@ class TutorialLevel extends GameLevel {
     await waitSeconds(1);
     if (cancelled) return;
 
-    // Title card, then the first real level loads behind the black screen.
+    // Title card, then either account creation (new player) or Sector 7.
     await game.presentLevelTitle('SECTOR 7', () {
-      game.startLevel(SectorLevel.sector7());
-    });
+      if (promptAccountAfter) {
+        game.promptAccountOnBlackScreen();
+      } else {
+        game.startLevel(SectorLevel.sector7());
+      }
+    }, dismissAfterLoad: !promptAccountAfter);
   }
 }

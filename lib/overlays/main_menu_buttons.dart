@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:juanshooter/core/di/providers.dart';
 import 'package:juanshooter/game.dart';
 import 'package:juanshooter/levels/sector_level.dart';
+import 'package:juanshooter/levels/tutorial_level.dart';
 
 class MainMenuButtons extends ConsumerStatefulWidget {
   const MainMenuButtons({required this.game, super.key});
@@ -62,6 +63,7 @@ class _MainMenuButtonsState extends ConsumerState<MainMenuButtons> {
           onPressed: () => Flame.device.setLandscapeLeftOnly(),
         ),
         _MenuAction(label: 'Cerrar sesion', onPressed: _signOut),
+        _MenuAction(label: 'Tutorial', onPressed: _playTutorial),
       ];
 
   @override
@@ -80,16 +82,25 @@ class _MainMenuButtonsState extends ConsumerState<MainMenuButtons> {
 
   Future<void> _play() async {
     final pilot = await ref.read(pilotRepositoryProvider).current();
-    if (pilot == null) {
-      game.overlays.add('CreateAccount');
-      return;
-    }
     game.overlays.remove('MainMenu');
     game.overlays.add('HudDecoration');
     game.overlays.add('ScoreBoard');
     game.resumeEngine();
     game.resumeBgmMusic();
+    if (pilot == null) {
+      game.startLevel(TutorialLevel(promptAccountAfter: true));
+      return;
+    }
     game.startLevel(SectorLevel.sector7());
+  }
+
+  void _playTutorial() {
+    game.overlays.remove('MainMenu');
+    game.overlays.add('HudDecoration');
+    game.overlays.add('ScoreBoard');
+    game.resumeEngine();
+    game.resumeBgmMusic();
+    game.startLevel(TutorialLevel());
   }
 
   Future<void> _signOut() async {

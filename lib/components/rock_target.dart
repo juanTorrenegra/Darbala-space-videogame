@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
+import 'package:juanshooter/components/target_health_bar.dart';
 import 'package:juanshooter/game.dart';
 import 'package:juanshooter/hud/potency_bar.dart';
 import 'package:juanshooter/weapons/bullet.dart';
@@ -45,6 +46,7 @@ class RockTarget extends PolygonComponent
   final Random _rng = Random();
   final Vector2 _basePosition = Vector2.zero();
 
+  int get hitPoints => _hitPoints;
   int _hitPoints = maxHitPoints;
   double _flashTimer = 0;
   double _shakeTimer = 0;
@@ -60,6 +62,14 @@ class RockTarget extends PolygonComponent
     await super.onLoad();
     _basePosition.setFrom(position);
     add(CircleHitbox()..collisionType = CollisionType.passive);
+    add(
+      TargetHealthBar(
+        host: this,
+        currentHp: () => _hitPoints,
+        maxHp: () => maxHitPoints,
+        isVisible: () => !_destroying,
+      ),
+    );
   }
 
   @override

@@ -228,13 +228,18 @@ class MyGame extends FlameGame
     overlays.add('MainMenu');
   }
 
+  /// True while the tutorial black screen is waiting for account creation.
+  bool awaitingAccountAfterTutorial = false;
+
   /// Plays the blur + title + glitch + blackout card for [title], holds the
   /// black screen for 3 s, runs [loadBehindBlack] (e.g. [startLevel]), then
-  /// fades the black away and removes the overlay.
+  /// fades the black away unless [dismissAfterLoad] is false (used to keep
+  /// the black screen up for the create-account overlay).
   Future<void> presentLevelTitle(
     String title,
-    void Function() loadBehindBlack,
-  ) async {
+    void Function() loadBehindBlack, {
+    bool dismissAfterLoad = true,
+  }) async {
     final controller = LevelTitleController(title: title);
     levelTitleController = controller;
     overlays.add('LevelTitle');
@@ -243,6 +248,30 @@ class MyGame extends FlameGame
     await Future<void>.delayed(const Duration(seconds: 3));
     loadBehindBlack();
 
+    if (!dismissAfterLoad) return;
+
+    controller.requestDismiss();
+    await controller.finished;
+    if (overlays.isActive('LevelTitle')) {
+      overlays.remove('LevelTitle');
+    }
+    levelTitleController = null;
+  }
+
+  /// Called from the tutorial: keep the black title card and show the
+  /// create-account overlay on top of it.
+  void promptAccountOnBlackScreen() {
+    awaitingAccountAfterTutorial = true;
+    if (overlays.isActive('HudDecoration')) overlays.remove('HudDecoration');
+    if (overlays.isActive('ScoreBoard')) overlays.remove('ScoreBoard');
+    overlays.add('CreateAccount');
+  }
+
+  /// Fade the held title-card black screen after Sector 7 has been loaded.
+  Future<void> dismissHeldLevelTitle() async {
+    awaitingAccountAfterTutorial = false;
+    final controller = levelTitleController;
+    if (controller == null) return;
     controller.requestDismiss();
     await controller.finished;
     if (overlays.isActive('LevelTitle')) {

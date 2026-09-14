@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:juanshooter/core/error/result.dart';
@@ -5,7 +7,6 @@ import 'package:juanshooter/core/di/providers.dart';
 import 'package:juanshooter/domain/entities/pilot_identity.dart';
 import 'package:juanshooter/game.dart';
 import 'package:juanshooter/levels/sector_level.dart';
-import 'package:juanshooter/levels/tutorial_level.dart';
 
 class CreateAccountOverlay extends ConsumerStatefulWidget {
   const CreateAccountOverlay({required this.game, super.key});
@@ -40,10 +41,7 @@ class _CreateAccountOverlayState extends ConsumerState<CreateAccountOverlay> {
     super.dispose();
   }
 
-  Future<void> _run(
-    Future<Result<PilotIdentity>> Function() action, {
-    required bool isNewAccount,
-  }) async {
+  Future<void> _run(Future<Result<PilotIdentity>> Function() action) async {
     setState(() {
       _busy = true;
       _error = null;
@@ -52,17 +50,21 @@ class _CreateAccountOverlayState extends ConsumerState<CreateAccountOverlay> {
     if (!mounted) return;
     result.when(
       success: (_) {
-        // Straight into the game: new pilots get the tutorial level,
-        // returning pilots jump into the first sector.
+        if (widget.game.awaitingAccountAfterTutorial) {
+          widget.game.overlays.remove('CreateAccount');
+          widget.game.overlays.add('HudDecoration');
+          widget.game.overlays.add('ScoreBoard');
+          widget.game.startLevel(SectorLevel.sector7());
+          unawaited(widget.game.dismissHeldLevelTitle());
+          return;
+        }
         widget.game.overlays.remove('CreateAccount');
         widget.game.overlays.remove('MainMenu');
         widget.game.overlays.add('HudDecoration');
         widget.game.overlays.add('ScoreBoard');
         widget.game.resumeEngine();
         widget.game.resumeBgmMusic();
-        widget.game.startLevel(
-          isNewAccount ? TutorialLevel() : SectorLevel.sector7(),
-        );
+        widget.game.startLevel(SectorLevel.sector7());
       },
       failure: (error) {
         setState(() {
@@ -71,6 +73,14 @@ class _CreateAccountOverlayState extends ConsumerState<CreateAccountOverlay> {
         });
       },
     );
+  }
+
+  void _goBack() {
+    widget.game.overlays.remove('CreateAccount');
+    if (!widget.game.awaitingAccountAfterTutorial) return;
+    widget.game.awaitingAccountAfterTutorial = false;
+    unawaited(widget.game.dismissHeldLevelTitle());
+    widget.game.returnToMenuBehindBlack();
   }
 
   InputDecoration _field(String label) {
@@ -163,7 +173,6 @@ class _CreateAccountOverlayState extends ConsumerState<CreateAccountOverlay> {
                               nombre: _nombre.text,
                               password: _password.text,
                             ),
-                            isNewAccount: true,
                           ),
                           child: const Text(
                             'CREAR',
@@ -180,7 +189,6 @@ class _CreateAccountOverlayState extends ConsumerState<CreateAccountOverlay> {
                               nombre: _nombre.text,
                               password: _password.text,
                             ),
-                            isNewAccount: false,
                           ),
                           child: const Text(
                             'ENTRAR',
@@ -192,8 +200,7 @@ class _CreateAccountOverlayState extends ConsumerState<CreateAccountOverlay> {
                           ),
                         ),
                         TextButton(
-                          onPressed: () =>
-                              widget.game.overlays.remove('CreateAccount'),
+                          onPressed: _goBack,
                           child: const Text(
                             'VOLVER',
                             style: TextStyle(

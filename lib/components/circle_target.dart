@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
+import 'package:juanshooter/components/target_health_bar.dart';
 import 'package:juanshooter/game.dart';
 import 'package:juanshooter/hud/potency_bar.dart';
 import 'package:juanshooter/weapons/bullet.dart';
@@ -35,6 +36,7 @@ class CircleTarget extends CircleComponent
   static const int regenAmount = 10;
   static const double regenInterval = 0.3;
 
+  int get hitPoints => _hitPoints;
   int _hitPoints = maxHitPoints;
   double _regenTimer = 0;
   double _flashTimer = 0;
@@ -48,6 +50,14 @@ class CircleTarget extends CircleComponent
   Future<void> onLoad() async {
     await super.onLoad();
     add(CircleHitbox()..collisionType = CollisionType.passive);
+    add(
+      TargetHealthBar(
+        host: this,
+        currentHp: () => _hitPoints,
+        maxHp: () => maxHitPoints,
+        isVisible: () => !_destroying,
+      ),
+    );
   }
 
   @override
