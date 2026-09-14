@@ -10,7 +10,7 @@ class TargetHealthBar extends PositionComponent {
     this.isVisible = _alwaysTrue,
   }) : super(
          size: Vector2((host.size.x * 1.2).clamp(16.0, 36.0), 3),
-         anchor: Anchor.bottomCenter,
+         anchor: Anchor.center,
          priority: 90,
        );
 
@@ -24,7 +24,7 @@ class TargetHealthBar extends PositionComponent {
   @override
   void update(double dt) {
     super.update(dt);
-    final lift = host.size.y * 0.55 + 4;
+    final lift = host.size.y * 0.55 - 6;
     position.setValues(0, -lift);
     position.rotate(-host.angle);
     angle = -host.angle;

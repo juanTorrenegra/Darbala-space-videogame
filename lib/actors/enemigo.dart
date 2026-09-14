@@ -114,11 +114,7 @@ abstract class Enemigo extends SpriteComponent
   void _emitAlarmRipple() {
     if (!isMounted || alarmRadius <= 0) return;
     game.universo.add(
-      AlarmRipple(
-        origin: position,
-        maxRadius: alarmRadius,
-        source: this,
-      ),
+      AlarmRipple(origin: position, maxRadius: alarmRadius, source: this),
     );
   }
 
@@ -212,7 +208,7 @@ class EnemyHealthBar extends PositionComponent {
   EnemyHealthBar({required this.host})
     : super(
         size: Vector2(_barWidthFor(host), 3),
-        anchor: Anchor.bottomCenter,
+        anchor: Anchor.center,
         priority: 90,
       );
 
@@ -222,7 +218,7 @@ class EnemyHealthBar extends PositionComponent {
   @override
   void update(double dt) {
     super.update(dt);
-    final lift = host.size.y * 0.55 + 4;
+    final lift = host.size.y * 0.55 - 6;
     position.setValues(0, -lift);
     position.rotate(-host.angle);
     angle = -host.angle;
