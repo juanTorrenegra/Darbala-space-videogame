@@ -3,7 +3,9 @@ import 'dart:math';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
+import 'package:juanshooter/components/offscreen_tracked.dart';
 import 'package:juanshooter/components/target_health_bar.dart';
+import 'package:juanshooter/components/target_roam.dart';
 import 'package:juanshooter/game.dart';
 import 'package:juanshooter/hud/potency_bar.dart';
 import 'package:juanshooter/weapons/bullet.dart';
@@ -15,10 +17,11 @@ import 'package:juanshooter/weapons/bullet.dart';
 /// which is >= its max HP). Regular shots only trigger the flash + damage
 /// number feedback. Not counted in the ships-destroyed score.
 class CircleTarget extends CircleComponent
-    with CollisionCallbacks, HasGameReference<MyGame> {
+    with CollisionCallbacks, HasGameReference<MyGame>, OffscreenTracked {
   CircleTarget({
     required Vector2 position,
     required this.onDestroyed,
+    this.roam,
     double radius = 18, // about the player's size (28 diameter)
   }) : super(
          radius: radius,
@@ -30,6 +33,10 @@ class CircleTarget extends CircleComponent
 
   /// Called once when the orb starts its destruction animation.
   final void Function() onDestroyed;
+
+  /// When set, the orb patrols its area like an idle enemy instead of
+  /// holding its spawn position.
+  final PatrolRoam? roam;
 
   static const Color _innerColor = Color(0xFFA5F3FC); // light cyan
   static const Color _outerColor = Color(0xFF38BDF8); // light blue
@@ -144,6 +151,8 @@ class CircleTarget extends CircleComponent
       }
       return;
     }
+
+    roam?.advance(position, dt);
 
     // Regenerate 10 HP every 0.3 s, up to max.
     _regenTimer += dt;

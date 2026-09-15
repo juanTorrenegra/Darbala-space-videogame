@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
-import 'package:juanshooter/actors/enemigo.dart';
+import 'package:juanshooter/components/offscreen_tracked.dart';
 import 'package:juanshooter/game.dart';
 
 /// Gray edge triangles pointing at enemies outside the camera view.
@@ -56,10 +56,10 @@ class OffscreenEnemyMarkers extends PositionComponent
       ..strokeWidth = 1.4
       ..strokeJoin = StrokeJoin.round;
 
-    for (final enemy in game.universo.children.whereType<Enemigo>()) {
-      if (!enemy.isMounted) continue;
+    for (final target in game.universo.children.whereType<OffscreenTracked>()) {
+      if (!target.isMounted) continue;
       final screen =
-          screenCenter + (enemy.position - worldCenter) * zoom;
+          screenCenter + (target.position - worldCenter) * zoom;
       if (_isOnScreen(screen, viewSize)) continue;
 
       final dir = screen - screenCenter;

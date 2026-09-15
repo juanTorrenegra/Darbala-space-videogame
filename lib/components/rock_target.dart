@@ -3,7 +3,9 @@ import 'dart:math';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
+import 'package:juanshooter/components/offscreen_tracked.dart';
 import 'package:juanshooter/components/target_health_bar.dart';
+import 'package:juanshooter/components/target_roam.dart';
 import 'package:juanshooter/game.dart';
 import 'package:juanshooter/hud/potency_bar.dart';
 import 'package:juanshooter/weapons/bullet.dart';
@@ -15,9 +17,12 @@ import 'package:juanshooter/weapons/bullet.dart';
 /// fade out over an explosion) and is NOT counted in the ships-destroyed
 /// score — it is a practice target, not a ship.
 class RockTarget extends PolygonComponent
-    with CollisionCallbacks, HasGameReference<MyGame> {
-  RockTarget({required Vector2 position, required this.onDestroyed})
-    : super(
+    with CollisionCallbacks, HasGameReference<MyGame>, OffscreenTracked {
+  RockTarget({
+    required Vector2 position,
+    required this.onDestroyed,
+    this.roam,
+  }) : super(
         _vertices,
         position: position,
         size: Vector2.all(34), // about the player's size (28)
@@ -28,6 +33,10 @@ class RockTarget extends PolygonComponent
 
   /// Called once when the rock starts its destruction animation.
   final void Function() onDestroyed;
+
+  /// When set, the rock slowly glides around a fixed point instead of
+  /// holding its spawn position.
+  final GlideRoam? roam;
 
   static const Color _innerColor = Color(0xFF22D3EE); // cyan
   static const Color _outerColor = Color(0xFF1D4ED8); // blue
@@ -172,6 +181,8 @@ class RockTarget extends PolygonComponent
       _flashTimer -= dt;
     }
 
+    roam?.advance(_basePosition, dt);
+
     if (_shakeTimer > 0) {
       _shakeTimer -= dt;
       if (_shakeTimer <= 0) {
@@ -182,6 +193,8 @@ class RockTarget extends PolygonComponent
           _basePosition.y + (_rng.nextDouble() - 0.5) * 3,
         );
       }
+    } else if (roam != null) {
+      position.setFrom(_basePosition);
     }
   }
 }

@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import 'package:juanshooter/game.dart';
@@ -133,9 +131,7 @@ class TutorialShootHint extends PositionComponent
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
     );
 
-    // Text sits up-left of the button, rotated to follow the connector.
-    const tilt = -0.55;
-    final textPos = Offset(btn.x - 210, btn.y - 175);
+    // Horizontal label centered above the button.
     final tp = TextPainter(
       text: TextSpan(
         text: label,
@@ -153,29 +149,12 @@ class TutorialShootHint extends PositionComponent
       textDirection: TextDirection.ltr,
     )..layout();
 
-    canvas.save();
-    canvas.translate(textPos.dx, textPos.dy);
-    canvas.rotate(tilt);
-    tp.paint(canvas, Offset.zero);
-    canvas.restore();
-
-    // Line from the text's lower-right toward the button's upper-left rim.
-    final textEnd = Offset(
-      textPos.dx + math.cos(tilt) * tp.width * 0.85,
-      textPos.dy + math.sin(tilt) * tp.width * 0.85 + 8,
-    );
-    final rim = Offset(
-      btn.x - AimShootPad.radius * 0.72,
-      btn.y - AimShootPad.radius * 0.72,
-    );
-    canvas.drawLine(
-      textEnd,
-      rim,
-      Paint()
-        ..color = const Color(0xFF00FFFF)
-        ..strokeWidth = 3
-        ..strokeCap = StrokeCap.round
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1),
+    tp.paint(
+      canvas,
+      Offset(
+        btn.x - tp.width / 2,
+        btn.y - AimShootPad.radius - 24 - tp.height,
+      ),
     );
 
     if (_kind == ShootHintKind.chargeLaser) {

@@ -4,13 +4,14 @@ import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/text.dart';
 import 'package:flutter/material.dart';
+import 'package:juanshooter/components/offscreen_tracked.dart';
 import 'package:juanshooter/effects/alarm_ripple.dart';
 import 'package:juanshooter/game.dart';
 import 'package:juanshooter/hud/potency_bar.dart';
 import 'package:juanshooter/weapons/bullet.dart';
 
 abstract class Enemigo extends SpriteComponent
-    with HasGameReference<MyGame>, CollisionCallbacks {
+    with HasGameReference<MyGame>, CollisionCallbacks, OffscreenTracked {
   int hitPoints;
   final int maxHitPoints;
   final int shield;

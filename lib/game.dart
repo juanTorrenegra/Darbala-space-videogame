@@ -80,6 +80,10 @@ class MyGame extends FlameGame
   /// While false, enemies will not wake from proximity (level intro slide).
   bool enemyAlertsEnabled = true;
 
+  /// When set, the camera view never shows anything outside this world rect
+  /// (used by the tutorial to fence the player inside its 6-tile background).
+  Rect? cameraWorldBounds;
+
   GameLevel? _currentLevel;
 
   /// The level currently running, if any.
@@ -209,6 +213,7 @@ class MyGame extends FlameGame
     cameraLocked = false;
     controlsLocked = false;
     enemyAlertsEnabled = true;
+    cameraWorldBounds = null;
     if (player.isMounted) player.resetPlayer();
     if (hud.isLoaded) hud.cancelCharge();
 
@@ -227,6 +232,7 @@ class MyGame extends FlameGame
     cameraLocked = false;
     controlsLocked = false;
     enemyAlertsEnabled = true;
+    cameraWorldBounds = null;
     if (player.isMounted) player.resetPlayer();
     setZoomDirect(defaultZoom);
     snapViewfinderToPlayer();
@@ -348,6 +354,25 @@ class MyGame extends FlameGame
     if (half == null) return cameraLookAheadRadius;
     final fit = min(half.x, half.y) - cameraViewportMargin;
     return min(cameraLookAheadRadius, max(8.0, fit));
+  }
+
+  /// Keeps the visible rect inside [cameraWorldBounds]. If the view is larger
+  /// than the bounds on an axis, that axis is centered instead.
+  void _clampViewfinderToWorldBounds() {
+    final bounds = cameraWorldBounds;
+    final cam = camara;
+    final half = _visibleWorldHalf();
+    if (bounds == null || cam == null || half == null) return;
+    final current = cam.viewfinder.position;
+    final x = bounds.width <= half.x * 2
+        ? bounds.center.dx
+        : current.x.clamp(bounds.left + half.x, bounds.right - half.x);
+    final y = bounds.height <= half.y * 2
+        ? bounds.center.dy
+        : current.y.clamp(bounds.top + half.y, bounds.bottom - half.y);
+    if (x != current.x || y != current.y) {
+      cam.viewfinder.position = Vector2(x, y);
+    }
   }
 
   void _clampPlayerToViewport() {
@@ -595,7 +620,7 @@ class MyGame extends FlameGame
     add(camara!);
 
     player = Player(
-      sprite: await Sprite.load('ship300x240.png'),
+      sprite: await Sprite.load('canvaSpaceshipSmall.png'),
       position: Vector2(380, 380),
     );
     playerMaxHitPoints = basePlayerMaxHitPoints;
@@ -683,6 +708,7 @@ class MyGame extends FlameGame
     super.update(dt * timeScale);
     if (!cameraLocked) {
       _updateSpaceCamera(dt);
+      _clampViewfinderToWorldBounds();
       _clampPlayerToViewport();
     }
 
@@ -962,7 +988,7 @@ class MyGame extends FlameGame
 
     // 2. Crear nuevo jugador
     player = Player(
-      sprite: await Sprite.load('ship.png'),
+      sprite: await Sprite.load('canvaSpaceshipSmall.png'),
       position: Vector2(380, 380),
     );
 
