@@ -122,6 +122,9 @@ class TutorialLevel extends GameLevel {
   @override
   void cancel() {
     super.cancel();
+    if (game.hud.isLoaded) {
+      game.hud.shootHint.stop();
+    }
     _complete(_rocksCompleter);
     _complete(_circleCompleter);
     _complete(_circlesCompleter);
@@ -180,8 +183,10 @@ class TutorialLevel extends GameLevel {
   Future<void> _run() async {
     // Phase 1: rocks.
     _spawnRocks();
+    game.hud.shootHint.startTapLaser();
     await _rocksCompleter?.future;
     if (cancelled) return;
+    game.hud.shootHint.stop();
 
     await waitSeconds(2);
     if (cancelled) return;
@@ -190,8 +195,10 @@ class TutorialLevel extends GameLevel {
 
     // Phase 2: single regenerating orb (charge-shot lesson).
     _spawnCircle(Vector2(560, 380));
+    game.hud.shootHint.startChargeLaser();
     await _circleCompleter?.future;
     if (cancelled) return;
+    game.hud.shootHint.stop();
 
     await waitSeconds(2);
     if (cancelled) return;
@@ -200,8 +207,10 @@ class TutorialLevel extends GameLevel {
 
     // Phase 3: three orbs.
     _spawnCircles();
+    game.hud.shootHint.startChargeLaser();
     await _circlesCompleter?.future;
     if (cancelled) return;
+    game.hud.shootHint.stop();
 
     await waitSeconds(1);
     if (cancelled) return;

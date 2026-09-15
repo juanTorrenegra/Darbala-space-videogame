@@ -8,6 +8,7 @@ import 'package:flutter/material.dart' hide Matrix4;
 import 'package:flutter/services.dart';
 import 'package:juanshooter/game.dart';
 import 'package:juanshooter/hud/potency_bar.dart';
+import 'package:juanshooter/hud/tutorial_shoot_hint.dart';
 import 'package:juanshooter/overlays/informacion_juego.dart';
 import 'package:vector_math/vector_math_64.dart' as vm;
 
@@ -174,6 +175,9 @@ class GameHud extends PositionComponent
   late final HudButtonComponent debugMenuButton;
   late final InformacionJuego informacionJuego;
   late final PotencyBar potencyBar;
+  late final TutorialShootHint shootHint;
+
+  bool get isShootHeld => _chargeHeld;
 
   bool get _isSingleStick =>
       game.useTouchControls && game.stickMode == AppStickMode.single;
@@ -406,12 +410,14 @@ class GameHud extends PositionComponent
 
     informacionJuego = InformacionJuego()..priority = 1000;
     potencyBar = PotencyBar();
+    shootHint = TutorialShootHint();
 
     add(menu);
     add(healthBar);
     add(debugMenuButton);
     add(informacionJuego);
     add(potencyBar);
+    add(shootHint);
 
     applyStickMode();
     _positionComponents();
@@ -486,6 +492,8 @@ class GameHud extends PositionComponent
     debugMenuButton.position = Vector2(10, 40);
     informacionJuego.position = Vector2(80, 260);
     potencyBar.position = Vector2((viewSize.x - potencyBar.size.x) / 2, 24);
+    shootHint.size = viewSize;
+    shootHint.position = Vector2.zero();
   }
 }
 
