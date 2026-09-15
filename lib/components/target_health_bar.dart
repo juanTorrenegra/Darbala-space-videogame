@@ -1,7 +1,7 @@
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
-/// Small red HP bar above a tutorial target, same look as enemy bars.
+/// Small red HP bar above a tutorial target, same look as enemy bars..
 ///
 /// Lives in the world (not as a child of the target) so rotation of the
 /// host never drags the bar to a corner. It sits on the top of the host's
