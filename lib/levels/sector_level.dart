@@ -258,16 +258,16 @@ class SectorLevel extends GameLevel {
     universo.add(
       ScenerySprite(
         sprite: await Sprite.load('bgasgigant.png'),
-        position: Vector2(-800, 380),
-        size: Vector2(1800, 1700),
+        position: Vector2(-400, 380),
+        size: Vector2(700, 650),
         priority: -1,
       ),
     );
     universo.add(
       ScenerySprite(
         sprite: await Sprite.load('bplanet.png'),
-        position: Vector2(1300, 500),
-        size: Vector2(1800, 1700),
+        position: Vector2(700, 500),
+        size: Vector2(1100, 1000),
         priority: -1,
       ),
     );
