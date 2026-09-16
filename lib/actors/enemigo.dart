@@ -201,6 +201,23 @@ abstract class Enemigo extends SpriteComponent
     game.incrementShipsDestroyed();
     game.spawnEnemyExplosion(position.clone(), size.clone());
   }
+
+  @override
+  void renderMarkerIcon(Canvas canvas, double diameter) {
+    sprite?.render(
+      canvas,
+      position: Vector2.zero(),
+      size: Vector2.all(diameter),
+      anchor: Anchor.center,
+    );
+  }
+
+  /// Debug shortcut: skip the damage math and run the normal death path.
+  void killInstantly() {
+    if (!isMounted) return;
+    onDeath();
+    removeFromParent();
+  }
 }
 
 /// Red HP bar above an enemy; stays world-upright and tracks [Enemigo.hitPoints].

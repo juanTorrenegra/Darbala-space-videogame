@@ -18,15 +18,16 @@ import 'package:juanshooter/levels/sector_level.dart';
 ///
 /// Script:
 /// 1. Zoom 3.5 — destroy 3 rocks (20 HP each).
-/// 2. Wait 2 s — zoom animates 3.5 → 2.2 over 3 s.
+/// 2. Pause — zoom animates 3.5 → 3.0.
 /// 3. One regenerating orb (49 HP, +10 HP / 0.3 s, min 1 HP) — only a fully
 ///    charged shot (50 dmg) destroys it.
-/// 4. Wait 2 s — zoom animates 2.2 → 1.8 over 3 s.
+/// 4. Pause — zoom animates 3.0 → 2.5.
 /// 5. Three orbs — same charge-to-destroy rule.
-/// 6. Wait 1 s — movement lesson: the ship is pushed off the arm, free flight
-///    is unlocked inside the 2×3 tile world, and 5 roaming targets must be
-///    destroyed (edge triangles point at the ones off-screen).
-/// 7. Wait 1 s — "SECTOR 7" title card (blur, glitches, black), then the
+/// 6. Pause — zoom animates 2.5 → 1.8, then the movement lesson: the ship is
+///    pushed off the arm, free flight is unlocked inside the 2×3 tile world,
+///    and 5 roaming targets must be destroyed (edge triangles point at the
+///    ones off-screen).
+/// 7. Pause — "SECTOR 7" title card (blur, glitches, black), then the
 ///    first real level loads behind the black screen.
 class TutorialLevel extends GameLevel {
   TutorialLevel({this.promptAccountAfter = false});
@@ -39,6 +40,14 @@ class TutorialLevel extends GameLevel {
   static const double rocksZoom = 3.5;
   static const double circleZoom = 3.0;
   static const double circlesZoom = 2.5;
+  static const double movementZoom = 1.8;
+
+  /// Length of each scripted zoom animation.
+  static const double zoomSeconds = 1.5;
+
+  /// Beat between phases, and the shorter one before/after the movement phase.
+  static const double phasePause = 1.0;
+  static const double shortPause = 0.5;
 
   /// Where the static ship sits for the whole tutorial.
   static final Vector2 playerPosition = Vector2(350, 365);
@@ -100,20 +109,23 @@ class TutorialLevel extends GameLevel {
     game.setZoomDirect(rocksZoom);
     _frameCamera();
     await _spawnBackground();
+    // Fence the camera from the start: the later zoom-outs are wide enough to
+    // see past the tiles otherwise.
+    game.cameraWorldBounds = _worldBounds;
     await _spawnMechaArm();
+    _frameCamera();
 
     unawaited(_run());
   }
 
-  /// Static mechanical arm reaching in from off-screen left. Anchored past the
-  /// leftmost visible edge (widest zoom) so its base stays clipped all tutorial.
+  /// Static mechanical arm reaching in from off-screen left. It starts just
+  /// outside [_worldBounds], which the camera never looks past, so its base
+  /// stays clipped at every zoom.
   Future<void> _spawnMechaArm() async {
     final sprite = await Sprite.load('mechaArm2.png');
     const armWidth = 170.0;
     final armHeight = armWidth * sprite.originalSize.y / sprite.originalSize.x;
-    final widestViewW = MyGame.logicalWidth / circlesZoom;
-    final leftEdge = playerPosition.x - playerScreenFraction * widestViewW;
-    final startX = leftEdge - 2;
+    final startX = _worldBounds.left - 8;
     game.universo.add(
       ScenerySprite(
         sprite: sprite,
@@ -175,6 +187,8 @@ class TutorialLevel extends GameLevel {
       playerPosition.x - (playerScreenFraction - 0.5) * viewWidth,
       playerPosition.y,
     );
+    // At the widest zoom the framing above would reach past the tiles.
+    game.clampViewfinderToWorldBounds();
   }
 
   @override
@@ -275,8 +289,8 @@ class TutorialLevel extends GameLevel {
     }
   }
 
-  /// Hands the ship back to the player: full aim, free thrust, camera follow
-  /// fenced to the 6 tiles, plus a kick to the right off the mecha arm.
+  /// Opens up aiming, hands the camera to the game's follow logic (still
+  /// fenced by [MyGame.cameraWorldBounds]), and kicks the ship off the arm.
   void _startFreeFlight() {
     final player = game.player;
     // Aim opens up immediately; thrust waits until the launch glide ends so
@@ -284,7 +298,6 @@ class TutorialLevel extends GameLevel {
     player.aimClampCenter = null;
 
     _freeFlight = true;
-    game.cameraWorldBounds = _worldBounds;
     game.cameraLocked = false;
     game.snapViewfinderToPlayer();
     _launchSpeed = launchSpeed;
@@ -338,9 +351,9 @@ class TutorialLevel extends GameLevel {
     if (cancelled) return;
     game.hud.shootHint.stop();
 
-    await waitSeconds(2);
+    await waitSeconds(phasePause);
     if (cancelled) return;
-    await animateZoom(circleZoom, 3);
+    await animateZoom(circleZoom, zoomSeconds);
     if (cancelled) return;
 
     // Phase 2: single regenerating orb (charge-shot lesson).
@@ -350,9 +363,9 @@ class TutorialLevel extends GameLevel {
     if (cancelled) return;
     game.hud.shootHint.stop();
 
-    await waitSeconds(2);
+    await waitSeconds(phasePause);
     if (cancelled) return;
-    await animateZoom(circlesZoom, 3);
+    await animateZoom(circlesZoom, zoomSeconds);
     if (cancelled) return;
 
     // Phase 3: three orbs.
@@ -362,15 +375,18 @@ class TutorialLevel extends GameLevel {
     if (cancelled) return;
     game.hud.shootHint.stop();
 
-    // Phase 4: movement — unlock free flight and clear the roaming targets.
-    await waitSeconds(1);
+    // Phase 4: movement — pull the camera back, then unlock free flight and
+    // clear the roaming targets.
+    await waitSeconds(shortPause);
+    if (cancelled) return;
+    await animateZoom(movementZoom, zoomSeconds);
     if (cancelled) return;
     _startFreeFlight();
     _spawnRoamingTargets();
     await _roamersCompleter?.future;
     if (cancelled) return;
 
-    await waitSeconds(1);
+    await waitSeconds(shortPause);
     if (cancelled) return;
 
     // Title card, then either account creation (new player) or Sector 7.

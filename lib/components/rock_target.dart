@@ -161,6 +161,13 @@ class RockTarget extends PolygonComponent
     _pushVelocity.add(away.normalized() * speed);
   }
 
+  /// Debug shortcut: play the destruction animation right away.
+  void destroyNow() {
+    if (_destroying) return;
+    _hitPoints = 0;
+    _startDestruction();
+  }
+
   void _startDestruction() {
     _destroying = true;
     game.spawnEnemyExplosion(position.clone(), size.clone(), showCore: false);
@@ -218,6 +225,17 @@ class RockTarget extends PolygonComponent
     );
     canvas.restore();
 
+    _fillShape(canvas, path, bounds, inner, outer, alpha);
+  }
+
+  void _fillShape(
+    Canvas canvas,
+    Path path,
+    Rect bounds,
+    Color inner,
+    Color outer,
+    double alpha,
+  ) {
     canvas.drawPath(
       path,
       Paint()
@@ -229,6 +247,22 @@ class RockTarget extends PolygonComponent
           radius: 0.9,
         ).createShader(bounds),
     );
+  }
+
+  @override
+  void renderMarkerIcon(Canvas canvas, double diameter) {
+    canvas.save();
+    canvas.scale(diameter / max(size.x, size.y));
+    canvas.translate(-size.x / 2, -size.y / 2);
+    _fillShape(
+      canvas,
+      _shapePath,
+      Rect.fromLTWH(0, 0, size.x, size.y),
+      _innerColor,
+      _outerColor,
+      1,
+    );
+    canvas.restore();
   }
 
   @override

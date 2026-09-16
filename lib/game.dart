@@ -357,8 +357,9 @@ class MyGame extends FlameGame
   }
 
   /// Keeps the visible rect inside [cameraWorldBounds]. If the view is larger
-  /// than the bounds on an axis, that axis is centered instead.
-  void _clampViewfinderToWorldBounds() {
+  /// than the bounds on an axis, that axis is centered instead. Levels that
+  /// drive the camera themselves call this after positioning it.
+  void clampViewfinderToWorldBounds() {
     final bounds = cameraWorldBounds;
     final cam = camara;
     final half = _visibleWorldHalf();
@@ -541,6 +542,21 @@ class MyGame extends FlameGame
     playSfx('menu1.mp3');
   }
 
+  /// Debug: blow up every enemy and tutorial target in the world, each with
+  /// its own explosion, so a level can be skipped while testing. Enemies run
+  /// their normal death path, so score and level completion still fire.
+  void destroyAllTargets() {
+    for (final enemy in universo.children.whereType<Enemigo>().toList()) {
+      enemy.killInstantly();
+    }
+    for (final rock in universo.children.whereType<RockTarget>().toList()) {
+      rock.destroyNow();
+    }
+    for (final orb in universo.children.whereType<CircleTarget>().toList()) {
+      orb.destroyNow();
+    }
+  }
+
   /// Power-ups: sube el máximo de vida de la run y actualiza al jugador.
   /// Si [healCurrentByAmount] es true, suma [amount] a la vida actual (sin pasar del nuevo máximo).
   void extendPlayerMaxHitPoints(int amount, {bool healCurrentByAmount = true}) {
@@ -718,7 +734,7 @@ class MyGame extends FlameGame
     super.update(dt * timeScale);
     if (!cameraLocked) {
       _updateSpaceCamera(dt);
-      _clampViewfinderToWorldBounds();
+      clampViewfinderToWorldBounds();
       _clampPlayerToViewport();
     }
 

@@ -173,6 +173,10 @@ class GameHud extends PositionComponent
   late final HudButtonComponent menu;
   late final HealthBar healthBar;
   late final HudButtonComponent debugMenuButton;
+  late final HudButtonComponent debugKillAllButton;
+
+  /// Ship-sized invisible pad, in screen pixels at the default zoom.
+  static const double debugKillAllSize = 28 * MyGame.defaultZoom;
   late final InformacionJuego informacionJuego;
   late final PotencyBar potencyBar;
   late final TutorialShootHint shootHint;
@@ -408,6 +412,17 @@ class GameHud extends PositionComponent
       },
     );
 
+    // Invisible debug pad in the top-right corner: wipes the enemies and
+    // targets on screen so levels can be stepped through quickly. Priority
+    // keeps it above the shoot pad, whose square hit area reaches the corner.
+    debugKillAllButton = HudButtonComponent(
+      button: RectangleComponent(
+        size: Vector2.all(debugKillAllSize),
+        paint: Paint()..color = Colors.transparent,
+      ),
+      onPressed: game.destroyAllTargets,
+    )..priority = 1200;
+
     informacionJuego = InformacionJuego()..priority = 1000;
     potencyBar = PotencyBar();
     shootHint = TutorialShootHint();
@@ -415,6 +430,7 @@ class GameHud extends PositionComponent
     add(menu);
     add(healthBar);
     add(debugMenuButton);
+    add(debugKillAllButton);
     add(informacionJuego);
     add(potencyBar);
     add(shootHint);
@@ -490,6 +506,8 @@ class GameHud extends PositionComponent
     menu.position = Vector2(viewSize.x / 2 - 15, viewSize.y - 60);
     healthBar.position = Vector2(200, 80);
     debugMenuButton.position = Vector2(10, 40);
+    debugKillAllButton.anchor = Anchor.topRight;
+    debugKillAllButton.position = Vector2(viewSize.x, 0);
     informacionJuego.position = Vector2(80, 260);
     potencyBar.position = Vector2((viewSize.x - potencyBar.size.x) / 2, 24);
     shootHint.size = viewSize;

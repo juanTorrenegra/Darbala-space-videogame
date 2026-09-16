@@ -97,6 +97,13 @@ class CircleTarget extends CircleComponent
     );
   }
 
+  /// Debug shortcut: play the destruction animation right away.
+  void destroyNow() {
+    if (_destroying) return;
+    _hitPoints = 0;
+    _startDestruction();
+  }
+
   void _startDestruction() {
     _destroying = true;
     game.spawnEnemyExplosion(position.clone(), size.clone(), showCore: false);
@@ -124,9 +131,21 @@ class CircleTarget extends CircleComponent
         ..color = _shadowColor.withValues(alpha: 0.55 * alpha)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
     );
+    _fillOrb(canvas, center, radius, bounds, inner, outer, alpha);
+  }
+
+  void _fillOrb(
+    Canvas canvas,
+    Offset center,
+    double r,
+    Rect bounds,
+    Color inner,
+    Color outer,
+    double alpha,
+  ) {
     canvas.drawCircle(
       center,
-      radius,
+      r,
       Paint()
         ..shader = RadialGradient(
           colors: [
@@ -135,6 +154,20 @@ class CircleTarget extends CircleComponent
           ],
           radius: 0.85,
         ).createShader(bounds),
+    );
+  }
+
+  @override
+  void renderMarkerIcon(Canvas canvas, double diameter) {
+    final r = diameter / 2;
+    _fillOrb(
+      canvas,
+      Offset.zero,
+      r,
+      Rect.fromCircle(center: Offset.zero, radius: r),
+      _innerColor,
+      _outerColor,
+      1,
     );
   }
 

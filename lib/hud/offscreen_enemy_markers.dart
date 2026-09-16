@@ -5,13 +5,28 @@ import 'package:flutter/material.dart';
 import 'package:juanshooter/components/offscreen_tracked.dart';
 import 'package:juanshooter/game.dart';
 
-/// Gray edge triangles pointing at enemies outside the camera view.
+/// Edge trackers for targets outside the camera view: a globe holding a
+/// portrait of the target, with a pointer wedge aimed at it.
 class OffscreenEnemyMarkers extends PositionComponent
     with HasGameReference<MyGame> {
-  static const double _edgePad = 20;
-  static const double _triLen = 11;
-  static const double _triHalf = 6.5;
+  /// Inset of the marker's globe center from the view edge. Has to clear the
+  /// globe plus the pointer sticking out past it.
+  static const double _edgePad = 34;
+
+  /// Pointer wedge measured from the globe's rim outward.
+  static const double _triLen = 14;
+  static const double _triHalf = 8;
   static const double _onScreenInset = 8;
+
+  /// Portrait size: half the target's on-screen size, kept in a range that
+  /// suits the HUD so a big target cannot blow the marker up.
+  static const double _iconMin = 14;
+  static const double _iconMax = 30;
+
+  /// Gap between the portrait and the globe's ring.
+  static const double _globePad = 3;
+
+  static const Color _lineColor = Color(0xFF9E9E9E);
 
   OffscreenEnemyMarkers()
     : super(
@@ -51,7 +66,7 @@ class OffscreenEnemyMarkers extends PositionComponent
     final worldCenter = cam.viewfinder.position;
     final screenCenter = viewSize / 2;
     final stroke = Paint()
-      ..color = const Color(0xFF9E9E9E)
+      ..color = _lineColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.4
       ..strokeJoin = StrokeJoin.round;
@@ -65,7 +80,11 @@ class OffscreenEnemyMarkers extends PositionComponent
       final dir = screen - screenCenter;
       if (dir.length2 < 1e-8) continue;
       final edge = _clampToEdge(dir, screenCenter, viewSize);
-      _drawTriangle(canvas, edge, atan2(dir.y, dir.x), stroke);
+      final icon = (max(target.size.x, target.size.y) * zoom * 0.5).clamp(
+        _iconMin,
+        _iconMax,
+      );
+      _drawMarker(canvas, edge, atan2(dir.y, dir.x), target, icon, stroke);
     }
   }
 
@@ -85,16 +104,72 @@ class OffscreenEnemyMarkers extends PositionComponent
     return Vector2(center.x + dir.x * t, center.y + dir.y * t);
   }
 
-  void _drawTriangle(Canvas canvas, Vector2 at, double angle, Paint stroke) {
+  void _drawMarker(
+    Canvas canvas,
+    Vector2 at,
+    double angle,
+    OffscreenTracked target,
+    double iconDiameter,
+    Paint stroke,
+  ) {
+    final globe = iconDiameter / 2 + _globePad;
     canvas.save();
     canvas.translate(at.x, at.y);
+
+    // Pointer wedge, rotated to face the target. Its base sits inside the
+    // globe and is then cut away, leaving the globe's arc as its inner edge.
+    canvas.save();
     canvas.rotate(angle);
-    final path = Path()
-      ..moveTo(_triLen, 0)
-      ..lineTo(-_triLen * 0.45, _triHalf)
-      ..lineTo(-_triLen * 0.45, -_triHalf)
-      ..close();
-    canvas.drawPath(path, stroke);
+    canvas.drawPath(_pointerPath(globe), stroke);
+    canvas.drawPath(
+      _innerPointerPath(globe),
+      Paint()
+        ..color = _lineColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.9
+        ..strokeJoin = StrokeJoin.round,
+    );
     canvas.restore();
+
+    // Globe stays upright so the portrait is never drawn upside down.
+    canvas.drawCircle(
+      Offset.zero,
+      globe,
+      Paint()..color = const Color(0xCC0B1220),
+    );
+    canvas.save();
+    canvas.clipPath(
+      Path()..addOval(Rect.fromCircle(center: Offset.zero, radius: globe - 0.7)),
+    );
+    target.renderMarkerIcon(canvas, iconDiameter);
+    canvas.restore();
+    canvas.drawCircle(Offset.zero, globe, stroke);
+
+    canvas.restore();
+  }
+
+  /// Wedge from the globe's rim outward, with the globe subtracted so its
+  /// short base is replaced by a circular cut-out.
+  Path _pointerPath(double globe) {
+    final wedge = Path()
+      ..moveTo(globe + _triLen, 0)
+      ..lineTo(globe * 0.35, _triHalf)
+      ..lineTo(globe * 0.35, -_triHalf)
+      ..close();
+    return Path.combine(
+      PathOperation.difference,
+      wedge,
+      Path()..addOval(Rect.fromCircle(center: Offset.zero, radius: globe + 1)),
+    );
+  }
+
+  /// Smaller wedge nested inside the pointer for a tracking-reticle look.
+  Path _innerPointerPath(double globe) {
+    final tipGap = _triLen * 0.3;
+    return Path()
+      ..moveTo(globe + _triLen - tipGap, 0)
+      ..lineTo(globe + tipGap * 0.8, _triHalf * 0.34)
+      ..lineTo(globe + tipGap * 0.8, -_triHalf * 0.34)
+      ..close();
   }
 }
