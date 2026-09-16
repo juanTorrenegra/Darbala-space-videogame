@@ -525,9 +525,19 @@ class MyGame extends FlameGame
     scoreNotifier.value = shipsDestroyed;
   }
 
-  void spawnEnemyExplosion(Vector2 worldPosition, Vector2 enemySize) {
+  void spawnEnemyExplosion(
+    Vector2 worldPosition,
+    Vector2 enemySize, {
+    bool showCore = true,
+  }) {
     final radius = max(enemySize.x, enemySize.y) * 2;
-    universo.add(SpaceExplosionEffect(center: worldPosition, radius: radius));
+    universo.add(
+      SpaceExplosionEffect(
+        center: worldPosition,
+        radius: radius,
+        showCore: showCore,
+      ),
+    );
     playSfx('menu1.mp3');
   }
 

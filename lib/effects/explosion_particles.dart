@@ -103,6 +103,11 @@ class SpaceExplosionEffect extends PositionComponent {
   final int rippleCount;
   final double rippleSpeed;
   final int _dotCount;
+
+  /// When false the bright white core is skipped and the dots burst right
+  /// away — tutorial targets shatter rather than detonate.
+  final bool showCore;
+
   final Random _rng = Random();
 
   double _age = 0;
@@ -110,7 +115,7 @@ class SpaceExplosionEffect extends PositionComponent {
   bool _burst = false;
   final List<double> _rippleStart = [];
 
-  double get _coreHold => 0.1 * durationScale;
+  double get _coreHold => showCore ? 0.1 * durationScale : 0.0;
   double get _coreFade => 0.32 * durationScale;
   double get _dotLife => 0.5 * durationScale;
 
@@ -120,6 +125,7 @@ class SpaceExplosionEffect extends PositionComponent {
     this.durationScale = 1,
     this.rippleCount = 0,
     this.rippleSpeed = 70,
+    this.showCore = true,
   }) : _dotCount = (32 + radius * 0.35).round().clamp(32, 64),
        _coreRadius = (radius * 0.11).clamp(1.8, 7.0),
        super(
@@ -174,7 +180,7 @@ class SpaceExplosionEffect extends PositionComponent {
   void render(Canvas canvas) {
     super.render(canvas);
     final a = _coreAlpha;
-    if (a > 0) {
+    if (showCore && a > 0) {
       canvas.drawCircle(
         Offset.zero,
         _coreRadius,

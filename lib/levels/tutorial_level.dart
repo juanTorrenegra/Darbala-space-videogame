@@ -53,7 +53,13 @@ class TutorialLevel extends GameLevel {
   static const double tileScale = 0.6;
 
   /// Sideways kick that launches the ship off the arm when movement unlocks.
-  static const double launchSpeed = 110;
+  /// The level glides the ship itself: [Player] caps its own velocity at
+  /// `currentSpeed` (50), which would swallow most of the shove.
+  static const double launchSpeed = 150;
+
+  /// Speed shed per second during the launch — 150 over 105 gives a ~1.4 s
+  /// glide covering roughly 107 world units.
+  static const double launchDrag = 105;
 
   /// Roaming targets to clear before the tutorial ends: 3 orbs + 2 rocks.
   static const int roamingTargetCount = 5;
@@ -68,6 +74,9 @@ class TutorialLevel extends GameLevel {
 
   /// Once true the level stops framing the camera and the game takes over.
   bool _freeFlight = false;
+
+  /// Remaining speed of the launch glide; 0 once the player has control.
+  double _launchSpeed = 0;
 
   Vector2 _tileSize = Vector2.zero();
   Vector2 _homeTileCenter = Vector2.zero();
@@ -171,9 +180,27 @@ class TutorialLevel extends GameLevel {
   @override
   void update(double dt) {
     super.update(dt);
-    if (_freeFlight) return;
-    // Keep the same screen composition while zoom animates.
-    _frameCamera();
+    if (!_freeFlight) {
+      // Keep the same screen composition while zoom animates.
+      _frameCamera();
+      return;
+    }
+    _updateLaunch(dt);
+  }
+
+  /// Slides the ship off the arm and feeds [Player.velocity] so the thruster
+  /// trail fires. Control is handed over once the glide runs out.
+  void _updateLaunch(double dt) {
+    if (_launchSpeed <= 0) return;
+    final player = game.player;
+    player.position.x += _launchSpeed * dt;
+    player.velocity.setValues(_launchSpeed, 0);
+    _launchSpeed -= launchDrag * dt;
+    if (_launchSpeed <= 0) {
+      _launchSpeed = 0;
+      player.velocity.setZero();
+      player.staticAimOnly = false;
+    }
   }
 
   void _complete(Completer<void>? completer) {
@@ -198,14 +225,17 @@ class TutorialLevel extends GameLevel {
   void _spawnRocks() {
     _rocksDestroyed = 0;
     _rocksCompleter = Completer<void>();
-    for (final pos in [
-      Vector2(450, 320),
-      Vector2(485, 380),
-      Vector2(515, 435),
-    ]) {
+    // Two of the three get a curved side so they don't read as identical.
+    final spots = [
+      (Vector2(450, 320), true),
+      (Vector2(485, 380), true),
+      (Vector2(515, 435), false),
+    ];
+    for (final (pos, curved) in spots) {
       game.universo.add(
         RockTarget(
           position: pos,
+          curved: curved,
           onDestroyed: () {
             _rocksDestroyed++;
             if (_rocksDestroyed >= 3) _complete(_rocksCompleter);
@@ -249,14 +279,15 @@ class TutorialLevel extends GameLevel {
   /// fenced to the 6 tiles, plus a kick to the right off the mecha arm.
   void _startFreeFlight() {
     final player = game.player;
-    player.staticAimOnly = false;
+    // Aim opens up immediately; thrust waits until the launch glide ends so
+    // the level and the player are not moving the ship at the same time.
     player.aimClampCenter = null;
 
     _freeFlight = true;
     game.cameraWorldBounds = _worldBounds;
     game.cameraLocked = false;
     game.snapViewfinderToPlayer();
-    player.velocity.setValues(launchSpeed, 0);
+    _launchSpeed = launchSpeed;
   }
 
   /// 3 patrolling orbs down the right column, 2 rocks gliding around the
@@ -292,6 +323,7 @@ class TutorialLevel extends GameLevel {
         RockTarget(
           position: roam.startPoint,
           roam: roam,
+          curved: true,
           onDestroyed: onKill,
         ),
       );

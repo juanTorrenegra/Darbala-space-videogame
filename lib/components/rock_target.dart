@@ -22,14 +22,16 @@ class RockTarget extends PolygonComponent
     required Vector2 position,
     required this.onDestroyed,
     this.roam,
+    this.curved = false,
   }) : super(
-        _vertices,
-        position: position,
-        size: Vector2.all(34), // about the player's size (28)
-        anchor: Anchor.center,
-        priority: 2,
-        paint: Paint()..color = const Color(0xFF1D4ED8),
-      );
+         _vertices,
+         position: position,
+         size: Vector2.all(34), // about the player's size (28)
+         anchor: Anchor.center,
+         angle: _shapeRng.nextDouble() * 2 * pi,
+         priority: 2,
+         paint: Paint()..color = const Color(0xFF1D4ED8),
+       );
 
   /// Called once when the rock starts its destruction animation.
   final void Function() onDestroyed;
@@ -38,9 +40,13 @@ class RockTarget extends PolygonComponent
   /// holding its spawn position.
   final GlideRoam? roam;
 
-  static const Color _innerColor = Color(0xFF22D3EE); // cyan
-  static const Color _outerColor = Color(0xFF1D4ED8); // blue
-  static const Color _shadowColor = Color(0xFF9E9E9E);
+  /// When true, one random corner's two straight edges are drawn as a single
+  /// outward curve, so the rocks are not all flat-sided.
+  final bool curved;
+
+  static const Color _innerColor = Color.fromARGB(219, 94, 97, 146); // cyan
+  static const Color _outerColor = Color.fromARGB(214, 131, 140, 165); // blue
+  static const Color _shadowColor = Color.fromARGB(223, 42, 174, 146);
   static const int maxHitPoints = 20;
 
   /// Asymmetric boulder outline in local space (0..34 box).
@@ -54,8 +60,34 @@ class RockTarget extends PolygonComponent
     Vector2(30, 25),
   ];
 
+  /// Drives spawn-time variety (facing, curved corner) from the constructor,
+  /// before instance fields exist.
+  static final Random _shapeRng = Random();
+
+  /// Corner whose two edges become a curve. Never the first vertex, so the
+  /// curve never wraps across the path's start point.
+  late final int? _curveCorner = curved
+      ? 1 + _shapeRng.nextInt(_vertices.length - 2)
+      : null;
+
+  /// How far past the corner the curve's control point sits.
+  static const double _curveBulge = 1.55;
+
   final Random _rng = Random();
   final Vector2 _basePosition = Vector2.zero();
+
+  /// Displacement from bullet impacts, layered on top of the roam/spawn point.
+  final Vector2 _pushOffset = Vector2.zero();
+  final Vector2 _pushVelocity = Vector2.zero();
+
+  /// Fraction of push speed shed per second.
+  static const double _pushDrag = 6.0;
+
+  /// Impact kick is scaled right down so hits nudge instead of shoving.
+  static const double _pushSpeedScale = 0.2;
+
+  /// Only half the drift distance is kept.
+  static const double _pushOffsetScale = 0.5;
 
   int get hitPoints => _hitPoints;
   int _hitPoints = maxHitPoints;
@@ -92,6 +124,7 @@ class RockTarget extends PolygonComponent
     if (other is! Bullet || _destroying) return;
 
     final damage = other.damage;
+    _applyPush(intersectionPoints, other, damage);
     other.removeFromParent();
     _hitPoints -= damage;
     _flashTimer = _flashSeconds;
@@ -109,18 +142,53 @@ class RockTarget extends PolygonComponent
     }
   }
 
+  /// Nudges the rock away from where the shot landed, harder for charged shots.
+  void _applyPush(
+    Set<Vector2> intersectionPoints,
+    PositionComponent shot,
+    int damage,
+  ) {
+    final away = Vector2.zero();
+    if (intersectionPoints.isNotEmpty) {
+      for (final point in intersectionPoints) {
+        away.add(position - point);
+      }
+    } else {
+      away.setFrom(position - shot.position);
+    }
+    if (away.length2 < 1e-6) return;
+    final speed = (18 + damage * 1.4).clamp(18.0, 90.0) * _pushSpeedScale;
+    _pushVelocity.add(away.normalized() * speed);
+  }
+
   void _startDestruction() {
     _destroying = true;
-    game.spawnEnemyExplosion(position.clone(), size.clone());
+    game.spawnEnemyExplosion(position.clone(), size.clone(), showCore: false);
     onDestroyed();
   }
 
   Path get _shapePath {
-    final path = Path();
     final verts = vertices;
-    path.moveTo(verts.first.x, verts.first.y);
-    for (var i = 1; i < verts.length; i++) {
-      path.lineTo(verts[i].x, verts[i].y);
+    final count = verts.length;
+    final corner = _curveCorner;
+    final path = Path()..moveTo(verts.first.x, verts.first.y);
+    var i = 0;
+    while (i < count) {
+      final next = (i + 1) % count;
+      if (next == corner) {
+        // Replace the two edges meeting at this corner with one bulge that
+        // leans outward from the rock's center.
+        final pivot = verts[corner!];
+        final after = verts[(corner + 1) % count];
+        final control =
+            Vector2(size.x / 2, size.y / 2) +
+            (pivot - Vector2(size.x / 2, size.y / 2)) * _curveBulge;
+        path.quadraticBezierTo(control.x, control.y, after.x, after.y);
+        i += 2;
+        continue;
+      }
+      path.lineTo(verts[next].x, verts[next].y);
+      i++;
     }
     path.close();
     return path;
@@ -182,19 +250,26 @@ class RockTarget extends PolygonComponent
     }
 
     roam?.advance(_basePosition, dt);
+    _updatePush(dt);
 
+    var x = _basePosition.x + _pushOffset.x;
+    var y = _basePosition.y + _pushOffset.y;
     if (_shakeTimer > 0) {
       _shakeTimer -= dt;
-      if (_shakeTimer <= 0) {
-        position.setFrom(_basePosition);
-      } else {
-        position.setValues(
-          _basePosition.x + (_rng.nextDouble() - 0.5) * 3,
-          _basePosition.y + (_rng.nextDouble() - 0.5) * 3,
-        );
+      if (_shakeTimer > 0) {
+        x += (_rng.nextDouble() - 0.5) * 3;
+        y += (_rng.nextDouble() - 0.5) * 3;
       }
-    } else if (roam != null) {
-      position.setFrom(_basePosition);
     }
+    position.setValues(x, y);
+  }
+
+  void _updatePush(double dt) {
+    if (_pushVelocity.length2 < 0.01) {
+      _pushVelocity.setZero();
+      return;
+    }
+    _pushOffset.add(_pushVelocity * (dt * _pushOffsetScale));
+    _pushVelocity.scale((1 - _pushDrag * dt).clamp(0.0, 1.0));
   }
 }

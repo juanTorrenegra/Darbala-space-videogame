@@ -99,7 +99,7 @@ class CircleTarget extends CircleComponent
 
   void _startDestruction() {
     _destroying = true;
-    game.spawnEnemyExplosion(position.clone(), size.clone());
+    game.spawnEnemyExplosion(position.clone(), size.clone(), showCore: false);
     onDestroyed();
   }
 
