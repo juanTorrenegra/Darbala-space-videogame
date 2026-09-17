@@ -150,6 +150,9 @@ class SectorLevel extends GameLevel {
 
     game.controlsLocked = true;
     game.cameraLocked = true; // freeze the current camera view
+    // The exit fakes a 260-speed velocity for the trail; without this the
+    // starfield would tear past as if the ship had gone into overdrive.
+    game.parallaxFollowsPlayer = false;
     if (game.hud.isLoaded) {
       game.hud.cancelCharge();
     }

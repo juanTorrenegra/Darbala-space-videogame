@@ -80,6 +80,11 @@ class MyGame extends FlameGame
   /// While false, enemies will not wake from proximity (level intro slide).
   bool enemyAlertsEnabled = true;
 
+  /// While false the starfield holds still instead of tracking the ship.
+  /// Scripted exits fake [Player.velocity] to keep the thruster trail lit,
+  /// which would otherwise whip the stars past at several times normal speed.
+  bool parallaxFollowsPlayer = true;
+
   /// When set, the camera view never shows anything outside this world rect
   /// (used by the tutorial to fence the player inside its 6-tile background).
   Rect? cameraWorldBounds;
@@ -214,6 +219,7 @@ class MyGame extends FlameGame
     controlsLocked = false;
     enemyAlertsEnabled = true;
     cameraWorldBounds = null;
+    parallaxFollowsPlayer = true;
     if (player.isMounted) player.resetPlayer();
     if (hud.isLoaded) hud.cancelCharge();
 
@@ -233,6 +239,7 @@ class MyGame extends FlameGame
     controlsLocked = false;
     enemyAlertsEnabled = true;
     cameraWorldBounds = null;
+    parallaxFollowsPlayer = true;
     if (player.isMounted) player.resetPlayer();
     setZoomDirect(defaultZoom);
     snapViewfinderToPlayer();
@@ -740,10 +747,13 @@ class MyGame extends FlameGame
 
     currentPlayerPos.setFrom(player.position);
 
-    final speed = player.currentSpeed.clamp(1.0, 10000.0);
-    spaceParallax.parallax!.baseVelocity.setFrom(
-      player.velocity * (25 / speed),
-    );
+    final parallax = spaceParallax.parallax!;
+    if (parallaxFollowsPlayer) {
+      final speed = player.currentSpeed.clamp(1.0, 10000.0);
+      parallax.baseVelocity.setFrom(player.velocity * (25 / speed));
+    } else {
+      parallax.baseVelocity.setZero();
+    }
   }
 
   @override
