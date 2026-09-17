@@ -239,17 +239,16 @@ class TutorialLevel extends GameLevel {
   void _spawnRocks() {
     _rocksDestroyed = 0;
     _rocksCompleter = Completer<void>();
-    // Two of the three get a curved side so they don't read as identical.
-    final spots = [
-      (Vector2(450, 320), true),
-      (Vector2(485, 380), true),
-      (Vector2(515, 435), false),
+    final positions = [
+      Vector2(450, 320),
+      Vector2(485, 380),
+      Vector2(515, 435),
     ];
-    for (final (pos, curved) in spots) {
+    for (var i = 0; i < positions.length; i++) {
       game.universo.add(
         RockTarget(
-          position: pos,
-          curved: curved,
+          position: positions[i],
+          spriteFile: RockTarget.spriteFiles[i],
           onDestroyed: () {
             _rocksDestroyed++;
             if (_rocksDestroyed >= 3) _complete(_rocksCompleter);
@@ -336,7 +335,6 @@ class TutorialLevel extends GameLevel {
         RockTarget(
           position: roam.startPoint,
           roam: roam,
-          curved: true,
           onDestroyed: onKill,
         ),
       );

@@ -10,27 +10,28 @@ import 'package:juanshooter/game.dart';
 import 'package:juanshooter/hud/potency_bar.dart';
 import 'package:juanshooter/weapons/bullet.dart';
 
-/// Tutorial target: asymmetric rock-shaped polygon with 20 HP.
+/// Tutorial target: space-rock sprite with 20 HP.
 ///
 /// Getting hit triggers a quick shake + white flash + floating damage number
 /// (same style as enemies). Its destruction is animated (flash, scale up and
 /// fade out over an explosion) and is NOT counted in the ships-destroyed
 /// score — it is a practice target, not a ship.
-class RockTarget extends PolygonComponent
+class RockTarget extends SpriteComponent
     with CollisionCallbacks, HasGameReference<MyGame>, OffscreenTracked {
   RockTarget({
     required Vector2 position,
     required this.onDestroyed,
     this.roam,
-    this.curved = false,
-  }) : super(
-         _vertices,
+    String? spriteFile,
+  }) : _spriteFile =
+           spriteFile ??
+           spriteFiles[_shapeRng.nextInt(spriteFiles.length)],
+       super(
          position: position,
-         size: Vector2.all(34), // about the player's size (28)
+         size: Vector2.all(34),
          anchor: Anchor.center,
          angle: _shapeRng.nextDouble() * 2 * pi,
          priority: 2,
-         paint: Paint()..color = const Color(0xFF1D4ED8),
        );
 
   /// Called once when the rock starts its destruction animation.
@@ -40,39 +41,22 @@ class RockTarget extends PolygonComponent
   /// holding its spawn position.
   final GlideRoam? roam;
 
-  /// When true, one random corner's two straight edges are drawn as a single
-  /// outward curve, so the rocks are not all flat-sided.
-  final bool curved;
-
-  static const Color _innerColor = Color.fromARGB(219, 94, 97, 146); // cyan
-  static const Color _outerColor = Color.fromARGB(214, 131, 140, 165); // blue
-  static const Color _shadowColor = Color.fromARGB(223, 42, 174, 146);
   static const int maxHitPoints = 20;
 
-  /// Asymmetric boulder outline in local space (0..34 box).
-  static final List<Vector2> _vertices = [
-    Vector2(32, 15),
-    Vector2(24, 3),
-    Vector2(12, 1),
-    Vector2(1, 11),
-    Vector2(5, 27),
-    Vector2(17, 33),
-    Vector2(30, 25),
+  /// Tutorial rock art. The opening three rocks pick these in order;
+  /// later rocks pick one at random.
+  static const List<String> spriteFiles = [
+    'spaceRock090px3.png',
+    'spaceRock084px2.png',
+    'spaceRock122px.png',
   ];
 
-  /// Drives spawn-time variety (facing, curved corner) from the constructor,
-  /// before instance fields exist.
+  /// Longest side in world units — about the player's size (28).
+  static const double _maxSide = 34;
+
+  final String _spriteFile;
+
   static final Random _shapeRng = Random();
-
-  /// Corner whose two edges become a curve. Never the first vertex, so the
-  /// curve never wraps across the path's start point.
-  late final int? _curveCorner = curved
-      ? 1 + _shapeRng.nextInt(_vertices.length - 2)
-      : null;
-
-  /// How far past the corner the curve's control point sits.
-  static const double _curveBulge = 1.55;
-
   final Random _rng = Random();
   final Vector2 _basePosition = Vector2.zero();
 
@@ -82,12 +66,6 @@ class RockTarget extends PolygonComponent
 
   /// Fraction of push speed shed per second.
   static const double _pushDrag = 6.0;
-
-  /// Impact kick is scaled right down so hits nudge instead of shoving.
-  static const double _pushSpeedScale = 0.2;
-
-  /// Only half the drift distance is kept.
-  static const double _pushOffsetScale = 0.5;
 
   int get hitPoints => _hitPoints;
   int _hitPoints = maxHitPoints;
@@ -102,6 +80,10 @@ class RockTarget extends PolygonComponent
 
   @override
   Future<void> onLoad() async {
+    sprite = await Sprite.load(_spriteFile);
+    final src = sprite!.originalSize;
+    final scale = _maxSide / max(src.x, src.y);
+    size = src * scale;
     await super.onLoad();
     _basePosition.setFrom(position);
     add(CircleHitbox()..collisionType = CollisionType.passive);
@@ -157,7 +139,7 @@ class RockTarget extends PolygonComponent
       away.setFrom(position - shot.position);
     }
     if (away.length2 < 1e-6) return;
-    final speed = (18 + damage * 1.4).clamp(18.0, 90.0) * _pushSpeedScale;
+    final speed = (18 + damage * 1.4).clamp(18.0, 90.0);
     _pushVelocity.add(away.normalized() * speed);
   }
 
@@ -174,33 +156,6 @@ class RockTarget extends PolygonComponent
     onDestroyed();
   }
 
-  Path get _shapePath {
-    final verts = vertices;
-    final count = verts.length;
-    final corner = _curveCorner;
-    final path = Path()..moveTo(verts.first.x, verts.first.y);
-    var i = 0;
-    while (i < count) {
-      final next = (i + 1) % count;
-      if (next == corner) {
-        // Replace the two edges meeting at this corner with one bulge that
-        // leans outward from the rock's center.
-        final pivot = verts[corner!];
-        final after = verts[(corner + 1) % count];
-        final control =
-            Vector2(size.x / 2, size.y / 2) +
-            (pivot - Vector2(size.x / 2, size.y / 2)) * _curveBulge;
-        path.quadraticBezierTo(control.x, control.y, after.x, after.y);
-        i += 2;
-        continue;
-      }
-      path.lineTo(verts[next].x, verts[next].y);
-      i++;
-    }
-    path.close();
-    return path;
-  }
-
   @override
   void render(Canvas canvas) {
     final destroyT = _destroying
@@ -209,60 +164,33 @@ class RockTarget extends PolygonComponent
     final flash = _destroying
         ? 1.0
         : (_flashTimer / _flashSeconds).clamp(0.0, 1.0);
-    final alpha = 1 - destroyT;
-    final inner = Color.lerp(_innerColor, Colors.white, flash)!;
-    final outer = Color.lerp(_outerColor, Colors.white, flash)!;
-    final path = _shapePath;
-    final bounds = Rect.fromLTWH(0, 0, size.x, size.y);
+    final alpha = (1 - destroyT).clamp(0.0, 1.0);
 
-    canvas.save();
-    canvas.translate(2.5, 3.5);
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = _shadowColor.withValues(alpha: 0.55 * alpha)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
-    );
-    canvas.restore();
+    paint.color = Colors.white.withValues(alpha: alpha);
+    paint.colorFilter = flash > 0
+        ? ColorFilter.mode(
+            Colors.white.withValues(alpha: flash * 0.85),
+            BlendMode.srcATop,
+          )
+        : null;
 
-    _fillShape(canvas, path, bounds, inner, outer, alpha);
-  }
-
-  void _fillShape(
-    Canvas canvas,
-    Path path,
-    Rect bounds,
-    Color inner,
-    Color outer,
-    double alpha,
-  ) {
-    canvas.drawPath(
-      path,
-      Paint()
-        ..shader = RadialGradient(
-          colors: [
-            inner.withValues(alpha: alpha),
-            outer.withValues(alpha: alpha),
-          ],
-          radius: 0.9,
-        ).createShader(bounds),
-    );
+    super.render(canvas);
   }
 
   @override
   void renderMarkerIcon(Canvas canvas, double diameter) {
-    canvas.save();
-    canvas.scale(diameter / max(size.x, size.y));
-    canvas.translate(-size.x / 2, -size.y / 2);
-    _fillShape(
+    final src = sprite;
+    if (src == null) return;
+    final aspect = src.originalSize.x / src.originalSize.y;
+    final iconSize = aspect >= 1
+        ? Vector2(diameter, diameter / aspect)
+        : Vector2(diameter * aspect, diameter);
+    src.render(
       canvas,
-      _shapePath,
-      Rect.fromLTWH(0, 0, size.x, size.y),
-      _innerColor,
-      _outerColor,
-      1,
+      position: Vector2.zero(),
+      size: iconSize,
+      anchor: Anchor.center,
     );
-    canvas.restore();
   }
 
   @override
@@ -299,11 +227,11 @@ class RockTarget extends PolygonComponent
   }
 
   void _updatePush(double dt) {
-    if (_pushVelocity.length2 < 0.01) {
+    if (_pushVelocity.length2 < 0.05) {
       _pushVelocity.setZero();
       return;
     }
-    _pushOffset.add(_pushVelocity * (dt * _pushOffsetScale));
+    _pushOffset.add(_pushVelocity * dt);
     _pushVelocity.scale((1 - _pushDrag * dt).clamp(0.0, 1.0));
   }
 }

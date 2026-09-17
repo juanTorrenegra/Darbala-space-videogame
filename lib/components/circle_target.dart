@@ -10,26 +10,24 @@ import 'package:juanshooter/game.dart';
 import 'package:juanshooter/hud/potency_bar.dart';
 import 'package:juanshooter/weapons/bullet.dart';
 
-/// Tutorial target: regenerating orb with 49 HP.
+/// Tutorial target: regenerating orb sprite with 49 HP.
 ///
 /// Regenerates 10 HP every 0.3 s and normal shots can never take it below
 /// 1 HP — the only way to destroy it is a fully charged shot (50 damage,
 /// which is >= its max HP). Regular shots only trigger the flash + damage
 /// number feedback. Not counted in the ships-destroyed score.
-class CircleTarget extends CircleComponent
+class CircleTarget extends SpriteComponent
     with CollisionCallbacks, HasGameReference<MyGame>, OffscreenTracked {
   CircleTarget({
     required Vector2 position,
     required this.onDestroyed,
     this.roam,
-    double radius = 18, // about the player's size (28 diameter)
   }) : super(
-         radius: radius,
          position: position,
+         size: Vector2.all(_maxSide),
          anchor: Anchor.center,
          priority: 2,
-        paint: Paint()..color = const Color(0xFF67E8F9),
-      );
+       );
 
   /// Called once when the orb starts its destruction animation.
   final void Function() onDestroyed;
@@ -38,12 +36,13 @@ class CircleTarget extends CircleComponent
   /// holding its spawn position.
   final PatrolRoam? roam;
 
-  static const Color _innerColor = Color(0xFFA5F3FC); // light cyan
-  static const Color _outerColor = Color(0xFF38BDF8); // light blue
-  static const Color _shadowColor = Color(0xFF9E9E9E);
   static const int maxHitPoints = 49;
   static const int regenAmount = 10;
   static const double regenInterval = 0.3;
+  static const String _spriteFile = 'tutorialTarget.png';
+
+  /// Longest side in world units — matches the old 18-radius orb (36 diameter).
+  static const double _maxSide = 36;
 
   int get hitPoints => _hitPoints;
   int _hitPoints = maxHitPoints;
@@ -57,6 +56,10 @@ class CircleTarget extends CircleComponent
 
   @override
   Future<void> onLoad() async {
+    sprite = await Sprite.load(_spriteFile);
+    final src = sprite!.originalSize;
+    final scale = _maxSide / max(src.x, src.y);
+    size = src * scale;
     await super.onLoad();
     add(CircleHitbox()..collisionType = CollisionType.passive);
     game.universo.add(
@@ -118,56 +121,32 @@ class CircleTarget extends CircleComponent
     final flash = _destroying
         ? 1.0
         : (_flashTimer / _flashSeconds).clamp(0.0, 1.0);
-    final alpha = 1 - destroyT;
-    final inner = Color.lerp(_innerColor, Colors.white, flash)!;
-    final outer = Color.lerp(_outerColor, Colors.white, flash)!;
-    final center = Offset(size.x / 2, size.y / 2);
-    final bounds = Rect.fromLTWH(0, 0, size.x, size.y);
+    final alpha = (1 - destroyT).clamp(0.0, 1.0);
 
-    canvas.drawCircle(
-      center.translate(2.5, 3.5),
-      radius,
-      Paint()
-        ..color = _shadowColor.withValues(alpha: 0.55 * alpha)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
-    );
-    _fillOrb(canvas, center, radius, bounds, inner, outer, alpha);
-  }
+    paint.color = Colors.white.withValues(alpha: alpha);
+    paint.colorFilter = flash > 0
+        ? ColorFilter.mode(
+            Colors.white.withValues(alpha: flash * 0.85),
+            BlendMode.srcATop,
+          )
+        : null;
 
-  void _fillOrb(
-    Canvas canvas,
-    Offset center,
-    double r,
-    Rect bounds,
-    Color inner,
-    Color outer,
-    double alpha,
-  ) {
-    canvas.drawCircle(
-      center,
-      r,
-      Paint()
-        ..shader = RadialGradient(
-          colors: [
-            inner.withValues(alpha: alpha),
-            outer.withValues(alpha: alpha),
-          ],
-          radius: 0.85,
-        ).createShader(bounds),
-    );
+    super.render(canvas);
   }
 
   @override
   void renderMarkerIcon(Canvas canvas, double diameter) {
-    final r = diameter / 2;
-    _fillOrb(
+    final src = sprite;
+    if (src == null) return;
+    final aspect = src.originalSize.x / src.originalSize.y;
+    final iconSize = aspect >= 1
+        ? Vector2(diameter, diameter / aspect)
+        : Vector2(diameter * aspect, diameter);
+    src.render(
       canvas,
-      Offset.zero,
-      r,
-      Rect.fromCircle(center: Offset.zero, radius: r),
-      _innerColor,
-      _outerColor,
-      1,
+      position: Vector2.zero(),
+      size: iconSize,
+      anchor: Anchor.center,
     );
   }
 
