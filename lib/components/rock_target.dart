@@ -4,6 +4,7 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import 'package:juanshooter/components/offscreen_tracked.dart';
+import 'package:juanshooter/components/solid_body.dart';
 import 'package:juanshooter/components/target_health_bar.dart';
 import 'package:juanshooter/components/target_roam.dart';
 import 'package:juanshooter/game.dart';
@@ -17,7 +18,11 @@ import 'package:juanshooter/weapons/bullet.dart';
 /// fade out over an explosion) and is NOT counted in the ships-destroyed
 /// score — it is a practice target, not a ship.
 class RockTarget extends SpriteComponent
-    with CollisionCallbacks, HasGameReference<MyGame>, OffscreenTracked {
+    with
+        CollisionCallbacks,
+        HasGameReference<MyGame>,
+        OffscreenTracked,
+        SolidBody {
   RockTarget({
     required Vector2 position,
     required this.onDestroyed,

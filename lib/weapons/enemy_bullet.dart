@@ -49,10 +49,14 @@ class EnemyBullet extends SpriteComponent
     Set<Vector2> intersectionPoints,
     PositionComponent other,
   ) {
+    super.onCollisionStart(intersectionPoints, other);
     if (other is Player) {
-      //other.takeDamage(1);
       other.takeDamage(damage);
+      final dir = _direction.length2 > 0
+          ? _direction.normalized()
+          : Vector2(1, 0);
+      other.startKnockback(dir * Player.bulletBounceDistance);
       removeFromParent();
     }
-  } // puedo cambiar este codigo? por que usa super.
+  }
 }

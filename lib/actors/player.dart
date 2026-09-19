@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
+import 'package:juanshooter/components/solid_body.dart';
 import 'package:juanshooter/effects/charge_aim_effect.dart';
 import 'package:juanshooter/effects/explosion_particles.dart';
 import 'package:juanshooter/effects/thruster_trail.dart';
@@ -12,7 +13,8 @@ import 'package:juanshooter/overlays/game_over.dart';
 import 'package:juanshooter/weapons/bullet.dart';
 import 'package:juanshooter/utils/game_utils.dart';
 
-class Player extends SpriteComponent with HasGameReference<MyGame> {
+class Player extends SpriteComponent
+    with HasGameReference<MyGame>, CollisionCallbacks {
   Player({required Sprite sprite, required Vector2 position})
     : super(
         position: position,
@@ -108,8 +110,17 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
     _isChargeSlowed = false;
   }
 
+  /// Distance the ship slides after bumping a solid body (enemies / targets).
+  static const double solidBounceDistance = 12;
+
+  /// Distance from a regular enemy shot — much smaller than a crab slash (30).
+  static const double bulletBounceDistance = 5;
+
   void startKnockback(Vector2 delta, {double? speed}) {
     if (_isDying || delta.length2 <= 0) return;
+    // Keep the stronger shove so a tiny body/bullet bounce cannot overwrite
+    // the crab's existing knockback.
+    if (delta.length2 <= _knockbackRemaining.length2) return;
     _knockbackRemaining.setFrom(delta);
     if (speed != null) {
       knockbackSpeed = speed;
@@ -342,6 +353,60 @@ class Player extends SpriteComponent with HasGameReference<MyGame> {
     game.universo.add(ChargeAimEffect());
     _trail = ThrusterTrail(player: this);
     game.universo.add(_trail!);
+  }
+
+  double get bodyRadius => min(size.x, size.y) * 0.5;
+
+  Vector2 _awayFrom(PositionComponent other, Set<Vector2> intersectionPoints) {
+    if (intersectionPoints.isNotEmpty) {
+      final mid = Vector2.zero();
+      for (final point in intersectionPoints) {
+        mid.add(point);
+      }
+      mid.scale(1 / intersectionPoints.length);
+      final away = position - mid;
+      if (away.length2 > 1e-6) return away.normalized();
+    }
+    final away = position - other.position;
+    if (away.length2 > 1e-6) return away.normalized();
+    return Vector2(1, 0);
+  }
+
+  /// Pushes the ship out so its body and [other] do not share the same space.
+  void _separateFrom(SolidBody other) {
+    final minDist = bodyRadius + other.bodyRadius;
+    final delta = position - other.position;
+    final dist = delta.length;
+    if (dist >= minDist) return;
+
+    final normal = dist > 1e-6 ? delta / dist : Vector2(1, 0);
+    position.add(normal * (minDist - dist));
+
+    // Kill motion that would drive back into the body this frame.
+    final into = velocity.dot(normal);
+    if (into < 0) {
+      velocity.add(normal * -into);
+    }
+  }
+
+  @override
+  void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
+    super.onCollision(intersectionPoints, other);
+    if (_isDying || staticAimOnly || game.controlsLocked) return;
+    if (other is SolidBody) {
+      _separateFrom(other);
+    }
+  }
+
+  @override
+  void onCollisionStart(
+    Set<Vector2> intersectionPoints,
+    PositionComponent other,
+  ) {
+    super.onCollisionStart(intersectionPoints, other);
+    if (_isDying || staticAimOnly || game.controlsLocked) return;
+    if (other is! SolidBody) return;
+    startKnockback(_awayFrom(other, intersectionPoints) * solidBounceDistance);
   }
 
   @override
