@@ -6,6 +6,7 @@ import 'package:flutter/animation.dart';
 import 'package:juanshooter/actors/crab_enemy.dart';
 import 'package:juanshooter/actors/enemigo.dart';
 import 'package:juanshooter/actors/ranged_enemy.dart';
+import 'package:juanshooter/components/placement_sprite.dart';
 import 'package:juanshooter/components/scenery_sprite.dart';
 import 'package:juanshooter/game.dart';
 import 'package:juanshooter/levels/game_level.dart';
@@ -324,5 +325,6 @@ class SectorLevel extends GameLevel {
       ),
     );
     await game.spawnEdgePatrolCrabs(origin: center);
+    await PlacementSprite.spawnAll(game);
   }
 }

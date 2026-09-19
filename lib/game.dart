@@ -13,11 +13,15 @@ import 'package:juanshooter/actors/player.dart';
 import 'package:juanshooter/actors/spike_enemy.dart';
 import 'package:juanshooter/actors/crab_enemy.dart';
 import 'package:juanshooter/components/circle_target.dart';
+import 'package:juanshooter/components/placement_edit_mode.dart';
+import 'package:juanshooter/components/placement_sprite.dart';
 import 'package:juanshooter/components/rock_target.dart';
 import 'package:juanshooter/components/scenery_sprite.dart';
 import 'package:juanshooter/components/target_health_bar.dart';
 import 'package:juanshooter/hud/game_hud.dart';
 import 'package:juanshooter/hud/offscreen_enemy_markers.dart';
+import 'package:juanshooter/hud/placement_edit_layer.dart';
+import 'package:juanshooter/hud/placement_inspector.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:juanshooter/levels/game_level.dart';
 import 'package:juanshooter/overlays/game_over.dart';
@@ -38,7 +42,8 @@ class MyGame extends FlameGame
         HasGameReference<MyGame>,
         HasCollisionDetection,
         flame_events.MouseMovementDetector,
-        flame_events.PanDetector {
+        flame_events.PanDetector,
+        flame_events.ScrollDetector {
   MyGame({this.onRunEnded});
 
   /// Called once when a run ends so the app layer can POST the scor
@@ -80,14 +85,25 @@ class MyGame extends FlameGame
   /// While false, enemies will not wake from proximity (level intro slide).
   bool enemyAlertsEnabled = true;
 
-  /// While false the starfield holds still instead of tracking the ship.
-  /// Scripted exits fake [Player.velocity] to keep the thruster trail lit,
-  /// which would otherwise whip the stars past at several times normal speed.
-  bool parallaxFollowsPlayer = true;
-
   /// When set, the camera view never shows anything outside this world rect
   /// (used by the tutorial to fence the player inside its 6-tile background).
   Rect? cameraWorldBounds;
+
+  /// While false the starfield holds still instead of tracking the ship.
+  /// Scripted exits fake [Player.velocity] for the thruster trail, which
+  /// would otherwise whip the stars past at several times normal speed.
+  bool parallaxFollowsPlayer = true;
+
+  /// Currently selected editor sprite (zombie ships being laid out).
+  PlacementSprite? selectedPlacement;
+
+  /// Which placement tool is armed. [PlacementEditMode.none] leaves the
+  /// movement stick free and does not drag other sprites.
+  PlacementEditMode placementEditMode = PlacementEditMode.none;
+
+  /// True while a placement sprite is being tapped/dragged so the HUD
+  /// does not also fire a shot.
+  bool suppressHudShoot = false;
 
   GameLevel? _currentLevel;
 
@@ -200,6 +216,7 @@ class MyGame extends FlameGame
           component is RockTarget ||
           component is CircleTarget ||
           component is ScenerySprite ||
+          component is PlacementSprite ||
           component is EnemyHealthBar ||
           component is TargetHealthBar) {
         component.removeFromParent();
@@ -215,6 +232,9 @@ class MyGame extends FlameGame
     old?.removeFromParent(); // onRemove cancels its script
 
     clearWorldEntities();
+    selectedPlacement = null;
+    placementEditMode = PlacementEditMode.none;
+    suppressHudShoot = false;
     cameraLocked = false;
     controlsLocked = false;
     enemyAlertsEnabled = true;
@@ -235,6 +255,9 @@ class MyGame extends FlameGame
     old?.removeFromParent();
 
     clearWorldEntities();
+    selectedPlacement = null;
+    placementEditMode = PlacementEditMode.none;
+    suppressHudShoot = false;
     cameraLocked = false;
     controlsLocked = false;
     enemyAlertsEnabled = true;
@@ -277,6 +300,28 @@ class MyGame extends FlameGame
       overlays.remove('LevelTitle');
     }
     levelTitleController = null;
+  }
+
+  void selectPlacement(PlacementSprite sprite) {
+    selectedPlacement = sprite;
+    suppressHudShoot = true;
+  }
+
+  void deleteSelectedPlacement() {
+    final sprite = selectedPlacement;
+    selectedPlacement = null;
+    placementEditMode = PlacementEditMode.none;
+    sprite?.removeFromParent();
+  }
+
+  @override
+  void onScroll(flame_events.PointerScrollInfo info) {
+    if (placementEditMode != PlacementEditMode.scale) return;
+    final selected = selectedPlacement;
+    if (selected == null || !selected.isMounted) return;
+    final dy = info.scrollDelta.global.y;
+    if (dy.abs() < 0.1) return;
+    selected.setUniformScale(selected.scale.x * (dy > 0 ? 0.93 : 1.07));
   }
 
   /// Called from the tutorial: keep the black title card and show the
@@ -533,6 +578,19 @@ class MyGame extends FlameGame
     scoreNotifier.value = shipsDestroyed;
   }
 
+  /// Debug: blow up every enemy and tutorial target, each with its explosion.
+  void destroyAllTargets() {
+    for (final enemy in universo.children.whereType<Enemigo>().toList()) {
+      enemy.killInstantly();
+    }
+    for (final rock in universo.children.whereType<RockTarget>().toList()) {
+      rock.destroyNow();
+    }
+    for (final orb in universo.children.whereType<CircleTarget>().toList()) {
+      orb.destroyNow();
+    }
+  }
+
   void spawnEnemyExplosion(
     Vector2 worldPosition,
     Vector2 enemySize, {
@@ -547,21 +605,6 @@ class MyGame extends FlameGame
       ),
     );
     playSfx('menu1.mp3');
-  }
-
-  /// Debug: blow up every enemy and tutorial target in the world, each with
-  /// its own explosion, so a level can be skipped while testing. Enemies run
-  /// their normal death path, so score and level completion still fire.
-  void destroyAllTargets() {
-    for (final enemy in universo.children.whereType<Enemigo>().toList()) {
-      enemy.killInstantly();
-    }
-    for (final rock in universo.children.whereType<RockTarget>().toList()) {
-      rock.destroyNow();
-    }
-    for (final orb in universo.children.whereType<CircleTarget>().toList()) {
-      orb.destroyNow();
-    }
   }
 
   /// Power-ups: sube el máximo de vida de la run y actualiza al jugador.
@@ -664,7 +707,9 @@ class MyGame extends FlameGame
     hud = GameHud()..priority = 100;
     scoreNotifier.value = shipsDestroyed;
     camara?.viewport.add(OffscreenEnemyMarkers());
+    camara?.viewport.add(PlacementEditLayer());
     camara?.viewport.add(hud);
+    camara?.viewport.add(PlacementInspector());
 
     currentPlayerPos = player.position.clone();
 
@@ -764,12 +809,22 @@ class MyGame extends FlameGame
     hud.setWebMouseWorldTarget(worldTarget);
   }
 
+  bool isPlacementAtWorld(Vector2 world) {
+    for (final sprite in universo.children.whereType<PlacementSprite>()) {
+      if (sprite.toAbsoluteRect().contains(world.toOffset())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   void _beginWebCharge() {
     if (!kIsWeb ||
         cellularMode ||
         paused ||
         !player.isMounted ||
-        !hud.isLoaded) {
+        !hud.isLoaded ||
+        suppressHudShoot) {
       return;
     }
     hud.beginCharge();
@@ -784,6 +839,11 @@ class MyGame extends FlameGame
   void onPanDown(flame_events.DragDownInfo info) {
     super.onPanDown(info);
     if (cellularMode) return;
+    if (camara != null &&
+        isPlacementAtWorld(camara!.globalToLocal(info.eventPosition.widget))) {
+      suppressHudShoot = true;
+      return;
+    }
     _beginWebCharge();
     if (!kIsWeb || camara == null || !hud.isLoaded) return;
     hud.setWebMouseWorldTarget(

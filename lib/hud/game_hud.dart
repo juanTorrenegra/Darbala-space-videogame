@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Matrix4;
 import 'package:flutter/services.dart';
 import 'package:juanshooter/game.dart';
+import 'package:juanshooter/hud/placement_toolbar.dart';
 import 'package:juanshooter/hud/potency_bar.dart';
 import 'package:juanshooter/hud/tutorial_shoot_hint.dart';
 import 'package:juanshooter/overlays/informacion_juego.dart';
@@ -180,6 +181,7 @@ class GameHud extends PositionComponent
   late final InformacionJuego informacionJuego;
   late final PotencyBar potencyBar;
   late final TutorialShootHint shootHint;
+  late final PlacementToolbar placementToolbar;
 
   bool get isShootHeld => _chargeHeld;
 
@@ -268,6 +270,10 @@ class GameHud extends PositionComponent
   }
 
   void beginCharge() {
+    if (game.suppressHudShoot) {
+      game.suppressHudShoot = false;
+      return;
+    }
     if (_chargeHeld ||
         game.paused ||
         !game.player.isMounted ||
@@ -426,6 +432,7 @@ class GameHud extends PositionComponent
     informacionJuego = InformacionJuego()..priority = 1000;
     potencyBar = PotencyBar();
     shootHint = TutorialShootHint();
+    placementToolbar = PlacementToolbar();
 
     add(menu);
     add(healthBar);
@@ -434,6 +441,7 @@ class GameHud extends PositionComponent
     add(informacionJuego);
     add(potencyBar);
     add(shootHint);
+    add(placementToolbar);
 
     applyStickMode();
     _positionComponents();
@@ -512,6 +520,10 @@ class GameHud extends PositionComponent
     potencyBar.position = Vector2((viewSize.x - potencyBar.size.x) / 2, 24);
     shootHint.size = viewSize;
     shootHint.position = Vector2.zero();
+    placementToolbar.position = Vector2(
+      viewSize.x - 18,
+      viewSize.y * 3 / 4 - 96,
+    );
   }
 }
 
