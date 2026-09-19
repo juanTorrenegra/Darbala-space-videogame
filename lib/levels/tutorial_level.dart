@@ -166,6 +166,10 @@ class TutorialLevel extends GameLevel {
     _homeTileCenter.y + (row - 1) * _tileSize.y,
   );
 
+  /// Halfway from the ship's start to [point], so roaming targets sit closer.
+  Vector2 _closerToPlayer(Vector2 point) =>
+      playerPosition + (point - playerPosition) * 0.5;
+
   /// World rect covering all 6 tiles — the camera never looks past it.
   Rect get _worldBounds => Rect.fromLTWH(
     _homeTileCenter.x - _tileSize.x / 2,
@@ -316,7 +320,7 @@ class TutorialLevel extends GameLevel {
 
     final areaRadius = min(_tileSize.x, _tileSize.y) * 0.3;
     for (var row = 0; row < gridRows; row++) {
-      final center = _tileCenter(1, row);
+      final center = _closerToPlayer(_tileCenter(1, row));
       game.universo.add(
         CircleTarget(
           position: center.clone(),
@@ -327,7 +331,7 @@ class TutorialLevel extends GameLevel {
     }
     for (final row in [0, 2]) {
       final roam = GlideRoam(
-        center: _tileCenter(0, row),
+        center: _closerToPlayer(_tileCenter(0, row)),
         radius: areaRadius * 0.8,
         phase: row == 0 ? pi : 0,
       );
