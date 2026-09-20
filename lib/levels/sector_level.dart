@@ -278,9 +278,9 @@ class SectorLevel extends GameLevel {
     // --- Enemies (the original 20).
     universo.add(
       RangedEnemy(
-        sprite: await Sprite.load('zombieShuttle2px140.png'),
-        position: Vector2(660, 380),
-        size: Vector2(16, 16),
+        sprite: await Sprite.load('zombieSatelite240px.png'),
+        position: Vector2(685, 380),
+        size: Vector2(60, 60),
         maxHitPoints: 200,
         rotationSpeed: 3.0,
         bulletSpeed: 50,

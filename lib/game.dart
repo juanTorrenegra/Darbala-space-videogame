@@ -674,7 +674,7 @@ class MyGame extends FlameGame
 
   /// Four patrol crabs just outside each viewport edge (16 total) to test markers.
   Future<void> spawnEdgePatrolCrabs({Vector2? origin}) async {
-    final sprite = await Sprite.load('10.png');
+    final sprite = await Sprite.load('zombieTargetM500.png');
     final patrolOrigin = origin ?? player.position;
     final half =
         _visibleWorldHalf() ??
@@ -711,7 +711,7 @@ class MyGame extends FlameGame
         CrabEnemy(
           sprite: sprite,
           position: Vector2(x, y),
-          size: Vector2(20, 20),
+          size: Vector2(30, 30),
           maxHitPoints: 50,
           rotationSpeed: 4.0,
           damage: 30,
