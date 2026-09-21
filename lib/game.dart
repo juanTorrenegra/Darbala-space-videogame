@@ -711,7 +711,7 @@ class MyGame extends FlameGame
         CrabEnemy(
           sprite: sprite,
           position: Vector2(x, y),
-          size: Vector2(30, 30),
+          size: Vector2(20, 20),
           maxHitPoints: 50,
           rotationSpeed: 4.0,
           damage: 30,

@@ -290,20 +290,20 @@ class SectorLevel extends GameLevel {
     );
     universo.add(
       CrabEnemy(
-        sprite: await Sprite.load('zombieShuttle2px140.png'),
+        sprite: await Sprite.load('z01px130.png'),
         position: Vector2(620, 350),
-        size: Vector2(20, 20),
+        size: Vector2(30, 30),
         maxHitPoints: 50,
         rotationSpeed: 4.0,
         damage: 30,
       ),
     );
-    final rangedSprite = await Sprite.load('zombieShuttle2px140.png');
+    final rangedSprite = await Sprite.load('z01px130.png');
     universo.add(
       RangedEnemy(
         sprite: rangedSprite,
         position: Vector2(620, 330),
-        size: Vector2(18, 18),
+        size: Vector2(25, 25),
         maxHitPoints: 40,
         rotationSpeed: 3.0,
         bulletSpeed: 50,
@@ -315,7 +315,7 @@ class SectorLevel extends GameLevel {
       RangedEnemy(
         sprite: rangedSprite,
         position: Vector2(630, 385),
-        size: Vector2(18, 18),
+        size: Vector2(35, 35),
         maxHitPoints: 40,
         rotationSpeed: 3.0,
         bulletSpeed: 50,
