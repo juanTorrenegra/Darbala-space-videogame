@@ -13,7 +13,7 @@ class TargetHealthBar extends PositionComponent {
     required this.maxHp,
     this.isVisible = _alwaysTrue,
   }) : super(
-         size: Vector2((host.size.x * 0.8).clamp(16.0, 36.0), 3),
+         size: Vector2((host.size.x * 0.8).clamp(16.0, 36.0), 0.5),
          anchor: Anchor.bottomCenter,
          priority: 90,
        );
@@ -42,25 +42,15 @@ class TargetHealthBar extends PositionComponent {
     if (!isVisible()) return;
     final max = maxHp();
     final ratio = max > 0 ? (currentHp() / max).clamp(0.0, 1.0) : 0.0;
-    final rect = Rect.fromLTWH(0, 0, size.x, size.y);
-    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(1));
-
-    canvas.drawRRect(rrect, Paint()..color = const Color(0xCC1A0000));
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.x, size.y),
+      Paint()..color = const Color(0xCC1A0000),
+    );
     if (ratio > 0) {
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(0, 0, size.x * ratio, size.y),
-          const Radius.circular(1),
-        ),
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, size.x * ratio, size.y),
         Paint()..color = const Color(0xFFE53935),
       );
     }
-    canvas.drawRRect(
-      rrect,
-      Paint()
-        ..color = const Color(0xAAFF8A80)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 0.5,
-    );
   }
 }
