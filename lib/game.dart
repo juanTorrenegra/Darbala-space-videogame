@@ -15,6 +15,7 @@ import 'package:juanshooter/actors/crab_enemy.dart';
 import 'package:juanshooter/components/circle_target.dart';
 import 'package:juanshooter/components/rock_target.dart';
 import 'package:juanshooter/components/scenery_sprite.dart';
+import 'package:juanshooter/components/space_rock.dart';
 import 'package:juanshooter/components/target_health_bar.dart';
 import 'package:juanshooter/hud/game_hud.dart';
 import 'package:juanshooter/hud/offscreen_enemy_markers.dart';
@@ -199,6 +200,7 @@ class MyGame extends FlameGame
           component is ExplosionEffect ||
           component is RockTarget ||
           component is CircleTarget ||
+          component is SpaceRock ||
           component is ScenerySprite ||
           component is EnemyHealthBar ||
           component is TargetHealthBar) {
