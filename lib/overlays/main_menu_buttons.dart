@@ -42,8 +42,12 @@ class _MainMenuButtonsState extends ConsumerState<MainMenuButtons> {
 
   MyGame get game => widget.game;
 
+  bool get _canResume => game.currentLevel != null;
+
   List<_MenuAction> get _actions => [
-        _MenuAction(label: 'Jugar', onPressed: _play),
+        _canResume
+            ? _MenuAction(label: 'Continuar', onPressed: _continue)
+            : _MenuAction(label: 'Jugar', onPressed: _play),
         _MenuAction(
           label: 'Ranking',
           onPressed: () => game.overlays.add('Leaderboard'),
@@ -78,6 +82,12 @@ class _MainMenuButtonsState extends ConsumerState<MainMenuButtons> {
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  void _continue() {
+    game.overlays.remove('MainMenu');
+    game.resumeEngine();
+    game.resumeBgmMusic();
   }
 
   Future<void> _play() async {
