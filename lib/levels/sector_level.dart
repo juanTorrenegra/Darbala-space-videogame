@@ -65,16 +65,18 @@ class SectorLevel extends GameLevel {
   Completer<void>? _exitCompleter;
 
   /// First combat sector. Menu / tutorial / account all enter here.
-  factory SectorLevel.sector7() => SectorLevel._at(0);
+  factory SectorLevel.sector7() => SectorLevel.at(0);
 
-  factory SectorLevel._at(int index) {
-    final spec = _campaign[index];
-    final hasNext = index + 1 < _campaign.length;
+  /// Combat sector [index] in play order (0 = first, 7 = last).
+  factory SectorLevel.at(int index) {
+    final clamped = index.clamp(0, _campaign.length - 1);
+    final spec = _campaign[clamped];
+    final hasNext = clamped + 1 < _campaign.length;
     return SectorLevel(
       title: spec.title,
       nextTitle: spec.nextTitle,
       spawnScene: spec.spawnScene,
-      nextIndex: hasNext ? index + 1 : null,
+      nextIndex: hasNext ? clamped + 1 : null,
     );
   }
 
@@ -263,7 +265,7 @@ class SectorLevel extends GameLevel {
     final following = nextIndex;
     await game.presentLevelTitle(nextTitle, () {
       if (following != null) {
-        game.startLevel(SectorLevel._at(following));
+        game.startLevel(SectorLevel.at(following));
       } else {
         game.returnToMenuBehindBlack();
       }
