@@ -169,7 +169,7 @@ class GameHud extends PositionComponent
   /// Touch controls: native app always; web only in cellular mode.
   JoystickComponent? movementJoystick;
   JoystickComponent? lookJoystick;
-  HudButtonComponent? shootButton;
+  ChargeShootButton? shootButton;
   late final HudButtonComponent menu;
   late final HealthBar healthBar;
   late final HudButtonComponent debugMenuButton;
@@ -356,7 +356,7 @@ class GameHud extends PositionComponent
           ..strokeWidth = 0.3,
       ),
     );
-    shootButton = HudButtonComponent(
+    shootButton = ChargeShootButton(
       button: AimShootPad(
         fillColor: Colors.cyan.withAlpha(25),
         strokeColor: Colors.cyan.withAlpha(90),
@@ -367,7 +367,6 @@ class GameHud extends PositionComponent
       ),
       onPressed: beginCharge,
       onReleased: releaseCharge,
-      onCancelled: releaseCharge,
     );
 
     menu = HudButtonComponent(
@@ -512,6 +511,69 @@ class GameHud extends PositionComponent
     potencyBar.position = Vector2((viewSize.x - potencyBar.size.x) / 2, 24);
     shootHint.size = viewSize;
     shootHint.position = Vector2.zero();
+  }
+}
+
+/// Hold-to-charge fire pad. Uses [DragCallbacks] so a second finger on the
+/// stick (or anywhere else) cannot cancel the charge the way a tap does.
+class ChargeShootButton extends PositionComponent with DragCallbacks {
+  ChargeShootButton({
+    required this.button,
+    required this.buttonDown,
+    required this.onPressed,
+    required this.onReleased,
+  }) : super(size: button.size, anchor: Anchor.center);
+
+  final PositionComponent button;
+  final PositionComponent buttonDown;
+  final VoidCallback onPressed;
+  final VoidCallback onReleased;
+
+  int? _pointerId;
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    add(button);
+  }
+
+  @override
+  bool containsLocalPoint(Vector2 point) {
+    return (point - size / 2).length <= AimShootPad.radius;
+  }
+
+  void _showDown(bool down) {
+    if (down) {
+      if (button.isMounted) button.removeFromParent();
+      if (!buttonDown.isMounted) add(buttonDown);
+    } else {
+      if (buttonDown.isMounted) buttonDown.removeFromParent();
+      if (!button.isMounted) add(button);
+    }
+  }
+
+  @override
+  void onDragStart(DragStartEvent event) {
+    super.onDragStart(event);
+    if (_pointerId != null) return;
+    _pointerId = event.pointerId;
+    _showDown(true);
+    onPressed();
+  }
+
+  @override
+  void onDragEnd(DragEndEvent event) {
+    super.onDragEnd(event);
+    if (event.pointerId != _pointerId) return;
+    _pointerId = null;
+    _showDown(false);
+    onReleased();
+  }
+
+  @override
+  void onDragCancel(DragCancelEvent event) {
+    if (event.pointerId != _pointerId) return;
+    super.onDragCancel(event);
   }
 }
 
