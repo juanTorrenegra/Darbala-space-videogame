@@ -32,6 +32,11 @@ class _VisorOverlayState extends ConsumerState<VisorOverlay> {
   /// Font size for the 1/2 joystick mode labels.
   static const double stickModeFontSize = 25;
 
+  bool _isCurrentSkipLevel(int oneBased) {
+    final level = game.currentLevel;
+    return level is SectorLevel && level.campaignIndex == oneBased - 1;
+  }
+
   void _jumpToLevel(int oneBased) {
     game.overlays.remove('MainMenu');
     if (!game.overlays.isActive('HudDecoration')) {
@@ -109,12 +114,26 @@ class _VisorOverlayState extends ConsumerState<VisorOverlay> {
                           padding: const EdgeInsets.symmetric(vertical: 4),
                           child: Text(
                             '$i',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'Megatrans',
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 2,
-                              color: Colors.white70,
+                              color: _isCurrentSkipLevel(i)
+                                  ? Colors.cyanAccent
+                                  : Colors.cyanAccent.withValues(alpha: 0.7),
+                              shadows: _isCurrentSkipLevel(i)
+                                  ? const [
+                                      Shadow(
+                                        color: Colors.cyanAccent,
+                                        blurRadius: 12,
+                                      ),
+                                      Shadow(
+                                        color: Colors.white,
+                                        blurRadius: 24,
+                                      ),
+                                    ]
+                                  : null,
                             ),
                           ),
                         ),

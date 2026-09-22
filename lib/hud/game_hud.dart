@@ -4,6 +4,7 @@ import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/input.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide Matrix4;
 import 'package:flutter/services.dart';
 import 'package:juanshooter/game.dart';
@@ -367,7 +368,7 @@ class GameHud extends PositionComponent
       ),
       onPressed: beginCharge,
       onReleased: releaseCharge,
-    );
+    )..priority = 300;
 
     menu = HudButtonComponent(
       button: TextComponent(
@@ -514,9 +515,13 @@ class GameHud extends PositionComponent
   }
 }
 
-/// Hold-to-charge fire pad. Uses [DragCallbacks] so a second finger on the
-/// stick (or anywhere else) cannot cancel the charge the way a tap does.
-class ChargeShootButton extends PositionComponent with DragCallbacks {
+/// Hold-to-charge fire pad.
+///
+/// Uses taps so a still press on Android fires immediately (Flame's drag
+/// recognizer waits for hit-slop). A second finger cancels that tap, so the
+/// shoot pointer is also watched on [GestureBinding.pointerRouter] and the
+/// charge only ends when that finger lifts.
+class ChargeShootButton extends PositionComponent with TapCallbacks {
   ChargeShootButton({
     required this.button,
     required this.buttonDown,
@@ -538,8 +543,29 @@ class ChargeShootButton extends PositionComponent with DragCallbacks {
   }
 
   @override
-  bool containsLocalPoint(Vector2 point) {
-    return (point - size / 2).length <= AimShootPad.radius;
+  void onRemove() {
+    _unbindPointer();
+    super.onRemove();
+  }
+
+  void _bindPointer(int id) {
+    _unbindPointer();
+    _pointerId = id;
+    GestureBinding.instance.pointerRouter.addRoute(id, _onPointer);
+  }
+
+  void _unbindPointer() {
+    final id = _pointerId;
+    if (id == null) return;
+    GestureBinding.instance.pointerRouter.removeRoute(id, _onPointer);
+    _pointerId = null;
+  }
+
+  void _onPointer(PointerEvent event) {
+    if (event.pointer != _pointerId) return;
+    if (event is PointerUpEvent || event is PointerCancelEvent) {
+      _finishPress();
+    }
   }
 
   void _showDown(bool down) {
@@ -552,28 +578,35 @@ class ChargeShootButton extends PositionComponent with DragCallbacks {
     }
   }
 
-  @override
-  void onDragStart(DragStartEvent event) {
-    super.onDragStart(event);
+  void _startPress(int pointerId) {
     if (_pointerId != null) return;
-    _pointerId = event.pointerId;
+    _bindPointer(pointerId);
     _showDown(true);
     onPressed();
   }
 
-  @override
-  void onDragEnd(DragEndEvent event) {
-    super.onDragEnd(event);
-    if (event.pointerId != _pointerId) return;
-    _pointerId = null;
+  void _finishPress() {
+    if (_pointerId == null) return;
+    _unbindPointer();
     _showDown(false);
     onReleased();
   }
 
   @override
-  void onDragCancel(DragCancelEvent event) {
-    if (event.pointerId != _pointerId) return;
-    super.onDragCancel(event);
+  void onTapDown(TapDownEvent event) {
+    _startPress(event.pointerId);
+  }
+
+  @override
+  void onTapUp(TapUpEvent event) {
+    if (event.pointerId == _pointerId) {
+      _finishPress();
+    }
+  }
+
+  @override
+  void onTapCancel(TapCancelEvent event) {
+    // Second finger cancels the tap; keep charging until this pointer lifts.
   }
 }
 

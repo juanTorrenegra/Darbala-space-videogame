@@ -27,6 +27,7 @@ class SectorLevel extends GameLevel {
     required this.nextTitle,
     required this.spawnScene,
     this.nextIndex,
+    this.campaignIndex = 0,
   });
 
   @override
@@ -40,6 +41,9 @@ class SectorLevel extends GameLevel {
 
   /// Index into [_campaign] for the following sector, or null after the last.
   final int? nextIndex;
+
+  /// Play-order index of this sector (0 = first fight, 7 = last).
+  final int campaignIndex;
 
   /// Center of the playfield (the original spawn point of the prototype).
   static final Vector2 center = Vector2(380, 380);
@@ -77,6 +81,7 @@ class SectorLevel extends GameLevel {
       nextTitle: spec.nextTitle,
       spawnScene: spec.spawnScene,
       nextIndex: hasNext ? clamped + 1 : null,
+      campaignIndex: clamped,
     );
   }
 
