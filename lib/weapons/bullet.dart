@@ -5,13 +5,22 @@ import 'package:flame/components.dart';
 import 'package:flutter/rendering.dart';
 import 'package:juanshooter/game.dart';
 
+/// Any player-fired shot. Enemies and rocks test this instead of [Bullet]
+/// so sprite lasers and procedural ammo all deal damage the same way.
+mixin PlayerProjectile on PositionComponent {
+  int get damage;
+}
+
 /// Off-screen shots still move and collide; they are not drawn, and they
 /// despawn after [maxFlightSeconds] so they cannot accumulate forever.
-mixin ProjectileLifetimeAndCull on SpriteComponent, HasGameReference<MyGame> {
+mixin ProjectileLifetimeAndCull on PositionComponent, HasGameReference<MyGame> {
   static const double maxFlightSeconds = 8;
   static const double renderMargin = 96;
 
   double _flightAge = 0;
+
+  bool get isProjectileVisible =>
+      game.isWorldPointVisible(position, margin: renderMargin);
 
   void tickProjectileLifetime(double dt) {
     _flightAge += dt;
@@ -22,14 +31,15 @@ mixin ProjectileLifetimeAndCull on SpriteComponent, HasGameReference<MyGame> {
 
   @override
   void render(Canvas canvas) {
-    if (!game.isWorldPointVisible(position, margin: renderMargin)) return;
+    if (!isProjectileVisible) return;
     super.render(canvas);
   }
 }
 
 class Bullet extends SpriteComponent
-    with HasGameReference<MyGame>, ProjectileLifetimeAndCull {
+    with HasGameReference<MyGame>, ProjectileLifetimeAndCull, PlayerProjectile {
   final double speed;
+  @override
   final int damage;
   final Vector2 _direction = Vector2.zero();
 
@@ -58,7 +68,7 @@ class Bullet extends SpriteComponent
   @override
   void update(double dt) {
     super.update(dt);
-    position += _direction * speed * dt;
+    position.addScaled(_direction, speed * dt);
     tickProjectileLifetime(dt);
   }
 }

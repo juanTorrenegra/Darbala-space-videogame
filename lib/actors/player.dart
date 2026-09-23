@@ -10,10 +10,8 @@ import 'package:juanshooter/effects/thruster_trail.dart';
 import 'package:juanshooter/game.dart';
 import 'package:juanshooter/hud/potency_bar.dart';
 import 'package:juanshooter/overlays/game_over.dart';
-import 'package:juanshooter/weapons/bullet.dart';
+import 'package:juanshooter/weapons/ammo.dart';
 import 'package:juanshooter/utils/game_utils.dart';
-
-//bullet change
 
 class Player extends SpriteComponent
     with HasGameReference<MyGame>, CollisionCallbacks {
@@ -493,14 +491,13 @@ class Player extends SpriteComponent
       10.0, // Offset adicional desde el borde
     );
 
-    final bullet = Bullet(
+    final shot = game.selectedAmmo.spawn(
       position: shootPosition,
       angle: angle,
-      speed: 100,
       damage: damage,
       sizeScale: sizeScale,
     );
-    game.universo.add(bullet);
+    game.universo.add(shot);
     game.playShotSound(sfx);
   }
 }

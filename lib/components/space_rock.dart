@@ -57,7 +57,7 @@ class SpaceRock extends SpriteComponent
     PositionComponent other,
   ) {
     super.onCollisionStart(intersectionPoints, other);
-    if (other is! Bullet) return;
+    if (other is! PlayerProjectile) return;
     _applyBlast(intersectionPoints, other, other.damage);
     other.removeFromParent();
   }

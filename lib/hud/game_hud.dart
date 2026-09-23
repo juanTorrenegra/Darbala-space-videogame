@@ -8,8 +8,10 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide Matrix4;
 import 'package:flutter/services.dart';
 import 'package:juanshooter/game.dart';
+import 'package:juanshooter/hud/ammo_selector.dart';
 import 'package:juanshooter/hud/potency_bar.dart';
 import 'package:juanshooter/hud/tutorial_shoot_hint.dart';
+import 'package:juanshooter/weapons/ammo.dart';
 import 'package:juanshooter/overlays/informacion_juego.dart';
 import 'package:vector_math/vector_math_64.dart' as vm;
 
@@ -172,6 +174,7 @@ class GameHud extends PositionComponent
   JoystickComponent? lookJoystick;
   ChargeShootButton? shootButton;
   late final HudButtonComponent menu;
+  late final AmmoSelector ammoSelector;
   late final HealthBar healthBar;
   late final HudButtonComponent debugMenuButton;
   late final HudButtonComponent debugKillAllButton;
@@ -259,6 +262,8 @@ class GameHud extends PositionComponent
       _keyboardMovement.normalize();
     }
 
+    _syncAmmoHotkeys();
+
     final spaceDown = kb.isLogicalKeyPressed(LogicalKeyboardKey.space);
     if (spaceDown && !_spaceWasDown && !game.paused) {
       beginCharge();
@@ -266,6 +271,23 @@ class GameHud extends PositionComponent
       releaseCharge();
     }
     _spaceWasDown = spaceDown;
+  }
+
+  void _syncAmmoHotkeys() {
+    final kb = HardwareKeyboard.instance;
+    if (kb.isLogicalKeyPressed(LogicalKeyboardKey.digit1) ||
+        kb.isLogicalKeyPressed(LogicalKeyboardKey.numpad1)) {
+      game.selectedAmmo = AmmoKind.laser;
+    } else if (kb.isLogicalKeyPressed(LogicalKeyboardKey.digit2) ||
+        kb.isLogicalKeyPressed(LogicalKeyboardKey.numpad2)) {
+      game.selectedAmmo = AmmoKind.needle;
+    } else if (kb.isLogicalKeyPressed(LogicalKeyboardKey.digit3) ||
+        kb.isLogicalKeyPressed(LogicalKeyboardKey.numpad3)) {
+      game.selectedAmmo = AmmoKind.plasma;
+    } else if (kb.isLogicalKeyPressed(LogicalKeyboardKey.digit4) ||
+        kb.isLogicalKeyPressed(LogicalKeyboardKey.numpad4)) {
+      game.selectedAmmo = AmmoKind.ion;
+    }
   }
 
   void beginCharge() {
@@ -321,6 +343,7 @@ class GameHud extends PositionComponent
   void update(double dt) {
     super.update(dt);
     _syncWebKeyboardInput();
+    if (!kIsWeb) _syncAmmoHotkeys();
   }
 
   @override
@@ -427,7 +450,10 @@ class GameHud extends PositionComponent
     potencyBar = PotencyBar();
     shootHint = TutorialShootHint();
 
+    ammoSelector = AmmoSelector()..priority = 800;
+
     add(menu);
+    add(ammoSelector);
     add(healthBar);
     add(debugMenuButton);
     add(debugKillAllButton);
@@ -504,6 +530,10 @@ class GameHud extends PositionComponent
       }
     }
     menu.position = Vector2(viewSize.x / 2 - 15, viewSize.y - 60);
+    ammoSelector.position = Vector2(
+      menu.position.x - ammoSelector.size.x - 20,
+      viewSize.y - 58,
+    );
     healthBar.position = Vector2(200, 80);
     debugMenuButton.position = Vector2(10, 40);
     debugKillAllButton.anchor = Anchor.topRight;

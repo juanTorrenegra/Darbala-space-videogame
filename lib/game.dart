@@ -23,6 +23,7 @@ import 'package:flame_audio/flame_audio.dart';
 import 'package:juanshooter/levels/game_level.dart';
 import 'package:juanshooter/overlays/game_over.dart';
 import 'package:juanshooter/overlays/level_title_overlay.dart';
+import 'package:juanshooter/weapons/ammo.dart';
 import 'package:juanshooter/weapons/bullet.dart';
 import 'package:juanshooter/weapons/enemy_bullet.dart';
 import 'package:juanshooter/effects/explosion_particles.dart';
@@ -58,6 +59,7 @@ class MyGame extends FlameGame
 
   final ValueNotifier<int> scoreNotifier = ValueNotifier<int>(0);
   int shipsDestroyed = 0;
+  AmmoKind selectedAmmo = AmmoKind.laser;
   late Player player;
 
   late final GameHud hud;
@@ -195,7 +197,7 @@ class MyGame extends FlameGame
     if (!universo.isMounted) return;
     for (final component in universo.children.toList()) {
       if (component is Enemigo ||
-          component is Bullet ||
+          component is PlayerProjectile ||
           component is EnemyBullet ||
           component is ExplosionEffect ||
           component is RockTarget ||
@@ -933,7 +935,7 @@ class MyGame extends FlameGame
     if (universo.isMounted) {
       for (final component in universo.children.toList()) {
         // Aquí necesitarías importar las clases
-        if (component is Bullet || component is EnemyBullet) {
+        if (component is PlayerProjectile || component is EnemyBullet) {
           component.removeFromParent();
           bulletsRemoved++;
         } else if (component is ExplosionEffect) {

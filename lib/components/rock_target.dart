@@ -108,7 +108,7 @@ class RockTarget extends SpriteComponent
     PositionComponent other,
   ) {
     super.onCollisionStart(intersectionPoints, other);
-    if (other is! Bullet || _destroying) return;
+    if (other is! PlayerProjectile || _destroying) return;
 
     final damage = other.damage;
     _applyPush(intersectionPoints, other, damage);

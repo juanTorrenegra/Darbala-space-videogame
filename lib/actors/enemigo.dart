@@ -167,7 +167,7 @@ abstract class Enemigo extends SpriteComponent
   ) {
     super.onCollisionStart(intersectionPoints, other);
 
-    if (other is Bullet) {
+    if (other is PlayerProjectile) {
       _showDamagePopup(other.damage);
       _takeDamage(other.damage);
       other.removeFromParent();
