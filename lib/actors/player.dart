@@ -13,6 +13,8 @@ import 'package:juanshooter/overlays/game_over.dart';
 import 'package:juanshooter/weapons/bullet.dart';
 import 'package:juanshooter/utils/game_utils.dart';
 
+//bullet change
+
 class Player extends SpriteComponent
     with HasGameReference<MyGame>, CollisionCallbacks {
   Player({required Sprite sprite, required Vector2 position})
@@ -69,7 +71,8 @@ class Player extends SpriteComponent
   double? aimClampCenter;
   double aimClampRange = pi / 2;
 
-  void takeDamage(int damage) {    if (isInvulnerable || _isDying) return;
+  void takeDamage(int damage) {
+    if (isInvulnerable || _isDying) return;
 
     currentHitPoints -= damage;
 
