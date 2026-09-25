@@ -455,7 +455,7 @@ class Player extends SpriteComponent
           var newAngle = look.screenAngle();
           final center = aimClampCenter;
           if (center != null) {
-            // Clamp al cono permitido (tutorial: no apuntar hacia atrás).
+            // Clamp al cono permitido (tutorial: no apuntar hacia atrás)..
             var d = (newAngle - center) % (2 * pi);
             if (d > pi) d -= 2 * pi;
             if (d < -pi) d += 2 * pi;
