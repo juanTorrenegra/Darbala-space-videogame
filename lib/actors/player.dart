@@ -18,7 +18,7 @@ class Player extends SpriteComponent
   Player({required Sprite sprite, required Vector2 position})
     : super(
         position: position,
-        size: Vector2.all(28),
+        size: Vector2.all(80),
         anchor: Anchor.center,
         sprite: sprite,
         priority: 8,

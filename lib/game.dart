@@ -43,7 +43,7 @@ class MyGame extends FlameGame
         flame_events.PanDetector {
   MyGame({this.onRunEnded});
 
-  /// Called once when a run ends so the app layer can POST the scor
+  /// Called once when a run ends so the app layer can POST the score
   final void Function(int score)? onRunEnded;
 
   /// Fixed design resolution (16:9). The Flutter shell letterboxes this frame;
@@ -657,7 +657,7 @@ class MyGame extends FlameGame
     add(camara!);
 
     player = Player(
-      sprite: await Sprite.load('canvaSpaceshipSmall.png'),
+      sprite: await Sprite.load('anima02.png'),
       position: Vector2(380, 380),
     );
     playerMaxHitPoints = basePlayerMaxHitPoints;
@@ -1028,7 +1028,7 @@ class MyGame extends FlameGame
 
     // 2. Crear nuevo jugador
     player = Player(
-      sprite: await Sprite.load('canvaSpaceshipSmall.png'),
+      sprite: await Sprite.load('anima02.png'),
       position: Vector2(380, 380),
     );
 
