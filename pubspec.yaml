@@ -82,10 +82,10 @@ flutter:
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
-flutter_icons:
+flutter_launcher_icons:
   android: true
-  ios: true
-  image_path: assets/images/ship30x24.png
+  ios: false
+  image_path: assets/images/darbalaIcon.png
 
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/to/asset-from-package

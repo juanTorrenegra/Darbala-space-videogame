@@ -657,7 +657,7 @@ class MyGame extends FlameGame
     add(camara!);
 
     player = Player(
-      sprite: await Sprite.load('anima02.png'),
+      sprite: await Sprite.load('canvaSpaceshipSmall.png.png'),
       position: Vector2(380, 380),
     );
     playerMaxHitPoints = basePlayerMaxHitPoints;
@@ -1028,7 +1028,7 @@ class MyGame extends FlameGame
 
     // 2. Crear nuevo jugador
     player = Player(
-      sprite: await Sprite.load('anima02.png'),
+      sprite: await Sprite.load('canvaSpaceshipSmall.png'),
       position: Vector2(380, 380),
     );
 
