@@ -13,16 +13,53 @@ import 'package:juanshooter/overlays/game_over.dart';
 import 'package:juanshooter/weapons/ammo.dart';
 import 'package:juanshooter/utils/game_utils.dart';
 
-class Player extends SpriteComponent
+class Player extends SpriteAnimationComponent
     with HasGameReference<MyGame>, CollisionCallbacks {
-  Player({required Sprite sprite, required Vector2 position})
+  Player({required Vector2 position})
     : super(
         position: position,
-        size: Vector2.all(80),
+        size: Vector2.all(50),
         anchor: Anchor.center,
-        sprite: sprite,
         priority: 8,
+        playing: false,
+        autoResize: false,
       );
+
+  /// CCW from nose-right: nave_14, nave_15, nave_00 … nave_13.
+  static const List<String> _facingFiles = [
+    'isometric/nave_14.png',
+    'isometric/nave_15.png',
+    'isometric/nave_00.png',
+    'isometric/nave_01.png',
+    'isometric/nave_02.png',
+    'isometric/nave_03.png',
+    'isometric/nave_04.png',
+    'isometric/nave_05.png',
+    'isometric/nave_06.png',
+    'isometric/nave_07.png',
+    'isometric/nave_08.png',
+    'isometric/nave_09.png',
+    'isometric/nave_10.png',
+    'isometric/nave_11.png',
+    'isometric/nave_12.png',
+    'isometric/nave_13.png',
+  ];
+
+  static const int _facingCount = 16;
+
+  /// Nose direction in world radians (0 = right, clockwise positive).
+  /// The isometric frames are pre-rotated, so [transform] angle stays 0.
+  double _logicalAngle = 0;
+
+  @override
+  double get angle => _logicalAngle;
+
+  @override
+  set angle(double a) {
+    _logicalAngle = a;
+    _syncFacingSprite();
+  }
+
   //double _baseSpeed = 80;;
   double currentSpeed = 50;
   double _angle = 0;
@@ -350,10 +387,29 @@ class Player extends SpriteComponent
 
   @override
   Future<void> onLoad() async {
+    final sprites = <Sprite>[];
+    for (final file in _facingFiles) {
+      sprites.add(await Sprite.load(file));
+    }
+    animation = SpriteAnimation.spriteList(sprites, stepTime: 1);
+    playing = false;
+    _syncFacingSprite();
+
     add(CircleHitbox()..collisionType = CollisionType.active);
     game.universo.add(ChargeAimEffect());
     _trail = ThrusterTrail(player: this);
     game.universo.add(_trail!);
+  }
+
+  void _syncFacingSprite() {
+    final ticker = animationTicker;
+    if (ticker == null) return;
+    // World angle is clockwise from the right (y grows down). Frames walk
+    // the other way: 0 = nave_14 (right), then CCW toward up (nave_15).
+    final tau = 2 * pi;
+    var t = -_logicalAngle / tau;
+    t -= t.floorToDouble();
+    ticker.currentIndex = (t * _facingCount + 0.5).floor() % _facingCount;
   }
 
   double get bodyRadius => min(size.x, size.y) * 0.5;
@@ -448,11 +504,14 @@ class Player extends SpriteComponent
         }
       }
 
-      // Rotación: look joystick; en web también sigue al mouse
+      // 16-dir isometric facing follows the movement stick; look/mouse
+      // still turn the ship when the move stick is idle (dual-stick / web).
       if (!game.controlsLocked) {
+        final move = game.hud.effectiveMovementDelta;
         final look = game.hud.effectiveLookDelta;
-        if (look.length2 > 0) {
-          var newAngle = look.screenAngle();
+        final dir = move.length2 > 0.0001 ? move : look;
+        if (dir.length2 > 0) {
+          var newAngle = dir.screenAngle();
           final center = aimClampCenter;
           if (center != null) {
             // Clamp al cono permitido (tutorial: no apuntar hacia atrás)..
@@ -463,7 +522,8 @@ class Player extends SpriteComponent
             newAngle = center + d;
           }
           _angle = newAngle;
-          const double offset = -pi / 2; // Ajusta este valor según tu sprite
+          const double offset =
+              -pi / 2; // screenAngle up=0 → world angle right=0
           angle = _angle + offset;
         }
       }

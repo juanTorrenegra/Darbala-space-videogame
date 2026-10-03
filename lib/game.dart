@@ -656,10 +656,7 @@ class MyGame extends FlameGame
     );
     add(camara!);
 
-    player = Player(
-      sprite: await Sprite.load('canvaSpaceshipSmall.png.png'),
-      position: Vector2(380, 380),
-    );
+    player = Player(position: Vector2(380, 380));
     playerMaxHitPoints = basePlayerMaxHitPoints;
     player.maxHitPoints = playerMaxHitPoints;
     player.currentHitPoints = playerMaxHitPoints;
@@ -1027,10 +1024,7 @@ class MyGame extends FlameGame
     }
 
     // 2. Crear nuevo jugador
-    player = Player(
-      sprite: await Sprite.load('canvaSpaceshipSmall.png'),
-      position: Vector2(380, 380),
-    );
+    player = Player(position: Vector2(380, 380));
 
     // 3. Misma run: conservar el máximo mejorado (power-ups), no el default del [Player].
     // La velocidad queda en la inicial del [Player] (50).

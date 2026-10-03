@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "781208763295",
+    "project_id": "darbala",
+    "storage_bucket": "darbala.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:781208763295:android:90acfb4b68d44194c8dbaa",
+        "android_client_info": {
+          "package_name": "com.darbala.game"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQ40H3BqGinX4EREqbul89TKgYH0ELQvQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
