@@ -35,6 +35,8 @@ import 'package:juanshooter/effects/explosion_particles.dart';
 
 enum AppStickMode { single, dual }
 
+enum ShipView { isometric, perspective }
+
 class MyGame extends FlameGame
     with
         HasGameReference<MyGame>,
@@ -60,6 +62,7 @@ class MyGame extends FlameGame
   final ValueNotifier<int> scoreNotifier = ValueNotifier<int>(0);
   int shipsDestroyed = 0;
   AmmoKind selectedAmmo = AmmoKind.laser;
+  ShipView shipView = ShipView.isometric;
   late Player player;
 
   late final GameHud hud;

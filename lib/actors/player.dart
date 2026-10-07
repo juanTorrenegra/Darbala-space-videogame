@@ -18,7 +18,7 @@ class Player extends SpriteAnimationComponent
   Player({required Vector2 position})
     : super(
         position: position,
-        size: Vector2.all(50),
+        size: Vector2.all(90),
         anchor: Anchor.center,
         priority: 8,
         playing: false,
@@ -26,26 +26,29 @@ class Player extends SpriteAnimationComponent
       );
 
   /// CCW from nose-right: nave_14, nave_15, nave_00 … nave_13.
-  static const List<String> _facingFiles = [
-    'isometric/nave_14.png',
-    'isometric/nave_15.png',
-    'isometric/nave_00.png',
-    'isometric/nave_01.png',
-    'isometric/nave_02.png',
-    'isometric/nave_03.png',
-    'isometric/nave_04.png',
-    'isometric/nave_05.png',
-    'isometric/nave_06.png',
-    'isometric/nave_07.png',
-    'isometric/nave_08.png',
-    'isometric/nave_09.png',
-    'isometric/nave_10.png',
-    'isometric/nave_11.png',
-    'isometric/nave_12.png',
-    'isometric/nave_13.png',
+  static const List<String> _facingNames = [
+    'nave_14.png',
+    'nave_15.png',
+    'nave_00.png',
+    'nave_01.png',
+    'nave_02.png',
+    'nave_03.png',
+    'nave_04.png',
+    'nave_05.png',
+    'nave_06.png',
+    'nave_07.png',
+    'nave_08.png',
+    'nave_09.png',
+    'nave_10.png',
+    'nave_11.png',
+    'nave_12.png',
+    'nave_13.png',
   ];
 
   static const int _facingCount = 16;
+
+  SpriteAnimation? _isometricAnimation;
+  SpriteAnimation? _perspectiveAnimation;
 
   /// Nose direction in world radians (0 = right, clockwise positive).
   /// The isometric frames are pre-rotated, so [transform] angle stays 0.
@@ -387,11 +390,11 @@ class Player extends SpriteAnimationComponent
 
   @override
   Future<void> onLoad() async {
-    final sprites = <Sprite>[];
-    for (final file in _facingFiles) {
-      sprites.add(await Sprite.load(file));
-    }
-    animation = SpriteAnimation.spriteList(sprites, stepTime: 1);
+    _isometricAnimation = await _loadFacingAnimation('LongIsometric');
+    _perspectiveAnimation = await _loadFacingAnimation('LongPerspective');
+    animation = game.shipView == ShipView.perspective
+        ? _perspectiveAnimation
+        : _isometricAnimation;
     playing = false;
     _syncFacingSprite();
 
@@ -399,6 +402,24 @@ class Player extends SpriteAnimationComponent
     game.universo.add(ChargeAimEffect());
     _trail = ThrusterTrail(player: this);
     game.universo.add(_trail!);
+  }
+
+  Future<SpriteAnimation> _loadFacingAnimation(String folder) async {
+    final sprites = <Sprite>[];
+    for (final name in _facingNames) {
+      sprites.add(await Sprite.load('$folder/$name'));
+    }
+    return SpriteAnimation.spriteList(sprites, stepTime: 1);
+  }
+
+  void applyShipView(ShipView view) {
+    final next = view == ShipView.perspective
+        ? _perspectiveAnimation
+        : _isometricAnimation;
+    if (next == null || animation == next) return;
+    animation = next;
+    playing = false;
+    _syncFacingSprite();
   }
 
   void _syncFacingSprite() {
