@@ -31,7 +31,7 @@ import 'package:juanshooter/effects/explosion_particles.dart';
 // Logical game frame = 1280×720 (16:9). See MyGame.logicalWidth / logicalHeight..
 // juego: nave que elimina asteroides para encontrar armas para derrotar monstruos del espacio, escenario: dentro de un imperio y uno es un minero: mision: minar y mejorar la nave para poder acceder a MediumWorld y HardWorld, competir contra otros mineros compitiendo y compartiendo loot.
 
-//prototipo
+//prototipo.
 
 enum AppStickMode { single, dual }
 
