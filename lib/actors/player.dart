@@ -18,40 +18,53 @@ class Player extends SpriteAnimationComponent
   Player({required Vector2 position})
     : super(
         position: position,
-        size: Vector2.all(90),
+        size: Vector2.all(50),
         anchor: Anchor.center,
         priority: 8,
         playing: false,
         autoResize: false,
       );
 
-  /// CCW from nose-right: nave_14, nave_15, nave_00 … nave_13.
+  /// CCW from nose-right: nave_28, nave_29 … nave_31, nave_00 … nave_27.
   static const List<String> _facingNames = [
-    'nave_14.png',
-    'nave_15.png',
-    'nave_00.png',
-    'nave_01.png',
-    'nave_02.png',
-    'nave_03.png',
-    'nave_04.png',
-    'nave_05.png',
-    'nave_06.png',
-    'nave_07.png',
-    'nave_08.png',
-    'nave_09.png',
-    'nave_10.png',
-    'nave_11.png',
-    'nave_12.png',
-    'nave_13.png',
+    'nave_28.webp',
+    'nave_29.webp',
+    'nave_30.webp',
+    'nave_31.webp',
+    'nave_00.webp',
+    'nave_01.webp',
+    'nave_02.webp',
+    'nave_03.webp',
+    'nave_04.webp',
+    'nave_05.webp',
+    'nave_06.webp',
+    'nave_07.webp',
+    'nave_08.webp',
+    'nave_09.webp',
+    'nave_10.webp',
+    'nave_11.webp',
+    'nave_12.webp',
+    'nave_13.webp',
+    'nave_14.webp',
+    'nave_15.webp',
+    'nave_16.webp',
+    'nave_17.webp',
+    'nave_18.webp',
+    'nave_19.webp',
+    'nave_20.webp',
+    'nave_21.webp',
+    'nave_22.webp',
+    'nave_23.webp',
+    'nave_24.webp',
+    'nave_25.webp',
+    'nave_26.webp',
+    'nave_27.webp',
   ];
 
-  static const int _facingCount = 16;
-
-  SpriteAnimation? _isometricAnimation;
-  SpriteAnimation? _perspectiveAnimation;
+  static const int _facingCount = 32;
 
   /// Nose direction in world radians (0 = right, clockwise positive).
-  /// The isometric frames are pre-rotated, so [transform] angle stays 0.
+  /// The facing frames are pre-rotated, so [transform] angle stays 0.
   double _logicalAngle = 0;
 
   @override
@@ -390,11 +403,7 @@ class Player extends SpriteAnimationComponent
 
   @override
   Future<void> onLoad() async {
-    _isometricAnimation = await _loadFacingAnimation('LongIsometric');
-    _perspectiveAnimation = await _loadFacingAnimation('LongPerspective');
-    animation = game.shipView == ShipView.perspective
-        ? _perspectiveAnimation
-        : _isometricAnimation;
+    animation = await _loadFacingAnimation('blackShip');
     playing = false;
     _syncFacingSprite();
 
@@ -412,21 +421,11 @@ class Player extends SpriteAnimationComponent
     return SpriteAnimation.spriteList(sprites, stepTime: 1);
   }
 
-  void applyShipView(ShipView view) {
-    final next = view == ShipView.perspective
-        ? _perspectiveAnimation
-        : _isometricAnimation;
-    if (next == null || animation == next) return;
-    animation = next;
-    playing = false;
-    _syncFacingSprite();
-  }
-
   void _syncFacingSprite() {
     final ticker = animationTicker;
     if (ticker == null) return;
     // World angle is clockwise from the right (y grows down). Frames walk
-    // the other way: 0 = nave_14 (right), then CCW toward up (nave_15).
+    // the other way: 0 = nave_28 (right), then CCW toward up (nave_29).
     final tau = 2 * pi;
     var t = -_logicalAngle / tau;
     t -= t.floorToDouble();
@@ -525,7 +524,7 @@ class Player extends SpriteAnimationComponent
         }
       }
 
-      // 16-dir isometric facing follows the movement stick; look/mouse
+      // 32-dir facing follows the movement stick; look/mouse
       // still turn the ship when the move stick is idle (dual-stick / web).
       if (!game.controlsLocked) {
         final move = game.hud.effectiveMovementDelta;
