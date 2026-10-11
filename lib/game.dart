@@ -86,6 +86,9 @@ class MyGame extends FlameGame
   /// While false, enemies will not wake from proximity (level intro slide).
   bool enemyAlertsEnabled = true;
 
+  /// Debug: when false, enemies stay idle/roam and never attack.
+  bool enemyHostilityEnabled = true;
+
   /// While false the starfield holds still instead of tracking the ship.
   /// Scripted exits fake [Player.velocity] to keep the thruster trail lit,
   /// which would otherwise whip the stars past at several times normal speed.
@@ -559,6 +562,16 @@ class MyGame extends FlameGame
   /// Debug: blow up every enemy and tutorial target in the world, each with
   /// its own explosion, so a level can be skipped while testing. Enemies run
   /// their normal death path, so score and level completion still fire.
+  void setEnemyHostilityEnabled(bool enabled) {
+    enemyHostilityEnabled = enabled;
+    if (enabled || !universo.isMounted) return;
+    for (final enemy in universo.children.whereType<Enemigo>()) {
+      if (enemy.isActivated) {
+        enemy.deactivate();
+      }
+    }
+  }
+
   void destroyAllTargets() {
     for (final enemy in universo.children.whereType<Enemigo>().toList()) {
       enemy.killInstantly();

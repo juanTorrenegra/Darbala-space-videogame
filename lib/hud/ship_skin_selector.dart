@@ -8,11 +8,15 @@ class ShipSkinSelector extends PositionComponent with HasGameReference<MyGame> {
   static const double buttonSize = 40;
   static const double gap = 6;
   static const int slotCount = 3;
+  static const double enemyButtonWidth = 88;
 
   ShipSkinSelector()
     : super(
         size: Vector2(
-          slotCount * buttonSize + (slotCount - 1) * gap,
+          slotCount * buttonSize +
+              (slotCount - 1) * gap +
+              gap +
+              enemyButtonWidth,
           buttonSize,
         ),
       );
@@ -29,6 +33,12 @@ class ShipSkinSelector extends PositionComponent with HasGameReference<MyGame> {
         ),
       );
     }
+    add(
+      EnemyHostilityButton(
+        position: Vector2(slotCount * (buttonSize + gap), 0),
+        size: Vector2(enemyButtonWidth, buttonSize),
+      ),
+    );
   }
 }
 
@@ -66,6 +76,44 @@ class ShipSkinButton extends PositionComponent
           color: _selected
               ? Colors.cyanAccent
               : Colors.cyanAccent.withAlpha(120),
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    painter.paint(
+      canvas,
+      Offset((size.x - painter.width) / 2, (size.y - painter.height) / 2),
+    );
+  }
+}
+
+class EnemyHostilityButton extends PositionComponent
+    with HasGameReference<MyGame>, TapCallbacks {
+  EnemyHostilityButton({required super.position, required super.size});
+
+  bool get _peaceMode => !game.enemyHostilityEnabled;
+
+  @override
+  void onTapDown(TapDownEvent event) {
+    event.continuePropagation = false;
+    game.setEnemyHostilityEnabled(!game.enemyHostilityEnabled);
+  }
+
+  @override
+  void render(Canvas canvas) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: 'ENEMY',
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: _peaceMode ? Colors.cyanAccent : Colors.white54,
+          shadows: _peaceMode
+              ? const [
+                  Shadow(color: Colors.cyanAccent, blurRadius: 10),
+                  Shadow(color: Colors.cyanAccent, blurRadius: 18),
+                ]
+              : null,
         ),
       ),
       textDirection: TextDirection.ltr,

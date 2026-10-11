@@ -75,7 +75,9 @@ abstract class Enemigo extends SpriteComponent
   }
 
   void _updateProximityState() {
-    if (!game.player.isMounted || !game.enemyAlertsEnabled) {
+    if (!game.player.isMounted ||
+        !game.enemyAlertsEnabled ||
+        !game.enemyHostilityEnabled) {
       _hideWarning();
       return;
     }
@@ -109,7 +111,11 @@ abstract class Enemigo extends SpriteComponent
   void onIdleBehavior(double dt) {}
 
   void activate() {
-    if (_isActivated || !game.enemyAlertsEnabled) return;
+    if (_isActivated ||
+        !game.enemyAlertsEnabled ||
+        !game.enemyHostilityEnabled) {
+      return;
+    }
     _hideWarning();
     _isActivated = true;
     onActivate();
