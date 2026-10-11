@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:juanshooter/game.dart';
 import 'package:juanshooter/hud/ammo_selector.dart';
 import 'package:juanshooter/hud/potency_bar.dart';
+import 'package:juanshooter/hud/ship_skin_selector.dart';
 import 'package:juanshooter/hud/tutorial_shoot_hint.dart';
 import 'package:juanshooter/weapons/ammo.dart';
 import 'package:juanshooter/overlays/informacion_juego.dart';
@@ -175,6 +176,7 @@ class GameHud extends PositionComponent
   ChargeShootButton? shootButton;
   late final HudButtonComponent menu;
   late final AmmoSelector ammoSelector;
+  late final ShipSkinSelector shipSkinSelector;
   late final HealthBar healthBar;
   late final HudButtonComponent debugMenuButton;
   late final HudButtonComponent debugKillAllButton;
@@ -451,9 +453,11 @@ class GameHud extends PositionComponent
     shootHint = TutorialShootHint();
 
     ammoSelector = AmmoSelector()..priority = 800;
+    shipSkinSelector = ShipSkinSelector()..priority = 800;
 
     add(menu);
     add(ammoSelector);
+    add(shipSkinSelector);
     add(healthBar);
     add(debugMenuButton);
     add(debugKillAllButton);
@@ -532,6 +536,10 @@ class GameHud extends PositionComponent
     menu.position = Vector2(viewSize.x / 2 - 15, viewSize.y - 60);
     ammoSelector.position = Vector2(
       menu.position.x - ammoSelector.size.x - 20,
+      viewSize.y - 58,
+    );
+    shipSkinSelector.position = Vector2(
+      menu.position.x + 55,
       viewSize.y - 58,
     );
     healthBar.position = Vector2(200, 80);

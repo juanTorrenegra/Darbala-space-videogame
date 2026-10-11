@@ -60,6 +60,9 @@ class MyGame extends FlameGame
   final ValueNotifier<int> scoreNotifier = ValueNotifier<int>(0);
   int shipsDestroyed = 0;
   AmmoKind selectedAmmo = AmmoKind.laser;
+
+  /// Temporary sprite-folder slot: 1 = blackShip, 2 = negra0metalic32sprites.
+  int shipSkinSlot = 1;
   late Player player;
 
   late final GameHud hud;

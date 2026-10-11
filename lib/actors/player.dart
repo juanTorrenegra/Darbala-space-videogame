@@ -63,6 +63,13 @@ class Player extends SpriteAnimationComponent
 
   static const int _facingCount = 32;
 
+  static const Map<int, String> _skinFolders = {
+    1: 'blackShip',
+    2: 'negra0metalic32sprites',
+  };
+
+  final Map<int, SpriteAnimation> _skinAnimations = {};
+
   /// Nose direction in world radians (0 = right, clockwise positive).
   /// The facing frames are pre-rotated, so [transform] angle stays 0.
   double _logicalAngle = 0;
@@ -403,14 +410,28 @@ class Player extends SpriteAnimationComponent
 
   @override
   Future<void> onLoad() async {
-    animation = await _loadFacingAnimation('blackShip');
-    playing = false;
-    _syncFacingSprite();
+    await applyShipSkin(game.shipSkinSlot);
 
     add(CircleHitbox()..collisionType = CollisionType.active);
     game.universo.add(ChargeAimEffect());
     _trail = ThrusterTrail(player: this);
     game.universo.add(_trail!);
+  }
+
+  Future<void> applyShipSkin(int slot) async {
+    final folder = _skinFolders[slot];
+    if (folder == null) return;
+    game.shipSkinSlot = slot;
+    final cached = _skinAnimations[slot];
+    if (cached != null) {
+      animation = cached;
+    } else {
+      final loaded = await _loadFacingAnimation(folder);
+      _skinAnimations[slot] = loaded;
+      animation = loaded;
+    }
+    playing = false;
+    _syncFacingSprite();
   }
 
   Future<SpriteAnimation> _loadFacingAnimation(String folder) async {
