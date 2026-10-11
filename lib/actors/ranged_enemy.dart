@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flame/components.dart';
-import 'package:juanshooter/game.dart';
+import 'package:juanshooter/components/facing_frames.dart';
 import 'package:juanshooter/weapons/enemy_bullet.dart';
 import 'package:juanshooter/utils/game_utils.dart';
 import 'enemigo.dart';
@@ -29,9 +29,10 @@ class RangedEnemy extends Enemigo {
   final double _shootingThreshold; // ✅ Margen de 10 grados para disparar
   final double _shootingOffset; // ✅ Nuevo parámetro para offset de disparo
   final int _damage;
+  double _logicalAngle;
 
   RangedEnemy({
-    required Sprite sprite,
+    Sprite? sprite,
     required Vector2 position,
     Vector2? size,
     double angle = 0, //Heredado de la clase base
@@ -52,17 +53,48 @@ class RangedEnemy extends Enemigo {
            shootingThreshold * pi / 180, // Convierte a radianes
        _shootingOffset = shootingOffset, // ✅ Asigna el offset
        _damage = damage,
+       _logicalAngle = angle,
        super(
          sprite: sprite,
          position: position,
          size: size,
-         angle: angle, // ✅ Pasa el ángulo a la clase base
+         angle: 0,
          maxHitPoints: maxHitPoints,
          shield: shield,
          movementSpeed: movementSpeed,
          rotationSpeed: rotationSpeed, // ✅ Pasa la velocidad de rotación
          alarmRadius: alarmRadius,
        );
+
+  @override
+  double get angle => _logicalAngle;
+
+  @override
+  set angle(double a) {
+    _logicalAngle = a;
+    _syncFacingSprite();
+  }
+
+  void _syncFacingSprite() {
+    final ticker = animationTicker;
+    if (ticker == null) return;
+    ticker.currentIndex = FacingFrames.indexForAngle(_logicalAngle);
+  }
+
+  @override
+  Future<void> onLoad() async {
+    await applyRangedSkin(game.rangedSkinSlot);
+    await super.onLoad();
+  }
+
+  Future<void> applyRangedSkin(int slot) async {
+    final loaded = await FacingFrames.enemyAnimation(slot);
+    if (loaded == null) return;
+    game.rangedSkinSlot = slot;
+    animation = loaded;
+    playing = false;
+    _syncFacingSprite();
+  }
 
   @override
   void onActivate() {

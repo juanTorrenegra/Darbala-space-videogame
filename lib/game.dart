@@ -12,6 +12,7 @@ import 'package:juanshooter/actors/enemigo.dart';
 import 'package:juanshooter/actors/player.dart';
 import 'package:juanshooter/actors/spike_enemy.dart';
 import 'package:juanshooter/actors/crab_enemy.dart';
+import 'package:juanshooter/actors/ranged_enemy.dart';
 import 'package:juanshooter/components/circle_target.dart';
 import 'package:juanshooter/components/rock_target.dart';
 import 'package:juanshooter/components/scenery_sprite.dart';
@@ -61,8 +62,14 @@ class MyGame extends FlameGame
   int shipsDestroyed = 0;
   AmmoKind selectedAmmo = AmmoKind.laser;
 
-  /// Temporary sprite-folder slot: 1 = blackShip, 2 = negra0metalic32sprites.
+  /// Temporary sprite-folder slot: 1–5 wired.
   int shipSkinSlot = 1;
+
+  /// Temporary crab sprite-folder slot: 1–6 wired (C1–C6).
+  int crabSkinSlot = 5;
+
+  /// Temporary ranged sprite-folder slot: 1–6 wired (R1–R6).
+  int rangedSkinSlot = 6;
   late Player player;
 
   late final GameHud hud;
@@ -562,6 +569,22 @@ class MyGame extends FlameGame
   /// Debug: blow up every enemy and tutorial target in the world, each with
   /// its own explosion, so a level can be skipped while testing. Enemies run
   /// their normal death path, so score and level completion still fire.
+  Future<void> applyCrabSkin(int slot) async {
+    crabSkinSlot = slot;
+    if (!universo.isMounted) return;
+    for (final crab in universo.children.whereType<CrabEnemy>()) {
+      await crab.applyCrabSkin(slot);
+    }
+  }
+
+  Future<void> applyRangedSkin(int slot) async {
+    rangedSkinSlot = slot;
+    if (!universo.isMounted) return;
+    for (final enemy in universo.children.whereType<RangedEnemy>()) {
+      await enemy.applyRangedSkin(slot);
+    }
+  }
+
   void setEnemyHostilityEnabled(bool enabled) {
     enemyHostilityEnabled = enabled;
     if (enabled || !universo.isMounted) return;
@@ -691,7 +714,6 @@ class MyGame extends FlameGame
 
   /// Four patrol crabs just outside each viewport edge (16 total) to test markers.
   Future<void> spawnEdgePatrolCrabs({Vector2? origin}) async {
-    final sprite = await Sprite.load('zombieTargetM500.png');
     final patrolOrigin = origin ?? player.position;
     final half =
         _visibleWorldHalf() ??
@@ -726,9 +748,8 @@ class MyGame extends FlameGame
     void addCrab(double x, double y) {
       universo.add(
         CrabEnemy(
-          sprite: sprite,
           position: Vector2(x, y),
-          size: Vector2(20, 20),
+          size: Vector2(60, 60),
           maxHitPoints: 50,
           rotationSpeed: 4.0,
           damage: 30,

@@ -11,7 +11,7 @@ import 'package:juanshooter/game.dart';
 import 'package:juanshooter/hud/potency_bar.dart';
 import 'package:juanshooter/weapons/bullet.dart';
 
-abstract class Enemigo extends SpriteComponent
+abstract class Enemigo extends SpriteAnimationComponent
     with
         HasGameReference<MyGame>,
         CollisionCallbacks,
@@ -28,11 +28,12 @@ abstract class Enemigo extends SpriteComponent
   final double warningRadius;
   bool _isActivated = false;
   AlarmWarningMark? _warningMark;
+  final Sprite? _staticSprite;
 
   bool get isActivated => _isActivated;
 
   Enemigo({
-    required Sprite sprite,
+    Sprite? sprite,
     required Vector2 position,
     Vector2? size,
     double angle = 0, // ✅ Ángulo inicial personalizable
@@ -44,16 +45,22 @@ abstract class Enemigo extends SpriteComponent
     this.warningRadius = 180,
   }) : hitPoints = maxHitPoints,
        maxHitPoints = maxHitPoints,
+       _staticSprite = sprite,
        super(
          position: position,
-         size: size ?? Vector2.all(60),
+         size: (size ?? Vector2.all(60)) * 3,
          anchor: Anchor.center,
          angle: angle, // ✅ Usa el ángulo proporcionado
-         sprite: sprite,
+         playing: false,
+         autoResize: false,
        );
 
   @override
   Future<void> onLoad() async {
+    if (animation == null && _staticSprite != null) {
+      animation = SpriteAnimation.spriteList([_staticSprite!], stepTime: 1);
+      playing = false;
+    }
     add(CircleHitbox(collisionType: CollisionType.active));
     // World-space bar so it stays on the top of the sprite, not a rotating corner.
     game.universo.add(EnemyHealthBar(host: this));
@@ -97,7 +104,7 @@ abstract class Enemigo extends SpriteComponent
     if (_warningMark != null) return;
     final mark = AlarmWarningMark(host: this);
     _warningMark = mark;
-    add(mark);
+    game.universo.add(mark);
   }
 
   void _hideWarning() {
@@ -215,7 +222,8 @@ abstract class Enemigo extends SpriteComponent
 
   @override
   void renderMarkerIcon(Canvas canvas, double diameter) {
-    sprite?.render(
+    final current = animationTicker?.getSprite() ?? _staticSprite;
+    current?.render(
       canvas,
       position: Vector2.zero(),
       size: Vector2.all(diameter),
@@ -285,7 +293,7 @@ class AlarmWarningMark extends TextComponent {
 
   AlarmWarningMark({required this.host})
     : super(
-        text: '  !',
+        text: '!',
         anchor: Anchor.bottomCenter,
         priority: 100,
         textRenderer: TextPaint(
@@ -304,12 +312,14 @@ class AlarmWarningMark extends TextComponent {
   @override
   void update(double dt) {
     super.update(dt);
+    if (!host.isMounted) {
+      removeFromParent();
+      return;
+    }
     _elapsed += dt;
-    // Keep the mark world-up and above the sprite, ignoring host rotation.
-    final lift = host.size.y * 0.55 + 6;
-    position.setValues(0, -lift);
-    position.rotate(-host.angle);
-    angle = -host.angle;
+    final bounds = host.toAbsoluteRect();
+    angle = 0;
+    position.setValues(bounds.center.dx, bounds.top - 4);
   }
 
   @override

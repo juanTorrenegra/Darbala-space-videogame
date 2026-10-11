@@ -176,6 +176,7 @@ class GameHud extends PositionComponent
   ChargeShootButton? shootButton;
   late final HudButtonComponent menu;
   late final AmmoSelector ammoSelector;
+  late final RangedSkinSelector rangedSkinSelector;
   late final ShipSkinSelector shipSkinSelector;
   late final HealthBar healthBar;
   late final HudButtonComponent debugMenuButton;
@@ -453,10 +454,12 @@ class GameHud extends PositionComponent
     shootHint = TutorialShootHint();
 
     ammoSelector = AmmoSelector()..priority = 800;
+    rangedSkinSelector = RangedSkinSelector()..priority = 800;
     shipSkinSelector = ShipSkinSelector()..priority = 800;
 
     add(menu);
     add(ammoSelector);
+    add(rangedSkinSelector);
     add(shipSkinSelector);
     add(healthBar);
     add(debugMenuButton);
@@ -536,6 +539,10 @@ class GameHud extends PositionComponent
     menu.position = Vector2(viewSize.x / 2 - 15, viewSize.y - 60);
     ammoSelector.position = Vector2(
       menu.position.x - ammoSelector.size.x - 20,
+      viewSize.y - 58,
+    );
+    rangedSkinSelector.position = Vector2(
+      ammoSelector.position.x - rangedSkinSelector.size.x - 12,
       viewSize.y - 58,
     );
     shipSkinSelector.position = Vector2(

@@ -7,19 +7,26 @@ import 'package:juanshooter/game.dart';
 class ShipSkinSelector extends PositionComponent with HasGameReference<MyGame> {
   static const double buttonSize = 40;
   static const double gap = 6;
-  static const int slotCount = 3;
+  static const int slotCount = 5;
   static const double enemyButtonWidth = 88;
+  static const int crabSlotCount = 6;
+  static const double crabButtonWidth = 44;
 
   ShipSkinSelector()
     : super(
         size: Vector2(
-          slotCount * buttonSize +
-              (slotCount - 1) * gap +
+          _playerRowWidth +
               gap +
-              enemyButtonWidth,
+              enemyButtonWidth +
+              gap +
+              crabSlotCount * crabButtonWidth +
+              (crabSlotCount - 1) * gap,
           buttonSize,
         ),
       );
+
+  static double get _playerRowWidth =>
+      slotCount * buttonSize + (slotCount - 1) * gap;
 
   @override
   Future<void> onLoad() async {
@@ -35,10 +42,20 @@ class ShipSkinSelector extends PositionComponent with HasGameReference<MyGame> {
     }
     add(
       EnemyHostilityButton(
-        position: Vector2(slotCount * (buttonSize + gap), 0),
+        position: Vector2(_playerRowWidth + gap, 0),
         size: Vector2(enemyButtonWidth, buttonSize),
       ),
     );
+    final crabOrigin = _playerRowWidth + gap + enemyButtonWidth + gap;
+    for (var i = 0; i < crabSlotCount; i++) {
+      add(
+        CrabSkinButton(
+          slot: i + 1,
+          position: Vector2(crabOrigin + i * (crabButtonWidth + gap), 0),
+          size: Vector2(crabButtonWidth, buttonSize),
+        ),
+      );
+    }
   }
 }
 
@@ -114,6 +131,118 @@ class EnemyHostilityButton extends PositionComponent
                   Shadow(color: Colors.cyanAccent, blurRadius: 18),
                 ]
               : null,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    painter.paint(
+      canvas,
+      Offset((size.x - painter.width) / 2, (size.y - painter.height) / 2),
+    );
+  }
+}
+
+class CrabSkinButton extends PositionComponent
+    with HasGameReference<MyGame>, TapCallbacks {
+  CrabSkinButton({
+    required this.slot,
+    required super.position,
+    required super.size,
+  });
+
+  final int slot;
+
+  bool get _selected => game.crabSkinSlot == slot;
+
+  @override
+  void onTapDown(TapDownEvent event) {
+    event.continuePropagation = false;
+    if (game.crabSkinSlot == slot) return;
+    game.applyCrabSkin(slot);
+  }
+
+  @override
+  void render(Canvas canvas) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: 'C$slot',
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: _selected
+              ? Colors.cyanAccent
+              : Colors.cyanAccent.withAlpha(120),
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    painter.paint(
+      canvas,
+      Offset((size.x - painter.width) / 2, (size.y - painter.height) / 2),
+    );
+  }
+}
+
+class RangedSkinSelector extends PositionComponent
+    with HasGameReference<MyGame> {
+  static const double buttonWidth = 44;
+  static const double buttonHeight = 40;
+  static const double gap = 6;
+  static const int slotCount = 6;
+
+  RangedSkinSelector()
+    : super(
+        size: Vector2(
+          slotCount * buttonWidth + (slotCount - 1) * gap,
+          buttonHeight,
+        ),
+      );
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    for (var i = 0; i < slotCount; i++) {
+      add(
+        RangedSkinButton(
+          slot: i + 1,
+          position: Vector2(i * (buttonWidth + gap), 0),
+          size: Vector2(buttonWidth, buttonHeight),
+        ),
+      );
+    }
+  }
+}
+
+class RangedSkinButton extends PositionComponent
+    with HasGameReference<MyGame>, TapCallbacks {
+  RangedSkinButton({
+    required this.slot,
+    required super.position,
+    required super.size,
+  });
+
+  final int slot;
+
+  bool get _selected => game.rangedSkinSlot == slot;
+
+  @override
+  void onTapDown(TapDownEvent event) {
+    event.continuePropagation = false;
+    if (game.rangedSkinSlot == slot) return;
+    game.applyRangedSkin(slot);
+  }
+
+  @override
+  void render(Canvas canvas) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: 'R$slot',
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: _selected
+              ? Colors.cyanAccent
+              : Colors.cyanAccent.withAlpha(120),
         ),
       ),
       textDirection: TextDirection.ltr,

@@ -78,6 +78,15 @@ flutter:
     - assets/images/
     - assets/images/blackShip/
     - assets/images/negra0metalic32sprites/
+    - assets/images/negra0.3m0.22r12.0iorSprites32/
+    - assets/images/red0.7m0.28r1.8iorSprites32/
+    - assets/images/red0m1r1.1iorSprites32/
+    - assets/images/pruebaEnemy/
+    - assets/images/enemyGreen/
+    - assets/images/enemyGreenDarker/
+    - assets/images/enemyCyan/
+    - assets/images/beholder/
+    - assets/images/donut/
     - assets/audio/
     - assets/fonts/
   #   - images/a_dot_ham.jpeg

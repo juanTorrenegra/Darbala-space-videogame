@@ -3,11 +3,14 @@ import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import 'package:juanshooter/actors/enemigo.dart';
+import 'package:juanshooter/components/facing_frames.dart';
 
 /// Melee crab: patrols [patrolRadius] while idle, then chases and slashes
 /// once the player enters [alarmRadius] or it takes damage.
 class CrabEnemy extends Enemigo {
   final int damage;
+
+  /// Extra claw reach beyond the two hull radii.
   final double meleeRange;
   final double knockbackDistance;
   final double patrolRadius;
@@ -26,8 +29,9 @@ class CrabEnemy extends Enemigo {
   /// Seconds to coast to a stop after cutting thrust.
   double coastTime = 1.2;
 
+  double _logicalAngle = 0;
+
   CrabEnemy({
-    required Sprite sprite,
     required Vector2 position,
     Vector2? size,
     double angle = 0,
@@ -37,15 +41,15 @@ class CrabEnemy extends Enemigo {
     double rotationSpeed = 4.0,
     this.damage = 20,
     double alarmRadius = 100,
-    this.meleeRange = 25,
+    this.meleeRange = 8,
     this.knockbackDistance = 30,
     this.patrolRadius = 100,
   }) : _patrolOrigin = position.clone(),
+       _logicalAngle = angle,
        super(
-         sprite: sprite,
          position: position,
-         size: size ?? Vector2(16, 16),
-         angle: angle,
+         size: size ?? Vector2(30, 30),
+         angle: 0,
          maxHitPoints: maxHitPoints,
          shield: shield,
          movementSpeed: movementSpeed,
@@ -53,6 +57,36 @@ class CrabEnemy extends Enemigo {
          alarmRadius: alarmRadius,
        ) {
     _pickPatrolTarget();
+  }
+
+  @override
+  double get angle => _logicalAngle;
+
+  @override
+  set angle(double a) {
+    _logicalAngle = a;
+    _syncFacingSprite();
+  }
+
+  void _syncFacingSprite() {
+    final ticker = animationTicker;
+    if (ticker == null) return;
+    ticker.currentIndex = FacingFrames.indexForAngle(_logicalAngle);
+  }
+
+  @override
+  Future<void> onLoad() async {
+    await applyCrabSkin(game.crabSkinSlot);
+    await super.onLoad();
+  }
+
+  Future<void> applyCrabSkin(int slot) async {
+    final loaded = await FacingFrames.enemyAnimation(slot);
+    if (loaded == null) return;
+    game.crabSkinSlot = slot;
+    animation = loaded;
+    playing = false;
+    _syncFacingSprite();
   }
 
   @override
@@ -108,6 +142,12 @@ class CrabEnemy extends Enemigo {
     if (velocity.length2 > 1e-8) {
       position.add(velocity * dt);
     }
+  }
+
+  /// Center-to-center distance where claws can hit: hulls touching, plus
+  /// [meleeRange] extra reach. Scales with the player's current size.
+  double _slashDistance() {
+    return game.player.bodyRadius + bodyRadius + meleeRange;
   }
 
   void _pickPatrolTarget() {
@@ -186,16 +226,18 @@ class CrabEnemy extends Enemigo {
       angle = rotateTowards(atan2(toPlayer.y, toPlayer.x), dt);
     }
 
+    final slashDistance = _slashDistance();
     _updateSpaceMovement(
       dt,
-      thrusting: distance > meleeRange,
+      thrusting: distance > slashDistance,
       thrustDir: toPlayer,
     );
 
     // Re-measure after closing the gap so arriving this frame still attacks.
     // Epsilon covers float error from stopping exactly on the range circle.
     final toPlayerNow = game.player.position - position;
-    if (toPlayerNow.length <= meleeRange + 1 && !game.player.isInvulnerable) {
+    if (toPlayerNow.length <= slashDistance + 1 &&
+        !game.player.isInvulnerable) {
       _slash(toPlayerNow);
     }
   }

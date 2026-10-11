@@ -64,8 +64,11 @@ class Player extends SpriteAnimationComponent
   static const int _facingCount = 32;
 
   static const Map<int, String> _skinFolders = {
-    1: 'blackShip',
-    2: 'negra0metalic32sprites',
+    1: 'negra0metalic32sprites',
+    2: 'blackShip',
+    3: 'negra0.3m0.22r12.0iorSprites32',
+    4: 'red0.7m0.28r1.8iorSprites32',
+    5: 'red0m1r1.1iorSprites32',
   };
 
   final Map<int, SpriteAnimation> _skinAnimations = {};

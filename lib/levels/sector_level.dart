@@ -378,9 +378,6 @@ class SectorLevel extends GameLevel {
   }
 
   static Future<void> _spawnEnemyClusters(MyGame game, int count) async {
-    final crabSprite = await Sprite.load('zombieTargetM500.png');
-    final rangedSprite = await Sprite.load('z01px130.png');
-    final satSprite = await Sprite.load('zombieSatelite240px.png');
     final sizes = _clusterSizes(count);
     final origins = _clusterOrigins(sizes.length);
     final rng = Random(count * 17 + sizes.length);
@@ -398,7 +395,6 @@ class SectorLevel extends GameLevel {
         if (i == 0 && n >= 5 && rng.nextBool()) {
           game.universo.add(
             RangedEnemy(
-              sprite: satSprite,
               position: pos,
               size: Vector2(60, 60),
               maxHitPoints: 200,
@@ -412,7 +408,6 @@ class SectorLevel extends GameLevel {
           final side = 20.0 + rng.nextDouble() * 10;
           game.universo.add(
             CrabEnemy(
-              sprite: crabSprite,
               position: pos,
               size: Vector2(side, side),
               maxHitPoints: 50,
@@ -425,7 +420,6 @@ class SectorLevel extends GameLevel {
           final side = 25.0 + rng.nextDouble() * 10;
           game.universo.add(
             RangedEnemy(
-              sprite: rangedSprite,
               position: pos,
               size: Vector2(side, side),
               maxHitPoints: 40,
@@ -521,7 +515,6 @@ class SectorLevel extends GameLevel {
 
     universo.add(
       RangedEnemy(
-        sprite: await Sprite.load('zombieSatelite240px.png'),
         position: Vector2(685, 380),
         size: Vector2(60, 60),
         maxHitPoints: 200,
@@ -533,7 +526,6 @@ class SectorLevel extends GameLevel {
     );
     universo.add(
       CrabEnemy(
-        sprite: await Sprite.load('z01px130.png'),
         position: Vector2(620, 350),
         size: Vector2(30, 30),
         maxHitPoints: 50,
@@ -541,10 +533,8 @@ class SectorLevel extends GameLevel {
         damage: 30,
       ),
     );
-    final rangedSprite = await Sprite.load('z01px130.png');
     universo.add(
       RangedEnemy(
-        sprite: rangedSprite,
         position: Vector2(620, 330),
         size: Vector2(25, 25),
         maxHitPoints: 40,
@@ -556,7 +546,6 @@ class SectorLevel extends GameLevel {
     );
     universo.add(
       RangedEnemy(
-        sprite: rangedSprite,
         position: Vector2(630, 385),
         size: Vector2(35, 35),
         maxHitPoints: 40,
