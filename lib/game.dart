@@ -81,7 +81,7 @@ class MyGame extends FlameGame
   double timeScale = 1.0; //game speed!
 
   /// Zoom al empezar una partida (los niveles pueden animarlo).
-  static const double defaultZoom = 2.2;
+  static const double defaultZoom = 1.6;
   double cameraZoom = defaultZoom;
 
   /// While true, level scripts drive the camera: no follow, no player clamp.
