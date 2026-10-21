@@ -9,7 +9,7 @@ import 'package:juanshooter/game.dart';
 /// A level is a child of the game itself (not of the world), so clearing the
 /// world between levels never kills the level script. Provides game-time
 /// helpers for scripted sequences: [waitSeconds] and [animateZoom], both
-/// driven by the update loop so they respect pause and timeScale.
+/// driven by the update loop so they respect pause and timeScale..
 abstract class GameLevel extends Component with HasGameReference<MyGame> {
   /// Shown on the title card that introduces this level.
   String get title;
