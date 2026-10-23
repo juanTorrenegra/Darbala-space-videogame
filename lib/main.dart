@@ -19,6 +19,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:juanshooter/core/network/supabase_config.dart';
 import 'package:juanshooter/overlays/create_account_overlay.dart';
 import 'package:juanshooter/overlays/flag_admin_overlay.dart';
+import 'package:juanshooter/overlays/info_panel_overlay.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,9 +84,11 @@ class JuanShooterApp extends ConsumerWidget {
                     controller: game.levelTitleController!,
                   ),
                   'LevelBanner': (_, game) => const LevelBannerOverlay(),
+                  'InfoPanel': (_, game) => InfoPanelOverlay(game: game),
                 },
                 initialActiveOverlays: const [
                   'MainMenu',
+                  'InfoPanel',
                 ],
               ),
             ),

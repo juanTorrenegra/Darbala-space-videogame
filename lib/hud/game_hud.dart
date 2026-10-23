@@ -13,7 +13,6 @@ import 'package:juanshooter/hud/potency_bar.dart';
 import 'package:juanshooter/hud/ship_skin_selector.dart';
 import 'package:juanshooter/hud/tutorial_shoot_hint.dart';
 import 'package:juanshooter/weapons/ammo.dart';
-import 'package:juanshooter/overlays/informacion_juego.dart';
 import 'package:vector_math/vector_math_64.dart' as vm;
 
 class HealthBar extends PositionComponent with HasGameReference<MyGame> {
@@ -184,7 +183,6 @@ class GameHud extends PositionComponent
 
   /// Ship-sized invisible pad, in screen pixels at the default zoom.
   static const double debugKillAllSize = 28 * MyGame.defaultZoom;
-  late final InformacionJuego informacionJuego;
   late final PotencyBar potencyBar;
   late final TutorialShootHint shootHint;
 
@@ -449,7 +447,6 @@ class GameHud extends PositionComponent
       onPressed: game.destroyAllTargets,
     )..priority = 1200;
 
-    informacionJuego = InformacionJuego()..priority = 1000;
     potencyBar = PotencyBar();
     shootHint = TutorialShootHint();
 
@@ -464,7 +461,6 @@ class GameHud extends PositionComponent
     add(healthBar);
     add(debugMenuButton);
     add(debugKillAllButton);
-    add(informacionJuego);
     add(potencyBar);
     add(shootHint);
 
@@ -498,7 +494,7 @@ class GameHud extends PositionComponent
   }
 
   void toggleGameInfo() {
-    informacionJuego.toggleVisibility();
+    game.overlays.toggle('InfoPanel');
   }
 
   void updateHealthBar(int currentHealth, int maxHealth) {
@@ -553,7 +549,6 @@ class GameHud extends PositionComponent
     debugMenuButton.position = Vector2(10, 40);
     debugKillAllButton.anchor = Anchor.topRight;
     debugKillAllButton.position = Vector2(viewSize.x, 0);
-    informacionJuego.position = Vector2(80, 260);
     potencyBar.position = Vector2((viewSize.x - potencyBar.size.x) / 2, 24);
     shootHint.size = viewSize;
     shootHint.position = Vector2.zero();

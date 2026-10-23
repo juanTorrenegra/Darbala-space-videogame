@@ -36,6 +36,18 @@ import 'package:juanshooter/effects/explosion_particles.dart';
 
 enum AppStickMode { single, dual }
 
+typedef DebugInfo = ({
+  int hp,
+  int maxHp,
+  double x,
+  double y,
+  int shipsDestroyed,
+  double timeScale,
+  bool paused,
+  double speed,
+  double zoom,
+});
+
 class MyGame extends FlameGame
     with
         HasGameReference<MyGame>,
@@ -59,6 +71,17 @@ class MyGame extends FlameGame
   int playerMaxHitPoints = basePlayerMaxHitPoints;
 
   final ValueNotifier<int> scoreNotifier = ValueNotifier<int>(0);
+  final ValueNotifier<DebugInfo> debugInfo = ValueNotifier((
+    hp: 0,
+    maxHp: 0,
+    x: 0,
+    y: 0,
+    shipsDestroyed: 0,
+    timeScale: 1.0,
+    paused: false,
+    speed: 0,
+    zoom: defaultZoom,
+  ));
   int shipsDestroyed = 0;
   AmmoKind selectedAmmo = AmmoKind.laser;
 
@@ -81,7 +104,7 @@ class MyGame extends FlameGame
   double timeScale = 1.0; //game speed!
 
   /// Zoom al empezar una partida (los niveles pueden animarlo).
-  static const double defaultZoom = 1.6;
+  static const double defaultZoom = 1.7;
   double cameraZoom = defaultZoom;
 
   /// While true, level scripts drive the camera: no follow, no player clamp.
@@ -771,12 +794,24 @@ class MyGame extends FlameGame
   @override
   void onRemove() {
     scoreNotifier.dispose(); // ✅ Importante: liberar recursos
+    debugInfo.dispose();
     super.onRemove();
   }
 
   @override
   void update(double dt) {
     super.update(dt * timeScale);
+    debugInfo.value = (
+      hp: player.currentHitPoints,
+      maxHp: player.maxHitPoints,
+      x: player.position.x,
+      y: player.position.y,
+      shipsDestroyed: shipsDestroyed,
+      timeScale: timeScale,
+      paused: paused,
+      speed: player.currentSpeed,
+      zoom: cameraZoom,
+    );
     if (!cameraLocked) {
       _updateSpaceCamera(dt);
       clampViewfinderToWorldBounds();
