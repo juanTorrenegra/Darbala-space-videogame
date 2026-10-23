@@ -21,67 +21,83 @@ class InfoPanelOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      left: 10,
-      top: 150,
-      width: 540,
-      height: 400,
+    return Positioned.fill(
       child: _HitTestChildrenOnly(
-        child: Navigator(
-          onGenerateRoute: (settings) {
-            return PageRouteBuilder<void>(
-              settings: settings,
-              opaque: false,
-              pageBuilder: (context, animation, secondaryAnimation) {
-                return _TopLeftPassThrough(
-                  child: OpenContainer<void>(
-                    useRootNavigator: false,
-                    transitionType: ContainerTransitionType.fadeThrough,
-                    transitionDuration: const Duration(milliseconds: 400),
-                    closedElevation: 0,
-                    openElevation: 0,
-                    closedColor: _tabColor,
-                    openColor: _panelColor,
-                    middleColor: _panelColor,
-                    closedShape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                        topRight: Radius.circular(12),
-                        bottomRight: Radius.circular(12),
-                      ),
-                    ),
-                    openShape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(12)),
-                    ),
-                    closedBuilder: (context, action) {
-                      return const SizedBox(
-                        width: 50,
-                        height: 56,
-                        child: Center(
-                          child: Icon(
-                            Icons.apps,
-                            color: Colors.cyanAccent,
-                            size: 22,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned(
+              left: 20,
+              top: 150,
+              width: 540,
+              height: 400,
+              child: Transform(
+                transform: Matrix4.skewX(-0.14),
+                alignment: Alignment.centerLeft,
+                child: Navigator(
+                  onGenerateRoute: (settings) {
+                    return PageRouteBuilder<void>(
+                      settings: settings,
+                      opaque: false,
+                      pageBuilder: (context, animation, secondaryAnimation) {
+                        return _TopLeftPassThrough(
+                          child: OpenContainer<void>(
+                            useRootNavigator: false,
+                            transitionType: ContainerTransitionType.fadeThrough,
+                            transitionDuration: const Duration(
+                              milliseconds: 400,
+                            ),
+                            closedElevation: 0,
+                            openElevation: 0,
+                            closedColor: _tabColor,
+                            openColor: _panelColor,
+                            middleColor: _panelColor,
+                            closedShape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.only(
+                                topRight: Radius.circular(12),
+                                bottomRight: Radius.circular(12),
+                              ),
+                            ),
+                            openShape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(12),
+                              ),
+                            ),
+                            closedBuilder: (context, action) {
+                              return const SizedBox(
+                                width: 50,
+                                height: 56,
+                                child: Center(
+                                  child: Icon(
+                                    Icons.apps,
+                                    color: Colors.cyanAccent,
+                                    size: 22,
+                                  ),
+                                ),
+                              );
+                            },
+                            openBuilder: (context, action) {
+                              return SizedBox.expand(
+                                child: Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    12,
+                                    8,
+                                    12,
+                                    10,
+                                  ),
+                                  child: _OpenPanel(game: game, close: action),
+                                ),
+                              );
+                            },
                           ),
-                        ),
-                      );
-                    },
-                    openBuilder: (context, action) {
-                      return SizedBox.expand(
-                        child: Transform(
-                          transform: Matrix4.skewX(-0.14),
-                          alignment: Alignment.centerLeft,
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
-                            child: _OpenPanel(game: game, close: action),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                );
-              },
-            );
-          },
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
