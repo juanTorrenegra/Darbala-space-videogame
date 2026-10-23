@@ -541,12 +541,9 @@ class GameHud extends PositionComponent
       ammoSelector.position.x - rangedSkinSelector.size.x - 12,
       viewSize.y - 58,
     );
-    shipSkinSelector.position = Vector2(
-      menu.position.x + 55,
-      viewSize.y - 58,
-    );
+    shipSkinSelector.position = Vector2(menu.position.x + 55, viewSize.y - 58);
     healthBar.position = Vector2(200, 80);
-    debugMenuButton.position = Vector2(10, 40);
+    debugMenuButton.position = Vector2(30, 40);
     debugKillAllButton.anchor = Anchor.topRight;
     debugKillAllButton.position = Vector2(viewSize.x, 0);
     potencyBar.position = Vector2((viewSize.x - potencyBar.size.x) / 2, 24);
