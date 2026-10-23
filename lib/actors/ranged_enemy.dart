@@ -83,14 +83,27 @@ class RangedEnemy extends Enemigo {
 
   @override
   Future<void> onLoad() async {
-    await applyRangedSkin(game.rangedSkinSlot);
+    await applyRangedSkinFolder(game.rangedSkinFolder);
     await super.onLoad();
   }
 
   Future<void> applyRangedSkin(int slot) async {
-    final loaded = await FacingFrames.enemyAnimation(slot);
-    if (loaded == null) return;
+    final folder = FacingFrames.enemyFolders[slot];
+    if (folder == null) return;
     game.rangedSkinSlot = slot;
+    await applyRangedSkinFolder(folder);
+  }
+
+  Future<void> applyRangedSkinFolder(String folder) async {
+    final loaded = await FacingFrames.enemyAnimationFolder(folder);
+    if (loaded == null) return;
+    game.rangedSkinFolder = folder;
+    for (final entry in FacingFrames.enemyFolders.entries) {
+      if (entry.value == folder) {
+        game.rangedSkinSlot = entry.key;
+        break;
+      }
+    }
     animation = loaded;
     playing = false;
     _syncFacingSprite();

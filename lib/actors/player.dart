@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
+import 'package:juanshooter/components/facing_frames.dart';
 import 'package:juanshooter/components/solid_body.dart';
 import 'package:juanshooter/effects/charge_aim_effect.dart';
 import 'package:juanshooter/effects/explosion_particles.dart';
@@ -25,43 +26,7 @@ class Player extends SpriteAnimationComponent
         autoResize: false,
       );
 
-  /// CCW from nose-right: nave_28, nave_29 … nave_31, nave_00 … nave_27.
-  static const List<String> _facingNames = [
-    'nave_28.webp',
-    'nave_29.webp',
-    'nave_30.webp',
-    'nave_31.webp',
-    'nave_00.webp',
-    'nave_01.webp',
-    'nave_02.webp',
-    'nave_03.webp',
-    'nave_04.webp',
-    'nave_05.webp',
-    'nave_06.webp',
-    'nave_07.webp',
-    'nave_08.webp',
-    'nave_09.webp',
-    'nave_10.webp',
-    'nave_11.webp',
-    'nave_12.webp',
-    'nave_13.webp',
-    'nave_14.webp',
-    'nave_15.webp',
-    'nave_16.webp',
-    'nave_17.webp',
-    'nave_18.webp',
-    'nave_19.webp',
-    'nave_20.webp',
-    'nave_21.webp',
-    'nave_22.webp',
-    'nave_23.webp',
-    'nave_24.webp',
-    'nave_25.webp',
-    'nave_26.webp',
-    'nave_27.webp',
-  ];
-
-  static const int _facingCount = 32;
+  static const int _facingCount = FacingFrames.count;
 
   static const Map<int, String> _skinFolders = {
     1: 'negra0metalic32sprites',
@@ -70,8 +35,6 @@ class Player extends SpriteAnimationComponent
     4: 'red0.7m0.28r1.8iorSprites32',
     5: 'red0m1r1.1iorSprites32',
   };
-
-  final Map<int, SpriteAnimation> _skinAnimations = {};
 
   /// Nose direction in world radians (0 = right, clockwise positive).
   /// The facing frames are pre-rotated, so [transform] angle stays 0.
@@ -386,7 +349,7 @@ class Player extends SpriteAnimationComponent
 
     // Restaurar velocidad
     restoreChargeSpeed();
-    currentSpeed = 50;
+    currentSpeed = game.playerSpeedSetting;
 
     clearKnockback();
     clearVelocity();
@@ -413,7 +376,8 @@ class Player extends SpriteAnimationComponent
 
   @override
   Future<void> onLoad() async {
-    await applyShipSkin(game.shipSkinSlot);
+    currentSpeed = game.playerSpeedSetting;
+    await applyShipSkinFolder(game.shipSkinFolder);
 
     add(CircleHitbox()..collisionType = CollisionType.active);
     game.universo.add(ChargeAimEffect());
@@ -425,24 +389,22 @@ class Player extends SpriteAnimationComponent
     final folder = _skinFolders[slot];
     if (folder == null) return;
     game.shipSkinSlot = slot;
-    final cached = _skinAnimations[slot];
-    if (cached != null) {
-      animation = cached;
-    } else {
-      final loaded = await _loadFacingAnimation(folder);
-      _skinAnimations[slot] = loaded;
-      animation = loaded;
-    }
-    playing = false;
-    _syncFacingSprite();
+    await applyShipSkinFolder(folder);
   }
 
-  Future<SpriteAnimation> _loadFacingAnimation(String folder) async {
-    final sprites = <Sprite>[];
-    for (final name in _facingNames) {
-      sprites.add(await Sprite.load('$folder/$name'));
+  Future<void> applyShipSkinFolder(String folder) async {
+    final loaded = await FacingFrames.loadSkin(folder, start: 28);
+    if (loaded == null) return;
+    game.shipSkinFolder = folder;
+    for (final entry in _skinFolders.entries) {
+      if (entry.value == folder) {
+        game.shipSkinSlot = entry.key;
+        break;
+      }
     }
-    return SpriteAnimation.spriteList(sprites, stepTime: 1);
+    animation = loaded;
+    playing = false;
+    _syncFacingSprite();
   }
 
   void _syncFacingSprite() {

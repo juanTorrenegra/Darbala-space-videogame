@@ -16,6 +16,7 @@ import 'package:juanshooter/actors/ranged_enemy.dart';
 import 'package:juanshooter/components/circle_target.dart';
 import 'package:juanshooter/components/rock_target.dart';
 import 'package:juanshooter/components/scenery_sprite.dart';
+import 'package:juanshooter/debug/debug_skin_store.dart';
 import 'package:juanshooter/components/space_rock.dart';
 import 'package:juanshooter/components/target_health_bar.dart';
 import 'package:juanshooter/hud/game_hud.dart';
@@ -87,12 +88,18 @@ class MyGame extends FlameGame
 
   /// Temporary sprite-folder slot: 1–5 wired.
   int shipSkinSlot = 1;
+  String shipSkinFolder = DebugSkinStore.defaultPlayer;
 
   /// Temporary crab sprite-folder slot: 1–6 wired (C1–C6).
   int crabSkinSlot = 5;
+  String crabSkinFolder = DebugSkinStore.defaultCrab;
 
   /// Temporary ranged sprite-folder slot: 1–6 wired (R1–R6).
   int rangedSkinSlot = 6;
+  String rangedSkinFolder = DebugSkinStore.defaultRanged;
+
+  /// Debug speed the player should keep across reset/recreate.
+  double playerSpeedSetting = 50;
   late Player player;
 
   late final GameHud hud;
@@ -118,6 +125,9 @@ class MyGame extends FlameGame
 
   /// Debug: when false, enemies stay idle/roam and never attack.
   bool enemyHostilityEnabled = true;
+
+  /// Debug: off-screen enemy edge markers.
+  bool enemyMarkersEnabled = true;
 
   /// While false the starfield holds still instead of tracking the ship.
   /// Scripted exits fake [Player.velocity] to keep the thruster trail lit,
@@ -210,8 +220,19 @@ class MyGame extends FlameGame
     print('Time scale set to: ${timeScale}x');
   }
 
+  void setPlayerSpeed(double value) {
+    playerSpeedSetting = value.clamp(1.0, 900.0);
+    if (!player.isMounted) return;
+    player.restoreChargeSpeed();
+    player.currentSpeed = playerSpeedSetting;
+  }
+
+  void setEnemyMarkersEnabled(bool enabled) {
+    enemyMarkersEnabled = enabled;
+  }
+
   void setCameraZoom(double zoom) {
-    cameraZoom = zoom.clamp(0.5, 3.0); // Limit zoom range
+    cameraZoom = zoom.clamp(0.10, 3.0); // Limit zoom range
     if (camara != null) {
       camara!.viewfinder.zoom = cameraZoom;
       print('Zoom set to: ${cameraZoom}x');
@@ -589,9 +610,13 @@ class MyGame extends FlameGame
     playSfx('menu1.mp3');
   }
 
-  /// Debug: blow up every enemy and tutorial target in the world, each with
-  /// its own explosion, so a level can be skipped while testing. Enemies run
-  /// their normal death path, so score and level completion still fire.
+  Future<void> applyPlayerSkinFolder(String folder) async {
+    shipSkinFolder = folder;
+    if (player.isMounted) {
+      await player.applyShipSkinFolder(folder);
+    }
+  }
+
   Future<void> applyCrabSkin(int slot) async {
     crabSkinSlot = slot;
     if (!universo.isMounted) return;
@@ -600,11 +625,27 @@ class MyGame extends FlameGame
     }
   }
 
+  Future<void> applyCrabSkinFolder(String folder) async {
+    crabSkinFolder = folder;
+    if (!universo.isMounted) return;
+    for (final crab in universo.children.whereType<CrabEnemy>()) {
+      await crab.applyCrabSkinFolder(folder);
+    }
+  }
+
   Future<void> applyRangedSkin(int slot) async {
     rangedSkinSlot = slot;
     if (!universo.isMounted) return;
     for (final enemy in universo.children.whereType<RangedEnemy>()) {
       await enemy.applyRangedSkin(slot);
+    }
+  }
+
+  Future<void> applyRangedSkinFolder(String folder) async {
+    rangedSkinFolder = folder;
+    if (!universo.isMounted) return;
+    for (final enemy in universo.children.whereType<RangedEnemy>()) {
+      await enemy.applyRangedSkinFolder(folder);
     }
   }
 
@@ -618,6 +659,9 @@ class MyGame extends FlameGame
     }
   }
 
+  /// Debug: blow up every enemy and tutorial target in the world, each with
+  /// its own explosion, so a level can be skipped while testing. Enemies run
+  /// their normal death path, so score and level completion still fire.
   void destroyAllTargets() {
     for (final enemy in universo.children.whereType<Enemigo>().toList()) {
       enemy.killInstantly();
@@ -684,6 +728,10 @@ class MyGame extends FlameGame
     );
     await _initSfx(['menu1.mp3', 'death1.mp3', 'menuOpen.mp3', 'alert3.mp3']);
     startBgmMusic();
+
+    shipSkinFolder = await DebugSkinStore.playerFolder();
+    crabSkinFolder = await DebugSkinStore.crabFolder();
+    rangedSkinFolder = await DebugSkinStore.rangedFolder();
 
     universo = World();
     add(universo);
@@ -1026,7 +1074,7 @@ class MyGame extends FlameGame
     player.isInvulnerable = false;
     player.isVisible = true;
     player.restoreChargeSpeed();
-    player.currentSpeed = 50;
+    player.currentSpeed = playerSpeedSetting;
 
     // Actualizar HUD
     if (hud != null) {

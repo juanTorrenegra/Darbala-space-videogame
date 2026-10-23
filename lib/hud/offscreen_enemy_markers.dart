@@ -57,6 +57,7 @@ class OffscreenEnemyMarkers extends PositionComponent
   @override
   void render(Canvas canvas) {
     super.render(canvas);
+    if (!game.enemyMarkersEnabled) return;
     final cam = game.camara;
     if (cam == null || !game.universo.isMounted) return;
 

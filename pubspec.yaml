@@ -77,17 +77,21 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
-    - assets/images/blackShip/
-    - assets/images/negra0metalic32sprites/
-    - assets/images/negra0.3m0.22r12.0iorSprites32/
-    - assets/images/red0.7m0.28r1.8iorSprites32/
-    - assets/images/red0m1r1.1iorSprites32/
-    - assets/images/pruebaEnemy/
-    - assets/images/enemyGreen/
-    - assets/images/enemyGreenDarker/
-    - assets/images/enemyCyan/
-    - assets/images/beholder/
-    - assets/images/donut/
+    # Debug skins: Flutter does not recurse — add a line per new folder.
+    - assets/images/skins/
+    - assets/images/skins/beholder/
+    - assets/images/skins/blackShip/
+    - assets/images/skins/donut/
+    - assets/images/skins/enemyCyan/
+    - assets/images/skins/enemyGreen/
+    - assets/images/skins/enemyGreenDarker/
+    - assets/images/skins/isometric/
+    - assets/images/skins/LongIsometric/
+    - assets/images/skins/negra0.3m0.22r12.0iorSprites32/
+    - assets/images/skins/negra0metalic32sprites/
+    - assets/images/skins/pruebaEnemy/
+    - assets/images/skins/red0.7m0.28r1.8iorSprites32/
+    - assets/images/skins/red0m1r1.1iorSprites32/
     - assets/audio/
     - assets/fonts/
   #   - images/a_dot_ham.jpeg

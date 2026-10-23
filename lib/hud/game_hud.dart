@@ -8,9 +8,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide Matrix4;
 import 'package:flutter/services.dart';
 import 'package:juanshooter/game.dart';
-import 'package:juanshooter/hud/ammo_selector.dart';
 import 'package:juanshooter/hud/potency_bar.dart';
-import 'package:juanshooter/hud/ship_skin_selector.dart';
 import 'package:juanshooter/hud/tutorial_shoot_hint.dart';
 import 'package:juanshooter/weapons/ammo.dart';
 import 'package:vector_math/vector_math_64.dart' as vm;
@@ -174,15 +172,7 @@ class GameHud extends PositionComponent
   JoystickComponent? lookJoystick;
   ChargeShootButton? shootButton;
   late final HudButtonComponent menu;
-  late final AmmoSelector ammoSelector;
-  late final RangedSkinSelector rangedSkinSelector;
-  late final ShipSkinSelector shipSkinSelector;
   late final HealthBar healthBar;
-  late final HudButtonComponent debugMenuButton;
-  late final HudButtonComponent debugKillAllButton;
-
-  /// Ship-sized invisible pad, in screen pixels at the default zoom.
-  static const double debugKillAllSize = 28 * MyGame.defaultZoom;
   late final PotencyBar potencyBar;
   late final TutorialShootHint shootHint;
 
@@ -424,43 +414,11 @@ class GameHud extends PositionComponent
       height: 40,
     );
 
-    debugMenuButton = HudButtonComponent(
-      button: RectangleComponent(
-        size: Vector2(30, 30),
-        paint: Paint()
-          ..color = Colors.green.withAlpha(20)
-          ..style = PaintingStyle.fill,
-      ),
-      onPressed: () {
-        game.overlays.add('DebugMenu');
-      },
-    );
-
-    // Invisible debug pad in the top-right corner: wipes the enemies and
-    // targets on screen so levels can be stepped through quickly. Priority
-    // keeps it above the shoot pad, whose square hit area reaches the corner.
-    debugKillAllButton = HudButtonComponent(
-      button: RectangleComponent(
-        size: Vector2.all(debugKillAllSize),
-        paint: Paint()..color = Colors.transparent,
-      ),
-      onPressed: game.destroyAllTargets,
-    )..priority = 1200;
-
     potencyBar = PotencyBar();
     shootHint = TutorialShootHint();
 
-    ammoSelector = AmmoSelector()..priority = 800;
-    rangedSkinSelector = RangedSkinSelector()..priority = 800;
-    shipSkinSelector = ShipSkinSelector()..priority = 800;
-
     add(menu);
-    add(ammoSelector);
-    add(rangedSkinSelector);
-    add(shipSkinSelector);
     add(healthBar);
-    add(debugMenuButton);
-    add(debugKillAllButton);
     add(potencyBar);
     add(shootHint);
 
@@ -533,19 +491,7 @@ class GameHud extends PositionComponent
       }
     }
     menu.position = Vector2(viewSize.x / 2 - 15, viewSize.y - 60);
-    ammoSelector.position = Vector2(
-      menu.position.x - ammoSelector.size.x - 20,
-      viewSize.y - 58,
-    );
-    rangedSkinSelector.position = Vector2(
-      ammoSelector.position.x - rangedSkinSelector.size.x - 12,
-      viewSize.y - 58,
-    );
-    shipSkinSelector.position = Vector2(menu.position.x + 55, viewSize.y - 58);
     healthBar.position = Vector2(200, 80);
-    debugMenuButton.position = Vector2(30, 40);
-    debugKillAllButton.anchor = Anchor.topRight;
-    debugKillAllButton.position = Vector2(viewSize.x, 0);
     potencyBar.position = Vector2((viewSize.x - potencyBar.size.x) / 2, 24);
     shootHint.size = viewSize;
     shootHint.position = Vector2.zero();

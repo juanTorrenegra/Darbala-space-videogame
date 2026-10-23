@@ -6,8 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:juanshooter/game.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:juanshooter/core/di/providers.dart';
-import 'package:juanshooter/hud/game_hud.dart';
-import 'package:juanshooter/levels/sector_level.dart';
 import 'package:juanshooter/overlays/main_menu_buttons.dart';
 
 class VisorOverlay extends ConsumerStatefulWidget {
@@ -21,7 +19,6 @@ class VisorOverlay extends ConsumerStatefulWidget {
 
 class _VisorOverlayState extends ConsumerState<VisorOverlay> {
   MyGame get game => widget.game;
-  bool _showLevelSkip = false;
 
   /// Gap to the right of the elevated buttons. Raise to push modes farther right.
   static const double stickModeOffsetX = 55;
@@ -31,24 +28,6 @@ class _VisorOverlayState extends ConsumerState<VisorOverlay> {
 
   /// Font size for the 1/2 joystick mode labels.
   static const double stickModeFontSize = 25;
-
-  bool _isCurrentSkipLevel(int oneBased) {
-    final level = game.currentLevel;
-    return level is SectorLevel && level.campaignIndex == oneBased - 1;
-  }
-
-  void _jumpToLevel(int oneBased) {
-    game.overlays.remove('MainMenu');
-    if (!game.overlays.isActive('HudDecoration')) {
-      game.overlays.add('HudDecoration');
-    }
-    if (!game.overlays.isActive('ScoreBoard')) {
-      game.overlays.add('ScoreBoard');
-    }
-    game.resumeEngine();
-    game.resumeBgmMusic();
-    game.startLevel(SectorLevel.at(oneBased - 1));
-  }
 
   @override
   void dispose() {
@@ -88,59 +67,6 @@ class _VisorOverlayState extends ConsumerState<VisorOverlay> {
             CustomPaint(painter: MenuPainter(), size: Size.infinite),
 
             Positioned(top: 505, left: 80, child: _ArtilleroNamePlate()),
-            Positioned(
-              top: 0,
-              right: 0,
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => setState(() => _showLevelSkip = !_showLevelSkip),
-                child: SizedBox(
-                  width: GameHud.debugKillAllSize,
-                  height: GameHud.debugKillAllSize,
-                ),
-              ),
-            ),
-            if (_showLevelSkip)
-              Positioned(
-                top: GameHud.debugKillAllSize + 4,
-                right: 18,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    for (var i = 1; i <= 8; i++)
-                      GestureDetector(
-                        onTap: () => _jumpToLevel(i),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Text(
-                            '$i',
-                            style: TextStyle(
-                              fontFamily: 'Megatrans',
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 2,
-                              color: _isCurrentSkipLevel(i)
-                                  ? Colors.cyanAccent
-                                  : Colors.cyanAccent.withValues(alpha: 0.7),
-                              shadows: _isCurrentSkipLevel(i)
-                                  ? const [
-                                      Shadow(
-                                        color: Colors.cyanAccent,
-                                        blurRadius: 12,
-                                      ),
-                                      Shadow(
-                                        color: Colors.white,
-                                        blurRadius: 24,
-                                      ),
-                                    ]
-                                  : null,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
 
             // 3) -- Los botones y otros widgets de interfaz encima del visor --
             Center(

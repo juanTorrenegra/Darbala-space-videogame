@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:juanshooter/core/di/providers.dart';
 import 'package:juanshooter/game.dart';
 
-import 'package:juanshooter/overlays/debug_menu.dart';
 import 'package:juanshooter/overlays/hud_decoration_overlay.dart';
 import 'package:juanshooter/overlays/leaderboard_overlay.dart';
 import 'package:juanshooter/overlays/level_title_overlay.dart';
@@ -72,7 +71,6 @@ class JuanShooterApp extends ConsumerWidget {
                   'MainMenu': (_, game) => VisorOverlay(game: game),
                   'HudDecoration': (_, game) =>
                       HudDecorationOverlay(game: game),
-                  'DebugMenu': (_, game) => DebugMenu(game: game),
                   'ScoreBoard': (_, game) => ScoreBoard(game: game),
                   'Leaderboard': (_, game) => LeaderboardOverlay(game: game),
                   'ScoreTransmit': (_, game) =>

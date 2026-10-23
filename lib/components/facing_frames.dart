@@ -41,10 +41,10 @@ class FacingFrames {
 
   static const int count = 32;
 
-  static List<String> namesFrom(int start) {
+  static List<String> namesFrom(int start, {String ext = 'webp'}) {
     return [
       for (var i = 0; i < count; i++)
-        'nave_${((start + i) % count).toString().padLeft(2, '0')}.webp',
+        'nave_${((start + i) % count).toString().padLeft(2, '0')}.$ext',
     ];
   }
 
@@ -65,16 +65,44 @@ class FacingFrames {
     6: 'donut',
   };
 
-  static final Map<int, SpriteAnimation> _enemyAnimations = {};
+  static final Map<String, SpriteAnimation> _skinCache = {};
+
+  /// Loads 32-dir frames from `assets/images/skins/<folder>/`.
+  static Future<SpriteAnimation?> loadSkin(
+    String folder, {
+    int start = 28,
+  }) async {
+    final key = '$start:$folder';
+    final cached = _skinCache[key];
+    if (cached != null) return cached;
+    try {
+      final loaded = await load('skins/$folder', start: start);
+      _skinCache[key] = loaded;
+      return loaded;
+    } catch (_) {
+      try {
+        final sprites = <Sprite>[];
+        for (final name in namesFrom(start, ext: 'png')) {
+          sprites.add(await Sprite.load('skins/$folder/$name'));
+        }
+        final loaded = SpriteAnimation.spriteList(sprites, stepTime: 1);
+        _skinCache[key] = loaded;
+        return loaded;
+      } catch (e) {
+        print('Failed to load skin "$folder": $e');
+        return null;
+      }
+    }
+  }
 
   static Future<SpriteAnimation?> enemyAnimation(int slot) async {
     final folder = enemyFolders[slot];
     if (folder == null) return null;
-    final cached = _enemyAnimations[slot];
-    if (cached != null) return cached;
-    final loaded = await load(folder, start: 4);
-    _enemyAnimations[slot] = loaded;
-    return loaded;
+    return loadSkin(folder, start: 4);
+  }
+
+  static Future<SpriteAnimation?> enemyAnimationFolder(String folder) {
+    return loadSkin(folder, start: 4);
   }
 
   static int indexForAngle(double logicalAngle) {

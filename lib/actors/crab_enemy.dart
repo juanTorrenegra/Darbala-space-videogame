@@ -76,14 +76,27 @@ class CrabEnemy extends Enemigo {
 
   @override
   Future<void> onLoad() async {
-    await applyCrabSkin(game.crabSkinSlot);
+    await applyCrabSkinFolder(game.crabSkinFolder);
     await super.onLoad();
   }
 
   Future<void> applyCrabSkin(int slot) async {
-    final loaded = await FacingFrames.enemyAnimation(slot);
-    if (loaded == null) return;
+    final folder = FacingFrames.enemyFolders[slot];
+    if (folder == null) return;
     game.crabSkinSlot = slot;
+    await applyCrabSkinFolder(folder);
+  }
+
+  Future<void> applyCrabSkinFolder(String folder) async {
+    final loaded = await FacingFrames.enemyAnimationFolder(folder);
+    if (loaded == null) return;
+    game.crabSkinFolder = folder;
+    for (final entry in FacingFrames.enemyFolders.entries) {
+      if (entry.value == folder) {
+        game.crabSkinSlot = entry.key;
+        break;
+      }
+    }
     animation = loaded;
     playing = false;
     _syncFacingSprite();

@@ -20,7 +20,7 @@ class _ScoreBoardState extends State<ScoreBoard>
   int _currentScore = 0;
   bool _showMedalAnimation = false;
 
-  static const double _baseFontSize = 72;
+  static const double _baseFontSize = 30;
 
   /// Horizontal skew (radians-ish via Matrix4) for a slanted score panel.
   static const double _panelSkewX = -0.14;
