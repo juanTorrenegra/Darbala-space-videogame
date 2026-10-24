@@ -13,7 +13,7 @@ final Color _panelColor = Color.alphaBlend(
   Colors.black.withAlpha(45),
 );
 
-enum _PanelTab { info, debug, sprites, level }
+enum _PanelTab { debug, sprites, level, info }
 
 class InfoPanelOverlay extends StatelessWidget {
   const InfoPanelOverlay({super.key, required this.game});
@@ -115,7 +115,7 @@ class _OpenPanel extends StatefulWidget {
 }
 
 class _OpenPanelState extends State<_OpenPanel> {
-  _PanelTab _tab = _PanelTab.info;
+  _PanelTab _tab = _PanelTab.debug;
 
   @override
   Widget build(BuildContext context) {

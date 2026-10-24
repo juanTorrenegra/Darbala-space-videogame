@@ -87,7 +87,7 @@ class _DebugPanelTabState extends State<DebugPanelTab> {
             current: info.zoom,
             step: 0.01,
             min: 0.10,
-            max: 3.00,
+            max: 5.00,
             format: (v) => v.toStringAsFixed(2),
             near: 0.004,
             onChanged: (v) => _apply(() => game.setCameraZoom(v)),
@@ -143,28 +143,26 @@ class _DebugControlRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           flex: 2,
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 16,
-                      fontFamily: 'Megatrans',
-                      height: 1,
-                    ),
-                  ),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 16,
+                  fontFamily: 'Megatrans',
+                  height: 1,
                 ),
               ),
-              Expanded(
-                flex: 2,
+              const SizedBox(height: 2),
+              SizedBox(
+                height: 32,
                 child: _NumberCarousel(
                   values: values,
                   current: current,
@@ -177,32 +175,35 @@ class _DebugControlRow extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: Row(
-            children: [
-              Expanded(
-                child: _StepHit(
-                  label: '−',
-                  onTap: () => onChanged((current - step).clamp(min, max)),
+          child: SizedBox(
+            height: 50,
+            child: Row(
+              children: [
+                Expanded(
+                  child: _StepHit(
+                    label: '−',
+                    onTap: () => onChanged((current - step).clamp(min, max)),
+                  ),
                 ),
-              ),
-              Expanded(
-                flex: 2,
-                child: Center(
-                  child: FittedBox(
-                    child: Text(
-                      format(current),
-                      style: debugGlowStyle(true, 36),
+                Expanded(
+                  flex: 2,
+                  child: Center(
+                    child: FittedBox(
+                      child: Text(
+                        format(current),
+                        style: debugGlowStyle(true, 36),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Expanded(
-                child: _StepHit(
-                  label: '+',
-                  onTap: () => onChanged((current + step).clamp(min, max)),
+                Expanded(
+                  child: _StepHit(
+                    label: '+',
+                    onTap: () => onChanged((current + step).clamp(min, max)),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],
@@ -231,14 +232,15 @@ class _NumberCarousel extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.only(right: 8),
       itemCount: values.length,
-      separatorBuilder: (_, _) => const SizedBox(width: 8),
+      separatorBuilder: (_, _) => const SizedBox(width: 24),
       itemBuilder: (context, index) {
         final value = values[index];
         final selected = (value - current).abs() <= near;
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () => onChanged(value),
-          child: Center(
+          child: Align(
+            alignment: Alignment.center,
             child: Text(format(value), style: debugGlowStyle(selected, 22)),
           ),
         );
@@ -326,13 +328,20 @@ class _StepHit extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Center(
-        child: Text(
-          label,
-          style: const TextStyle(
-            color: Colors.cyanAccent,
-            fontSize: 32,
-            fontFamily: 'Megatrans',
-            height: 1,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.cyanAccent, width: 1.5),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: Colors.cyanAccent,
+              fontSize: 32,
+              fontFamily: 'Megatrans',
+              height: 1,
+            ),
           ),
         ),
       ),

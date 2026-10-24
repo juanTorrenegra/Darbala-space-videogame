@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:juanshooter/game.dart';
 import 'package:juanshooter/levels/sector_level.dart';
-import 'package:juanshooter/overlays/debug_panel_tab.dart';
 
 class LevelsPanelTab extends StatefulWidget {
   const LevelsPanelTab({super.key, required this.game});
@@ -71,7 +70,12 @@ class _LevelsPanelTabState extends State<LevelsPanelTab> {
               child: Text(
                 'level $oneBased',
                 textAlign: TextAlign.center,
-                style: debugGlowStyle(selected, 16),
+                style: TextStyle(
+                  color: selected ? Colors.black : Colors.white70,
+                  fontSize: 16,
+                  fontFamily: 'Megatrans',
+                  height: 1,
+                ),
               ),
             ),
           ),

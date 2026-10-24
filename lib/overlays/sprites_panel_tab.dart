@@ -218,8 +218,8 @@ class _SkinGrid extends StatelessWidget {
                     child: Text(
                       skin.twoLineLabel,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: isSelected ? Colors.black : Colors.white,
                         fontSize: 16,
                         fontFamily: 'Megatrans',
                         height: 1.05,
@@ -232,8 +232,8 @@ class _SkinGrid extends StatelessWidget {
                   right: 4,
                   child: Text(
                     '${skin.spriteCount}',
-                    style: const TextStyle(
-                      color: Colors.cyanAccent,
+                    style: TextStyle(
+                      color: isSelected ? Colors.black : Colors.cyanAccent,
                       fontSize: 16,
                       fontFamily: 'Megatrans',
                       height: 1,
