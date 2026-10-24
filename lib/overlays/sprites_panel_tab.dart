@@ -18,18 +18,34 @@ class SpritesPanelTab extends StatefulWidget {
   State<SpritesPanelTab> createState() => _SpritesPanelTabState();
 }
 
-class _SpritesPanelTabState extends State<SpritesPanelTab> {
+class _SpritesPanelTabState extends State<SpritesPanelTab>
+    with SingleTickerProviderStateMixin {
   SpriteSubTab _sub = SpriteSubTab.player;
   List<SkinFolderInfo> _skins = const [];
   String? _savedPlayer;
   String? _savedCrab;
   String? _savedRanged;
   bool _loading = true;
+  late final AnimationController _pop;
+  late final Animation<double> _popScale;
 
   @override
   void initState() {
     super.initState();
+    _pop = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 120),
+    );
+    _popScale = Tween<double>(begin: 1, end: 1.16).animate(
+      CurvedAnimation(parent: _pop, curve: Curves.easeOut),
+    );
     _reload();
+  }
+
+  @override
+  void dispose() {
+    _pop.dispose();
+    super.dispose();
   }
 
   Future<void> _reload() async {
@@ -88,6 +104,9 @@ class _SpritesPanelTabState extends State<SpritesPanelTab> {
   }
 
   Future<void> _saveDefault() async {
+    _pop.forward(from: 0).then((_) {
+      if (mounted) _pop.reverse();
+    });
     switch (_sub) {
       case SpriteSubTab.player:
         await DebugSkinStore.savePlayer(widget.game.shipSkinFolder);
@@ -144,6 +163,7 @@ class _SpritesPanelTabState extends State<SpritesPanelTab> {
                       skins: _skins,
                       selected: _appliedFolder,
                       saved: _savedFolder,
+                      popScale: _popScale,
                       onTap: _preview,
                     ),
                     Align(
@@ -151,9 +171,12 @@ class _SpritesPanelTabState extends State<SpritesPanelTab> {
                       child: GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onTap: _saveDefault,
-                        child: Padding(
-                          padding: const EdgeInsets.all(4),
-                          child: Text('set', style: debugGlowStyle(true, 28)),
+                        child: ScaleTransition(
+                          scale: _popScale,
+                          child: Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: Text('set', style: debugGlowStyle(true, 28)),
+                          ),
                         ),
                       ),
                     ),
@@ -170,12 +193,14 @@ class _SkinGrid extends StatelessWidget {
     required this.skins,
     required this.selected,
     required this.saved,
+    required this.popScale,
     required this.onTap,
   });
 
   final List<SkinFolderInfo> skins;
   final String selected;
   final String? saved;
+  final Animation<double> popScale;
   final ValueChanged<String> onTap;
 
   @override
@@ -192,9 +217,7 @@ class _SkinGrid extends StatelessWidget {
       itemBuilder: (context, index) {
         final skin = skins[index];
         final isSelected = skin.name == selected;
-        return GestureDetector(
-          onTap: () => onTap(skin.name),
-          child: DecoratedBox(
+        Widget tile = DecoratedBox(
             decoration: BoxDecoration(
               color: const Color(0x2210A0B0),
               borderRadius: BorderRadius.circular(10),
@@ -256,7 +279,13 @@ class _SkinGrid extends StatelessWidget {
                   ),
               ],
             ),
-          ),
+        );
+        if (isSelected) {
+          tile = ScaleTransition(scale: popScale, child: tile);
+        }
+        return GestureDetector(
+          onTap: () => onTap(skin.name),
+          child: tile,
         );
       },
     );
